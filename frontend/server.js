@@ -17,7 +17,7 @@ app.use('/api',(req,res)=>{
   const opts={
     hostname:target.hostname,
     port:target.port||(target.protocol==='https:'?443:80),
-    path:'/api'+req.url,
+    path:req.url,
     method:req.method,
     headers:{...req.headers,host:target.hostname}
   };

@@ -1,0 +1,1888 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Catch My Flight — Departure Planner | Know When to Leave for the Airport</title>
+<meta name="description" content="Never miss your flight. Enter your flight number and get an exact leave-home time with drive time, security buffer, and pre-flight checklist — all free."/>
+<meta name="theme-color" content="#0a0c10"/>
+<!-- Core SEO -->
+<meta name="robots" content="index, follow"/>
+<meta name="author" content="Meet My Flight"/>
+<link rel="canonical" href="https://flightpickup.com/depart.html"/>
+<!-- Open Graph (full set) -->
+<meta property="og:type" content="website"/>
+<meta property="og:site_name" content="Meet My Flight"/>
+<meta property="og:title" content="Catch My Flight — Departure Planner | Know When to Leave for the Airport"/>
+<meta property="og:description" content="Never miss your flight. Enter your flight number and get an exact leave-home time with drive time, security buffer, and pre-flight checklist — all free."/>
+<meta property="og:url" content="https://flightpickup.com/depart.html"/>
+<meta property="og:image" content="https://flightpickup.com/icons/icon-512.png"/>
+<meta property="og:image:width" content="512"/>
+<meta property="og:image:height" content="512"/>
+<meta property="og:locale" content="en_US"/>
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:site" content="@meetmyflight"/>
+<meta name="twitter:title" content="Catch My Flight — Departure Planner | Know When to Leave for the Airport"/>
+<meta name="twitter:description" content="Never miss your flight. Enter your flight number and get an exact leave-home time with drive time, security buffer, and pre-flight checklist — all free."/>
+<meta name="twitter:image" content="https://flightpickup.com/icons/icon-512.png"/>
+<!-- Performance: resource hints -->
+<link rel="preconnect" href="https://images.unsplash.com"/>
+<link rel="dns-prefetch" href="https://images.unsplash.com"/>
+<link rel="dns-prefetch" href="https://unpkg.com"/>
+<link rel="manifest" href="manifest.json"/>
+<link rel="apple-touch-icon" href="icons/icon-192.png"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<style>
+/* ── Ad Slots ── */
+.ad-slot{width:100%;max-width:728px;margin:0 auto 1rem;min-height:50px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.03);border:1px dashed rgba(255,255,255,.08);border-radius:8px;overflow:hidden}
+.ad-slot--rectangle{max-width:336px;min-height:280px}
+@media(prefers-color-scheme:light){.ad-slot{background:rgba(0,0,0,.02);border-color:rgba(0,0,0,.07)}}
+/* ── Site Footer ── */
+.site-footer{text-align:center;font-size:.72rem;color:var(--t3);margin-top:.5rem;padding-bottom:1rem;line-height:2}
+/* ── DARK mode ── */
+:root{
+  --bg:#0a0c10; --s1:rgba(18,14,10,.9); --s2:rgba(28,20,12,.93);
+  --g1:rgba(255,255,255,.05); --g2:rgba(255,255,255,.09);
+  --b1:rgba(255,255,255,.08); --b2:rgba(255,255,255,.15);
+  --t1:#fff3e8; --t2:#9e8a76; --t3:#4a3e32;
+  --acc:#f97316; --acc2:#ef4444;
+  --green:#10d98a; --amber:#f5a623; --red:#f05252; --blue:#60a5fa;
+  --r:18px; --rsm:12px;
+}
+/* ── LIGHT mode ── */
+@media(prefers-color-scheme:light){
+  :root{
+    --bg:#fff8f0; --s1:rgba(255,252,248,.95); --s2:rgba(255,246,235,.96);
+    --g1:rgba(0,0,0,.04); --g2:rgba(0,0,0,.07);
+    --b1:rgba(0,0,0,.08); --b2:rgba(0,0,0,.14);
+    --t1:#1a0f00; --t2:#6b5240; --t3:#b89880;
+    --green:#059669; --amber:#d97706; --red:#dc2626; --blue:#2563eb;
+  }
+  #stars{display:none}
+  #bg-overlay{background:linear-gradient(to bottom,rgba(255,248,240,.55) 0%,rgba(255,248,240,.28) 30%,rgba(255,248,240,.72) 60%,rgba(255,248,240,.97) 100%)}
+  .leaflet-container{background:#f5ede4}
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t1);min-height:100vh;overflow-x:hidden}
+
+/* ── Background slideshow ── */
+#bg-slideshow{position:fixed;top:0;right:0;bottom:0;left:0;z-index:0}
+.bg-slide{position:absolute;inset:0;background-size:cover;background-position:center;background-repeat:no-repeat;opacity:0;transition:opacity 1.8s ease;image-rendering:-webkit-optimize-contrast;image-rendering:crisp-edges;will-change:opacity,filter}
+.bg-slide.active{opacity:1}
+#bg-overlay{position:fixed;top:0;right:0;bottom:0;left:0;background:linear-gradient(to bottom,rgba(10,8,4,.65) 0%,rgba(10,8,4,.32) 30%,rgba(10,8,4,.62) 62%,rgba(10,8,4,.97) 100%);z-index:1}
+#stars{position:fixed;top:0;right:0;bottom:0;left:0;z-index:0;background-image:radial-gradient(1px 1px at 15% 20%,rgba(255,200,100,.3) 0%,transparent 100%),radial-gradient(1px 1px at 65% 12%,rgba(255,200,100,.25) 0%,transparent 100%),radial-gradient(1.5px 1.5px at 85% 55%,rgba(255,200,100,.18) 0%,transparent 100%),radial-gradient(1px 1px at 40% 70%,rgba(255,200,100,.18) 0%,transparent 100%)}
+
+/* ── Mode switcher (top centre) ── */
+.mode-bar{position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:500;display:flex;gap:4px;background:rgba(10,8,4,.6);border:1px solid rgba(255,255,255,.14);border-radius:999px;padding:4px;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.mode-opt{padding:5px 16px;border-radius:999px;font-size:.78rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:none;transition:all .2s;color:rgba(255,255,255,.6);white-space:nowrap}
+.mode-opt.active{background:linear-gradient(135deg,#4f9cf9,#8b5cf6);color:#fff;font-weight:600}
+.mode-opt:not(.active):hover{color:#fff;background:rgba(255,255,255,.1)}
+@media(prefers-color-scheme:light){
+  .mode-bar{background:rgba(255,255,255,.85);border-color:rgba(0,0,0,.12)}
+  .mode-opt:not(.active){color:#6b5240}
+  .mode-opt:not(.active):hover{background:rgba(0,0,0,.07);color:#1a0f00}
+  .mode-opt.active{background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff}
+}
+
+/* ── Language selector ── */
+#lang-sel{position:fixed;top:12px;right:14px;z-index:500;display:none}
+#lang-btn{display:flex;align-items:center;gap:5px;padding:5px 12px;background:rgba(10,8,4,.55);border:1px solid rgba(255,255,255,.18);border-radius:999px;color:rgba(255,255,255,.88);font-size:.78rem;cursor:pointer;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);font-family:'DM Sans',sans-serif;transition:background .2s}
+#lang-btn:hover{background:rgba(10,8,4,.75)}
+#lang-menu{display:none;position:absolute;top:calc(100% + 7px);right:0;background:rgba(14,10,4,.93);border:1px solid rgba(255,255,255,.13);border-radius:12px;padding:5px;min-width:148px;backdrop-filter:blur(16px);box-shadow:0 8px 32px rgba(0,0,0,.5)}
+#lang-menu.open{display:block}
+#lang-menu div{padding:7px 11px;border-radius:8px;cursor:pointer;font-size:.8rem;color:rgba(255,255,255,.8);white-space:nowrap;transition:background .15s}
+#lang-menu div:hover{background:rgba(255,255,255,.1)}
+#lang-menu div.lng-active{background:rgba(249,115,22,.25);color:#fff}
+@media(prefers-color-scheme:light){
+  #lang-btn{background:rgba(255,255,255,.85);border-color:rgba(0,0,0,.12);color:#1a0f00}
+  #lang-menu{background:rgba(255,252,248,.97);border-color:rgba(0,0,0,.1)}
+  #lang-menu div{color:#6b5240}
+  #lang-menu div.lng-active{background:rgba(249,115,22,.12);color:#c2410c}
+}
+
+.wrap{position:relative;z-index:2;max-width:720px;margin:0 auto;padding:0 1rem 5rem}
+
+/* ── Header / Hero ── */
+header{text-align:center;padding:5rem 0 2.2rem;position:relative}
+header::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:600px;height:320px;background:radial-gradient(ellipse at center,rgba(249,115,22,.18) 0%,transparent 70%);pointer-events:none;z-index:0}
+.logo-row{display:inline-flex;align-items:center;gap:10px;margin-bottom:1.8rem;position:relative;z-index:1}
+.logo-icon{width:46px;height:46px;background:linear-gradient(135deg,#f97316,#ef4444);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:23px;box-shadow:0 6px 28px rgba(249,115,22,.5)}
+.logo-name{font-family:'Syne',sans-serif;font-weight:800;font-size:1.35rem;letter-spacing:-.5px;background:linear-gradient(135deg,#fff 40%,#fdba74);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;padding:.38rem 1.1rem;background:rgba(249,115,22,.14);border:1px solid rgba(249,115,22,.35);border-radius:999px;font-size:.68rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,200,140,.95);margin-bottom:1.2rem;position:relative;z-index:1;backdrop-filter:blur(8px)}
+.hero-badge-dot{width:7px;height:7px;border-radius:50%;background:#f97316;box-shadow:0 0 8px 2px rgba(249,115,22,.7);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
+.hero-title{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(2.2rem,8vw,3.6rem);line-height:1.1;letter-spacing:-.03em;color:#fff;margin-bottom:.9rem;position:relative;z-index:1;text-shadow:0 2px 40px rgba(0,0,0,.4)}
+.hero-title span{background:linear-gradient(135deg,#fb923c,#f43f5e);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-sub{font-size:clamp(.9rem,2.5vw,1.05rem);color:rgba(255,255,255,.58);font-weight:300;max-width:420px;margin:0 auto 1.8rem;line-height:1.7;position:relative;z-index:1}
+.hero-divider{width:48px;height:3px;background:linear-gradient(90deg,#f97316,#ef4444);border-radius:2px;margin:0 auto 1.8rem;position:relative;z-index:1}
+@media(prefers-color-scheme:light){
+  .hero-title{color:var(--t1);text-shadow:none}
+  .logo-name{background:linear-gradient(135deg,#0f172a 40%,#ea580c);-webkit-background-clip:text;background-clip:text}
+  .hero-badge{background:rgba(234,88,12,.08);border-color:rgba(234,88,12,.25);color:#ea580c}
+  .hero-sub{color:var(--t2)}
+  header::before{background:radial-gradient(ellipse at center,rgba(249,115,22,.08) 0%,transparent 70%)}
+}
+
+/* ── Card ── */
+.card{background:var(--s1);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--b2);border-radius:var(--r);margin-bottom:.9rem}
+
+/* ── Search ── */
+.sbody{padding:.9rem}
+.frow{display:flex;gap:.65rem;flex-wrap:wrap}
+.field{flex:1;min-width:130px;position:relative}
+.field label{display:block;font-size:.68rem;color:var(--t2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px}
+.field input{width:100%;padding:.65rem .9rem;background:var(--g2);border:1px solid var(--b2);border-radius:var(--rsm);color:var(--t1);font-family:'Syne',sans-serif;font-size:.98rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;outline:none;transition:border-color .2s,box-shadow .2s}
+.field input:focus{border-color:var(--acc);box-shadow:0 0 0 3px rgba(249,115,22,.15)}
+.field input::placeholder{color:var(--t3);font-family:'DM Sans',sans-serif;font-weight:300;font-size:.88rem;letter-spacing:0;text-transform:none}
+.sbtn{width:100%;margin-top:.85rem;padding:.82rem;background:linear-gradient(135deg,#f97316,#ef4444);border:none;border-radius:var(--rsm);color:#fff;font-family:'Syne',sans-serif;font-size:.98rem;font-weight:700;cursor:pointer;transition:opacity .2s,transform .1s;box-shadow:0 4px 20px rgba(249,115,22,.35)}
+.sbtn:hover{opacity:.91}
+.sbtn:active{transform:scale(.99)}
+.sbtn:disabled{opacity:.45;cursor:not-allowed}
+
+/* ── Autocomplete ── */
+.ac{position:absolute;top:calc(100% + 4px);left:0;right:0;background:#1a100a;border:1px solid var(--b2);border-radius:var(--rsm);z-index:200;overflow:hidden;max-height:260px;overflow-y:auto;display:none}
+.aci{display:flex;align-items:center;gap:9px;padding:.6rem .9rem;cursor:pointer;transition:background .15s;border-bottom:1px solid var(--b1)}
+.aci:last-child{border-bottom:none}
+.aci:hover{background:var(--g2)}
+.aci-iata{font-family:'Syne',sans-serif;font-weight:800;font-size:.95rem;color:var(--acc);min-width:36px}
+.aci-city{font-size:.85rem;font-weight:500}
+.aci-name{font-size:.72rem;color:var(--t2);margin-top:1px}
+.aci-country{font-size:.72rem;color:var(--t3);margin-left:auto}
+.sel-tag{display:none;align-items:center;gap:5px;margin-top:5px;padding:3px 9px;background:rgba(249,115,22,.1);border:1px solid rgba(249,115,22,.3);border-radius:8px;font-size:.78rem;color:var(--acc)}
+.sel-tag.show{display:flex}
+.sel-tag button{background:none;border:none;color:var(--t2);cursor:pointer;font-size:.78rem;margin-left:auto}
+
+/* ── Error / Loading ── */
+.err{display:none;background:rgba(240,82,82,.1);border:1px solid rgba(240,82,82,.3);border-radius:var(--rsm);padding:.85rem 1.1rem;color:#fca5a5;font-size:.88rem;margin-bottom:.75rem}
+.err.show{display:block}
+.loading{display:none;text-align:center;padding:2.5rem;color:var(--t2)}
+.loading.show{display:block}
+.plane-fly{font-size:2.2rem;display:inline-block;animation:fly 1.8s ease-in-out infinite alternate}
+@keyframes fly{from{transform:translateX(-12px) rotate(-4deg)}to{transform:translateX(12px) rotate(4deg)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── Smart Departure Commander ── */
+.spc{background:var(--s1);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--b2);border-radius:var(--r);overflow:hidden;margin-bottom:.9rem}
+.spc-hdr{display:flex;align-items:center;gap:8px;padding:.8rem 1.2rem;border-bottom:1px solid var(--b1);background:linear-gradient(135deg,rgba(249,115,22,.09),rgba(239,68,68,.06))}
+.spc-hdr-icon{font-size:1.1rem}
+.spc-hdr-title{font-family:'Syne',sans-serif;font-size:.88rem;font-weight:700;flex:1}
+.spc-hdr-hint{font-size:.72rem;color:var(--t3)}
+.spc-pillars{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;align-items:center;gap:0;padding:.8rem .6rem;border-bottom:1px solid var(--b1)}
+.spc-p{display:flex;flex-direction:column;align-items:center;text-align:center;padding:.5rem .3rem;gap:3px}
+.spc-p-ico{width:36px;height:36px;border-radius:50%;background:var(--g2);border:1px solid var(--b2);display:flex;align-items:center;justify-content:center;margin-bottom:2px}
+.spc-p-ico svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;color:var(--acc)}
+.spc-p-lbl{font-size:.6rem;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+.spc-p-val{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;color:var(--t1);line-height:1.1}
+.spc-p-sub{font-size:.65rem;color:var(--t2);text-align:center}
+.spc-sep{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:700;color:var(--t3);padding:0 .1rem;align-self:center;flex-shrink:0}
+.spc-result{padding:.85rem 1.2rem;background:var(--g1)}
+.spc-res-grp{text-align:center}
+.spc-res-lbl{font-size:.72rem;color:var(--t2);text-transform:uppercase;letter-spacing:.07em;font-weight:600;margin-bottom:.3rem}
+.spc-res-time{font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;line-height:1;margin-bottom:.3rem}
+.spc-res-time.green{color:var(--green)}
+.spc-res-time.amber{color:var(--amber)}
+.spc-res-time.red{color:var(--red)}
+.spc-res-cd{font-size:.78rem;color:var(--t2)}
+.spc-loc-btn{display:flex;align-items:center;justify-content:center;gap:5px;width:100%;padding:.42rem .5rem;background:rgba(249,115,22,.12);border:1px solid rgba(249,115,22,.3);border-radius:10px;color:#fb923c;font-size:.72rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;margin-top:4px}
+.spc-loc-btn:hover{background:rgba(249,115,22,.2)}
+.spc-loc-btn.hidden{display:none}
+.spc-loc-btn svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+@media(max-width:480px){
+  .spc-p-val{font-size:.95rem}
+  .spc-res-time{font-size:1.6rem}
+  .spc-p-ico{width:30px;height:30px}
+  .spc-p-ico svg{width:13px;height:13px}
+  .spc-pillars{padding:.6rem .3rem}
+}
+
+/* ── Leave banner (departure style) ── */
+.leave-card{border-radius:var(--r);overflow:hidden;margin-bottom:.9rem}
+.leave-top{padding:1.25rem 1.4rem;display:flex;align-items:flex-start;gap:.9rem;flex-wrap:wrap}
+.leave-top.orange{background:rgba(249,115,22,.12);border-bottom:1px solid rgba(249,115,22,.22)}
+.leave-top.green{background:rgba(16,217,138,.1);border-bottom:1px solid rgba(16,217,138,.18)}
+.leave-top.amber{background:rgba(245,166,35,.1);border-bottom:1px solid rgba(245,166,35,.18)}
+.leave-top.red{background:rgba(240,82,82,.1);border-bottom:1px solid rgba(240,82,82,.18)}
+.leave-icon{font-size:2.4rem;flex-shrink:0}
+.leave-main{flex:1}
+.leave-title{font-family:'Syne',sans-serif;font-size:1.25rem;font-weight:800;line-height:1.2;margin-bottom:5px}
+.leave-badge{padding:.3rem .9rem;border-radius:999px;font-family:'Syne',sans-serif;font-size:.77rem;font-weight:700;white-space:nowrap;align-self:flex-start}
+.leave-badge.orange{background:rgba(249,115,22,.22);color:#fb923c}
+.leave-badge.green{background:rgba(16,217,138,.2);color:#10d98a}
+.leave-badge.amber{background:rgba(245,166,35,.2);color:#f5a623}
+.leave-badge.red{background:rgba(240,82,82,.2);color:#f05252}
+
+/* ── Leave calculator ── */
+.leave-calc{background:var(--s2);padding:1.1rem 1.4rem;border:1px solid var(--b2);border-top:none;border-radius:0 0 var(--r) var(--r)}
+.calc-ttl{font-size:.78rem;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.85rem;display:flex;align-items:center;gap:7px}
+
+/* ── Departure timeline ── */
+.dep-timeline{display:flex;align-items:flex-start;gap:0;margin-bottom:1rem;overflow-x:auto;padding-bottom:.3rem;scrollbar-width:none}
+.dep-timeline::-webkit-scrollbar{display:none}
+.tl-step{display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0;min-width:70px}
+.tl-ic{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.1rem;background:var(--g2);border:2px solid var(--b2);flex-shrink:0;position:relative;z-index:1}
+.tl-ic.active{background:var(--acc);border-color:var(--acc);box-shadow:0 0 0 4px rgba(249,115,22,.2)}
+.tl-ic.done{background:rgba(16,217,138,.18);border-color:#10d98a}
+.tl-time{font-family:'Syne',sans-serif;font-size:.78rem;font-weight:800;color:var(--t1)}
+.tl-lbl{font-size:.6rem;color:var(--t2);text-transform:uppercase;letter-spacing:.05em;text-align:center;max-width:68px}
+.tl-line{flex:1;height:2px;background:var(--b2);align-self:center;margin-top:-22px;min-width:12px;flex-shrink:1}
+.tl-line.done{background:var(--acc)}
+
+/* ── Metrics grid ── */
+.calc-grid{display:grid;grid-template-columns:1fr 1fr;gap:.65rem;margin-bottom:.85rem}
+.cmet{background:var(--g2);border:1px solid var(--b2);border-radius:var(--rsm);padding:.9rem 1rem;text-align:center}
+.cmet-lbl{font-size:.67rem;color:var(--t2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px;font-weight:600}
+.cmet-val{font-family:'Syne',sans-serif;font-size:1.45rem;font-weight:800;color:var(--t1)}
+.cmet-val.orange{color:#fb923c}
+.cmet-val.green{color:#10d98a}
+.cmet-val.amber{color:#f5a623}
+.cmet-val.red{color:#f05252}
+.cmet-sub{font-size:.72rem;color:var(--t2);margin-top:4px}
+
+/* ── Controls row ── */
+.ctrl-row{display:flex;align-items:center;gap:.65rem;flex-wrap:wrap;margin-bottom:.6rem}
+.ctrl-lbl{font-size:.8rem;color:var(--t2);flex-shrink:0}
+.ctrl-input{width:65px;padding:.4rem .6rem;background:var(--g2);border:1px solid var(--b2);border-radius:8px;color:var(--t1);font-family:'Syne',sans-serif;font-size:.98rem;font-weight:700;text-align:center;outline:none}
+.ctrl-input:focus{border-color:var(--acc)}
+.buf-btns{display:flex;gap:.3rem;flex-wrap:wrap}
+.buf-btn{padding:.32rem .75rem;background:var(--g1);border:1px solid var(--b1);border-radius:8px;font-size:.75rem;color:var(--t2);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .18s;font-weight:500}
+.buf-btn:hover{background:var(--g2);color:var(--t1)}
+.buf-btn.active{background:rgba(249,115,22,.18);border-color:rgba(249,115,22,.5);color:#fb923c}
+.loc-row{display:flex;align-items:center;gap:.65rem;flex-wrap:wrap}
+.loc-st{display:flex;align-items:center;gap:5px;font-size:.8rem;color:var(--t2);flex:1}
+.loc-dot{width:6px;height:6px;border-radius:50%;background:var(--t3);flex-shrink:0}
+.loc-dot.on{background:var(--green);animation:pulse 1.5s ease infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.4)}}
+.loc-btn{padding:.4rem .9rem;background:none;border:1px solid var(--b2);border-radius:8px;color:var(--t1);font-size:.8rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;white-space:nowrap}
+.loc-btn:hover{background:var(--g2)}
+.loc-btn.on{border-color:var(--green);color:var(--green)}
+.loc-nav{display:none;gap:.35rem;align-items:center}
+.loc-nav.show{display:flex}
+.loc-nav a{width:34px;height:34px;border-radius:9px;border:1px solid var(--b2);background:var(--g1);display:flex;align-items:center;justify-content:center;text-decoration:none;font-size:1.05rem;transition:all .18s;flex-shrink:0}
+.loc-nav a:hover{background:var(--g2);transform:translateY(-1px)}
+
+/* ── Checklist ── */
+.checklist{background:var(--s1);backdrop-filter:blur(20px);border:1px solid var(--b2);border-radius:var(--r);overflow:hidden;margin-bottom:.9rem}
+.cl-hdr{display:flex;align-items:center;gap:10px;padding:.85rem 1.2rem;border-bottom:1px solid var(--b1);background:linear-gradient(135deg,rgba(249,115,22,.09),rgba(239,68,68,.09))}
+.cl-hdr-icon{font-size:1.2rem}
+.cl-hdr-title{font-family:'Syne',sans-serif;font-size:.9rem;font-weight:700;flex:1}
+.cl-body{padding:.75rem 1.2rem}
+.cl-items{display:grid;grid-template-columns:1fr 1fr;gap:.45rem}
+.cl-item{display:flex;align-items:center;gap:8px;padding:.55rem .75rem;background:var(--g1);border:1px solid var(--b1);border-radius:10px;cursor:pointer;transition:all .18s;user-select:none;min-width:0;overflow:hidden}
+.cl-item:hover{background:var(--g2)}
+.cl-item.checked{background:rgba(16,217,138,.1);border-color:rgba(16,217,138,.3)}
+.cl-check{width:18px;height:18px;min-width:18px;border-radius:5px;border:2px solid var(--b2);display:flex;align-items:center;justify-content:center;font-size:.7rem;flex-shrink:0;transition:all .18s}
+.cl-item.checked .cl-check{background:#10d98a;border-color:#10d98a;color:#fff}
+.cl-text{font-size:.8rem;font-weight:500;color:var(--t2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.cl-item.checked .cl-text{color:var(--t1)}
+@media(max-width:560px){.cl-items{grid-template-columns:1fr}}
+@media(max-width:560px){.cl-text{white-space:normal}}
+
+/* ── Flight info card ── */
+.fi{background:var(--s1);backdrop-filter:blur(20px);border:1px solid var(--b2);border-radius:var(--r);overflow:hidden;margin-bottom:.9rem}
+.fi-hdr{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.3rem;border-bottom:1px solid var(--b1);flex-wrap:wrap;gap:.5rem}
+.fi-num{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;letter-spacing:-.5px}
+.fi-airline{font-size:.82rem;color:var(--t2);margin-top:2px}
+.spill{padding:.28rem .8rem;border-radius:999px;font-size:.72rem;font-weight:500;text-transform:uppercase;letter-spacing:.05em}
+.sp-scheduled{background:rgba(96,165,250,.15);color:#60a5fa}
+.sp-active,.sp-enroute{background:rgba(249,115,22,.15);color:#fb923c}
+.sp-landed{background:rgba(16,217,138,.15);color:#10d98a}
+.sp-cancelled{background:rgba(240,82,82,.15);color:#f05252}
+.sp-diverted{background:rgba(245,166,35,.15);color:#f5a623}
+.sp-unknown{background:var(--g1);color:var(--t2)}
+.rroute{display:flex;align-items:center;padding:1.1rem 1.3rem;gap:.65rem;border-bottom:1px solid var(--b1)}
+.apt{flex:1}
+.apt.r{text-align:right}
+.apt-iata{font-family:'Syne',sans-serif;font-size:1.85rem;font-weight:800;letter-spacing:-1px;line-height:1}
+.apt-city{font-size:.85rem;font-weight:500;color:var(--t1);margin-top:3px}
+.apt-name{font-size:.72rem;color:var(--t2);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:175px}
+.apt.r .apt-name{margin-left:auto}
+.rmid{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px}
+.rbar{width:100%;height:1.5px;background:var(--b2);position:relative}
+.rbar::after{content:'🛫';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--bg);padding:0 3px;font-size:.88rem}
+@media(prefers-color-scheme:light){.rbar::after{background:#fff8f0}}
+.tgrid{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--b1)}
+.tblk{padding:1rem 1.3rem}
+.tblk:first-child{border-right:1px solid var(--b1)}
+.tlbl{font-size:.66rem;color:var(--t3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px}
+.ttime{font-family:'Syne',sans-serif;font-size:1.25rem;font-weight:800}
+.tdate{font-size:.75rem;color:var(--t2);margin-top:2px}
+.tdelay{font-size:.75rem;color:var(--amber);margin-top:3px}
+.tinfo{font-size:.75rem;color:var(--t2);margin-top:3px}
+.dstrip{display:flex;flex-wrap:wrap;border-bottom:1px solid var(--b1)}
+.di{flex:1;min-width:90px;padding:.8rem 1.3rem;border-right:1px solid var(--b1)}
+.di:last-child{border-right:none}
+.di-lbl{font-size:.64rem;color:var(--t3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px}
+.di-val{font-family:'Syne',sans-serif;font-size:.9rem;font-weight:700}
+.fi-status{display:none;align-items:center;gap:.65rem;padding:.65rem 1.3rem;border-bottom:1px solid var(--b1)}
+.fi-st-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;animation:pulse 1.6s ease infinite}
+.fi-st-dot.green{background:var(--green);box-shadow:0 0 0 3px rgba(16,217,138,.2)}
+.fi-st-dot.amber{background:var(--amber);box-shadow:0 0 0 3px rgba(245,166,35,.2)}
+.fi-st-dot.red{background:var(--red);box-shadow:0 0 0 3px rgba(240,82,82,.2)}
+.fi-st-dot.blue{background:var(--blue);box-shadow:0 0 0 3px rgba(96,165,250,.2)}
+.fi-st-ico{font-size:.95rem;flex-shrink:0}
+.fi-st-lbl{font-size:.8rem;font-weight:500;flex:1;color:var(--t1);min-width:0}
+.cfoot{display:flex;align-items:center;justify-content:space-between;padding:.65rem 1.3rem;font-size:.72rem;color:var(--t3)}
+.rfbtn{background:none;border:1px solid var(--b1);border-radius:7px;color:var(--t2);font-size:.72rem;padding:.22rem .7rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s}
+.rfbtn:hover{background:var(--g1);color:var(--t1)}
+
+/* ── Weather strip ── */
+.wx-strip{display:none;align-items:center;gap:.75rem;padding:.75rem 1.4rem;background:var(--g1);border-top:1px solid var(--b1);flex-wrap:wrap}
+.wx-strip.show{display:flex}
+.wx-icon{font-size:1.6rem}
+.wx-main{flex:1}
+.wx-temp{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800}
+.wx-desc{font-size:.78rem;color:var(--t2);text-transform:capitalize;margin-top:1px}
+.wx-stats{display:flex;gap:.9rem;flex-wrap:wrap}
+.wx-stat{text-align:center}
+.wx-stat-lbl{font-size:.64rem;color:var(--t3);text-transform:uppercase;letter-spacing:.06em}
+.wx-stat-val{font-family:'Syne',sans-serif;font-size:.85rem;font-weight:700}
+
+
+/* ── Live flight map ── */
+.map-card{background:var(--s1);backdrop-filter:blur(20px);border:1px solid var(--b2);border-radius:var(--r);overflow:hidden;margin-bottom:.9rem;display:none}
+.map-card.show{display:block}
+#flight-layout{display:block}
+#flight-map{height:320px}
+.map-hdr{display:flex;align-items:center;justify-content:space-between;padding:.8rem 1.3rem;border-bottom:1px solid var(--b1)}
+.map-ttl{font-family:'Syne',sans-serif;font-size:.88rem;font-weight:700;display:flex;align-items:center;gap:7px}
+.mldot{width:6px;height:6px;background:var(--acc);border-radius:50%;animation:pulse 1.5s ease infinite}
+.map-info{display:flex;gap:.9rem;font-size:.78rem;color:var(--t2)}
+.map-info strong{color:var(--t1)}
+#flight-map{width:100%;height:280px}
+.map-tog{background:var(--g1);border:1px solid var(--b1);border-radius:8px;padding:5px 9px;cursor:pointer;color:var(--t2);display:flex;align-items:center;gap:5px;font-size:.73rem;transition:all .2s;font-family:'DM Sans',sans-serif}
+.map-tog:hover,.map-tog.active{background:rgba(249,115,22,.15);border-color:rgba(249,115,22,.4);color:#fb923c}
+@media(prefers-color-scheme:dark){.leaflet-container{background:#0a0c10}.leaflet-tile{filter:brightness(.85) saturate(.9)}}
+.leaflet-control-zoom a{background:var(--s1)!important;color:var(--t1)!important;border-color:var(--b2)!important}
+
+/* ── Action bar ── */
+.act-bar{display:flex;background:var(--s1);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--b2);border-radius:var(--r);overflow:hidden;margin:.9rem 0}
+.ab-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:.72rem .3rem;border:none;border-right:1px solid var(--b1);background:transparent;cursor:pointer;transition:background .15s;font-family:'DM Sans',sans-serif}
+.ab-btn:last-child{border-right:none}
+.ab-btn:hover{background:var(--b1)}
+.ab-btn:active{background:var(--b2)}
+.ab-ic{display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ab-ic svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ab-lbl{font-size:.6rem;font-weight:600;letter-spacing:.03em;white-space:nowrap}
+.ab-save{color:#a5b4fc}
+.ab-nav{color:#67e8f9}
+.ab-wa{color:#86efac}
+.ab-copy{color:#d8b4fe}
+.ab-share{color:#fda4af}
+.ab-notif{color:#fbbf24}
+.ab-notif.active{color:#f59e0b;background:rgba(251,191,36,.14)}
+.ab-save.saved-state{color:#6ee7b7}
+
+/* ── Live Status Monitor ── */
+.status-monitor{background:var(--s1);backdrop-filter:blur(20px);border:1px solid var(--b2);border-radius:var(--r);overflow:hidden;margin-bottom:.9rem}
+.sm-hdr{display:flex;align-items:center;gap:9px;padding:.8rem 1.2rem;border-bottom:1px solid var(--b1);background:linear-gradient(135deg,rgba(249,115,22,.06),rgba(239,68,68,.04))}
+.sm-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;animation:pulse 1.6s ease infinite}
+.sm-dot.green{background:var(--green);box-shadow:0 0 0 3px rgba(16,217,138,.22)}
+.sm-dot.amber{background:var(--amber);box-shadow:0 0 0 3px rgba(245,166,35,.22)}
+.sm-dot.red{background:var(--red);box-shadow:0 0 0 3px rgba(240,82,82,.22)}
+.sm-dot.blue{background:var(--blue);box-shadow:0 0 0 3px rgba(96,165,250,.22)}
+.sm-hdr-title{font-family:'Syne',sans-serif;font-size:.85rem;font-weight:700;flex:1}
+.sm-ref{background:none;border:1px solid var(--b1);border-radius:7px;color:var(--t2);font-size:.72rem;padding:.2rem .6rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .18s;white-space:nowrap}
+.sm-ref:hover{background:var(--g2);color:var(--t1)}
+.sm-main{display:flex;align-items:center;gap:1rem;padding:1.1rem 1.3rem}
+.sm-icon-box{width:54px;height:54px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.7rem;flex-shrink:0;transition:background .3s}
+.sm-icon-box.green{background:rgba(16,217,138,.14)}
+.sm-icon-box.amber{background:rgba(245,166,35,.14)}
+.sm-icon-box.red{background:rgba(240,82,82,.14)}
+.sm-icon-box.blue{background:rgba(96,165,250,.14)}
+.sm-text{flex:1;min-width:0}
+.sm-label{font-family:'Syne',sans-serif;font-size:1.08rem;font-weight:800;line-height:1.2}
+.sm-sub{font-size:.78rem;color:var(--t2);margin-top:4px;line-height:1.4}
+.sm-pill{padding:.3rem .9rem;border-radius:999px;font-family:'Syne',sans-serif;font-size:.7rem;font-weight:800;letter-spacing:.07em;text-transform:uppercase;flex-shrink:0}
+.sm-pill.green{background:rgba(16,217,138,.18);color:#10d98a;border:1px solid rgba(16,217,138,.32)}
+.sm-pill.amber{background:rgba(245,166,35,.18);color:#f5a623;border:1px solid rgba(245,166,35,.32)}
+.sm-pill.red{background:rgba(240,82,82,.18);color:#f05252;border:1px solid rgba(240,82,82,.32)}
+.sm-pill.blue{background:rgba(96,165,250,.18);color:#60a5fa;border:1px solid rgba(96,165,250,.32)}
+.sm-alert{display:flex;align-items:flex-start;gap:.85rem;padding:.9rem 1.3rem;border-top:1px solid var(--b1)}
+.sm-alert.green{background:rgba(16,217,138,.06);border-top-color:rgba(16,217,138,.18)}
+.sm-alert.amber{background:rgba(245,166,35,.07);border-top-color:rgba(245,166,35,.2)}
+.sm-alert.red{background:rgba(240,82,82,.07);border-top-color:rgba(240,82,82,.2)}
+.sm-alert.blue{background:rgba(96,165,250,.06);border-top-color:rgba(96,165,250,.18)}
+.sm-alert-ic{font-size:1.3rem;flex-shrink:0;margin-top:1px}
+.sm-alert-ttl{font-family:'Syne',sans-serif;font-size:.9rem;font-weight:700;margin-bottom:3px}
+.sm-alert-body{font-size:.76rem;color:var(--t2);line-height:1.55}
+.sm-route{padding:.9rem 1.3rem;border-top:1px solid var(--b1)}
+.sm-route-lbl{font-size:.64rem;color:var(--t3);text-transform:uppercase;letter-spacing:.08em;font-weight:600;margin-bottom:.6rem}
+.sm-route-bar{display:flex;align-items:center;gap:.7rem}
+.sm-rt-iata{font-family:'Syne',sans-serif;font-size:1.05rem;font-weight:800;min-width:36px;line-height:1}
+.sm-rt-iata.r{text-align:right}
+.sm-track{flex:1;height:4px;background:var(--b2);border-radius:2px;position:relative}
+.sm-track-fill{position:absolute;left:0;top:0;height:100%;border-radius:2px;background:linear-gradient(90deg,var(--acc),#ef4444);transition:width 1.4s ease}
+.sm-plane-dot{position:absolute;top:50%;transform:translateY(-50%) translateX(-50%);font-size:.95rem;line-height:1;transition:left 1.4s ease;filter:drop-shadow(0 1px 4px rgba(0,0,0,.5))}
+.sm-rt-stats{display:flex;gap:1.1rem;margin-top:.65rem;flex-wrap:wrap}
+.sm-rt-stat{font-size:.72rem;color:var(--t2)}
+.sm-rt-stat strong{color:var(--t1);font-weight:700;font-family:'Syne',sans-serif;font-size:.8rem}
+@media(max-width:480px){
+  .sm-main{gap:.65rem;padding:.9rem 1rem}
+  .sm-icon-box{width:42px;height:42px;font-size:1.35rem;border-radius:10px}
+  .sm-label{font-size:.92rem}
+  .sm-alert{padding:.75rem 1rem;gap:.6rem}
+  .sm-route{padding:.75rem 1rem}
+  .sm-rt-iata{font-size:.9rem}
+}
+
+/* ── Back bar (results mode) ── */
+.back-bar{display:none;align-items:center;gap:.75rem;padding:.55rem .9rem;background:var(--s1);border:1px solid var(--b2);border-radius:var(--r);margin-bottom:.9rem;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.back-bar.show{display:flex}
+body.results-mode .back-bar{margin-top:3.6rem}
+.back-btn{background:none;border:none;color:var(--acc);font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:600;cursor:pointer;padding:0;display:flex;align-items:center;gap:4px;flex-shrink:0}
+.back-btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.back-flight{font-family:'Syne',sans-serif;font-size:.85rem;font-weight:700;color:var(--t1);flex:1}
+body.results-mode header{display:none}
+body.results-mode .saved-panel{display:none!important}
+body.results-mode .card{display:none}
+body.results-mode .leave-card{display:block}
+/* ── Toast ── */
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(80px);background:#1a100a;border:1px solid var(--b2);border-radius:var(--rsm);padding:.65rem 1.2rem;font-size:.82rem;color:var(--t1);z-index:9999;transition:transform .3s ease;pointer-events:none;white-space:nowrap}
+#toast.show{transform:translateX(-50%) translateY(0)}
+
+/* ── Saved flights panel ── */
+.saved-panel{display:none;margin-bottom:.9rem}
+.saved-panel.show{display:block}
+.saved-lbl{font-size:.78rem;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.5rem;padding:0 .2rem}
+.saved-row{display:flex;gap:.45rem;flex-wrap:wrap}
+.saved-item{display:flex;align-items:center;gap:5px;padding:.35rem .75rem;background:var(--s1);border:1px solid var(--b2);border-radius:999px;cursor:pointer;transition:all .2s}
+.saved-item:hover{background:var(--g2)}
+.saved-fn{font-family:'Syne',sans-serif;font-weight:800;font-size:.82rem}
+.saved-st{font-size:.72rem;color:var(--t2)}
+.saved-del{background:none;border:none;color:var(--t3);cursor:pointer;font-size:.75rem;padding:0;margin-left:3px}
+
+/* ── Responsive ── */
+@media(max-width:480px){
+  header{padding:3.6rem 0 1rem}
+  header::before{display:none}
+  .logo-icon{width:34px;height:34px;font-size:16px}
+  .logo-name{font-size:1.2rem}
+  .hero-badge{font-size:.6rem;padding:.25rem .75rem}
+  .hero-title{font-size:1.65rem;margin-bottom:.5rem}
+  .hero-sub{font-size:.78rem;margin-bottom:1rem}
+  .hero-divider{margin-bottom:1rem}
+  .mode-bar{top:8px;padding:3px}
+  .mode-opt{padding:.22rem .42rem;font-size:.63rem}
+  #lang-sel{position:fixed;top:8px;right:8px;bottom:auto;margin:0;z-index:500}
+  #lang-menu{top:calc(100% + 7px);bottom:auto}
+  .lang-label{display:none}
+  #lang-btn{padding:3px 8px;font-size:.68rem}
+  /* baggage panel */
+  .bp-body{padding:.75rem .9rem}
+  .bp-grid{grid-template-columns:1fr;gap:.45rem}
+  .bp-item{padding:.65rem .85rem}
+  .bp-item-val{font-size:.98rem}
+  .bp-item-sub{font-size:.68rem}
+  /* result card */
+  .leave-top{padding:.85rem 1rem;gap:.4rem;align-items:center;flex-wrap:nowrap}
+  .leave-icon{font-size:1.35rem;flex-shrink:0;line-height:1}
+  .leave-title{font-size:.88rem;font-weight:700}
+  .leave-badge{font-size:.68rem;padding:.22rem .7rem}
+  /* timeline */
+  .dep-timeline{gap:0;padding:.1rem 0}
+  .tl-step{min-width:52px}
+  .tl-ic{width:28px;height:28px;font-size:.85rem}
+  .tl-time{font-size:.65rem}
+  .tl-lbl{font-size:.52rem;max-width:52px}
+  .tl-line{flex:1;min-width:8px}
+  /* calc grid */
+  .calc-grid{grid-template-columns:1fr 1fr;gap:.5rem}
+  .cmet{padding:.7rem .8rem}
+  .cmet-lbl{font-size:.6rem}
+  .cmet-val{font-size:1.1rem}
+  .cmet-sub{font-size:.68rem}
+  /* buffer + drive */
+  .buf-opts{gap:.35rem}
+  .buf-opt{padding:.3rem .7rem;font-size:.75rem}
+  /* action bar */
+  .ab-btn{padding:.6rem .2rem;gap:3px}
+  .ab-ic svg{width:13px;height:13px}
+  .ab-lbl{font-size:.55rem}
+  /* flight card compact */
+  .apt-iata{font-size:1.1rem}
+  .apt-city{font-size:.72rem}
+  .apt-name,.tdate,.tinfo,.tdelay{display:none}
+  .fi-num{font-size:1.1rem}
+  .fi-airline{font-size:.72rem}
+  .fi-hdr{padding:.65rem .9rem}
+  .tgrid{grid-template-columns:1fr 1fr}
+  .tblk{padding:.6rem .9rem}
+  .tblk:first-child{border-right:1px solid var(--b1);border-bottom:none}
+  .tlbl{font-size:.58rem}
+  .ttime{font-size:.95rem}
+  .dstrip{flex-direction:row;flex-wrap:wrap}
+  .di{padding:.45rem .8rem;border-right:1px solid var(--b1);border-bottom:none;flex:1;min-width:75px}
+  .di:last-child{border-right:none}
+  .di-lbl{font-size:.56rem}
+  .di-val{font-size:.78rem}
+  .app-dl{padding:1.2rem .5rem}
+  .app-dl-title{font-size:.92rem}
+  .store-badge{min-width:130px;padding:.55rem 1rem}
+  .sb-name{font-size:.8rem}
+}
+
+/* ── App Store download section ── */
+.app-dl{text-align:center;padding:2rem 1rem 1.2rem;position:relative;z-index:2}
+.app-dl-eyebrow{font-size:.68rem;text-transform:uppercase;letter-spacing:.14em;color:var(--t3);font-weight:700;margin-bottom:.5rem}
+.app-dl-title{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;color:var(--t1);margin-bottom:1.2rem}
+.app-dl-badges{display:flex;gap:.75rem;justify-content:center;flex-wrap:wrap}
+.store-badge{display:flex;align-items:center;gap:10px;padding:.7rem 1.4rem;background:#111827;border-radius:13px;text-decoration:none;transition:opacity .2s,transform .15s;min-width:155px;box-shadow:0 4px 18px rgba(0,0,0,.45)}
+.store-badge:hover{opacity:.86;transform:translateY(-2px)}
+.store-badge:active{transform:translateY(0)}
+.sb-icon{flex-shrink:0;display:flex;align-items:center}
+.sb-txt{display:flex;flex-direction:column;align-items:flex-start}
+.sb-pre{font-size:.58rem;color:rgba(255,255,255,.6);line-height:1;text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px}
+.sb-name{font-family:'Syne',sans-serif;font-size:.88rem;font-weight:800;color:#fff;line-height:1.1;letter-spacing:-.01em}
+
+/* ── Notification toggle panel ── */
+.notif-panel-dep{background:var(--s1);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--b2);border-radius:var(--r);overflow:hidden;margin-bottom:.9rem}
+.np-dep-inner{display:flex;align-items:center;gap:.9rem;padding:.9rem 1.2rem}
+.np-dep-ic{font-size:1.3rem;flex-shrink:0;line-height:1}
+.np-dep-info{flex:1;min-width:0}
+.np-dep-title{font-family:'Syne',sans-serif;font-size:.88rem;font-weight:700;color:var(--t1);margin-bottom:2px}
+.np-dep-sub{font-size:.73rem;color:var(--t2);line-height:1.4}
+.np-switch{position:relative;width:48px;height:27px;flex-shrink:0;display:inline-block}
+.np-switch input{position:absolute;top:0;left:0;width:100%;height:100%;opacity:0;margin:0;cursor:pointer;z-index:1}
+.np-slider{position:absolute;top:0;right:0;bottom:0;left:0;background:var(--b2);border-radius:999px;transition:background .25s;pointer-events:none}
+.np-slider:before{content:'';position:absolute;width:21px;height:21px;left:3px;top:3px;background:#fff;border-radius:50%;transition:transform .25s;box-shadow:0 1px 4px rgba(0,0,0,.3)}
+.np-switch input:checked+.np-slider{background:var(--acc)}
+.np-switch input:checked+.np-slider:before{transform:translateX(21px)}
+.np-status{font-size:.74rem;padding:.3rem 1.2rem .7rem;color:#10d98a;display:none}
+.np-status.show{display:block}
+@media(max-width:480px){.np-dep-inner{gap:.65rem;padding:.8rem .9rem}.np-dep-sub{font-size:.7rem}}
+
+/* ── Pre-flight prep card (baggage + checklist merged) ── */
+.prep-card{background:var(--s1);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--b2);border-radius:var(--r);overflow:hidden;margin-bottom:.9rem}
+
+/* ── Baggage rules panel ── */
+.baggage-panel{background:var(--s1);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--b2);border-radius:var(--r);overflow:hidden;margin-bottom:.9rem}
+.bp-hdr{display:flex;align-items:center;gap:9px;padding:.8rem 1.2rem;border-bottom:1px solid var(--b1);background:linear-gradient(135deg,rgba(249,115,22,.09),rgba(239,68,68,.06))}
+.bp-title{font-family:'Syne',sans-serif;font-size:.88rem;font-weight:700;flex:1}
+.bp-airline{font-size:.74rem;color:var(--acc);font-weight:600;margin-left:auto}
+.bp-body{padding:1rem 1.2rem}
+.bp-grid{display:grid;grid-template-columns:1fr 1fr;gap:.65rem;margin-bottom:.85rem}
+.bp-item{background:var(--g2);border:1px solid var(--b2);border-radius:var(--rsm);padding:.85rem 1rem;min-width:0;overflow:hidden}
+.bp-item-lbl{font-size:.64rem;color:var(--t3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px;font-weight:600}
+.bp-item-val{font-family:'Syne',sans-serif;font-size:1.05rem;font-weight:800;color:var(--t1);word-break:break-word}
+.bp-item-sub{font-size:.72rem;color:var(--t2);margin-top:3px;word-break:break-word}
+.bp-notes{background:rgba(249,115,22,.07);border:1px solid rgba(249,115,22,.2);border-radius:var(--rsm);padding:.75rem 1rem;font-size:.78rem;color:var(--t2);line-height:1.55}
+.bp-notes strong{color:var(--acc);font-weight:700}
+.bp-loading{padding:1.5rem;text-align:center;font-size:.82rem;color:var(--t2)}
+
+/* ── Security wait times panel ── */
+.security-panel{background:var(--s1);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--b2);border-radius:var(--r);overflow:hidden;margin-bottom:.9rem}
+.secp-hdr{display:flex;align-items:center;gap:9px;padding:.8rem 1.2rem;border-bottom:1px solid var(--b1);background:linear-gradient(135deg,rgba(249,115,22,.09),rgba(239,68,68,.06))}
+.secp-title{font-family:'Syne',sans-serif;font-size:.88rem;font-weight:700;flex:1}
+.secp-body{padding:1rem 1.2rem}
+.secp-bar-wrap{margin-bottom:.8rem}
+.secp-queue-lbl{display:flex;justify-content:space-between;font-size:.72rem;margin-bottom:.42rem}
+.secp-queue-name{color:var(--t2);font-weight:600}
+.secp-queue-time{font-family:'Syne',sans-serif;font-weight:800;color:var(--t1)}
+.secp-bar{height:7px;background:var(--b1);border-radius:4px;overflow:hidden;margin-bottom:.7rem}
+.secp-bar-fill{height:100%;border-radius:4px;transition:width .6s ease}
+.secp-bar-fill.low{background:var(--green)}
+.secp-bar-fill.mid{background:var(--amber)}
+.secp-bar-fill.high{background:var(--red)}
+.secp-tip{background:var(--g1);border:1px solid var(--b1);border-radius:var(--rsm);padding:.7rem 1rem;font-size:.77rem;color:var(--t2);line-height:1.65}
+.secp-tip strong{color:var(--t1)}
+
+/* ── Traffic + Route Card ── */
+.tc-card{background:var(--s1);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--b2);border-radius:var(--r);overflow:hidden;margin-bottom:.9rem;display:none}
+.tc-card.show{display:block}
+.tc-hdr{display:flex;align-items:center;gap:8px;padding:.8rem 1.2rem;border-bottom:1px solid var(--b1)}
+.tc-dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 1.5s ease infinite;flex-shrink:0}
+.tc-hdr-ttl{font-family:'Syne',sans-serif;font-size:.85rem;font-weight:700;flex:1}
+.tc-live{font-size:.67rem;color:var(--t2);font-weight:600;white-space:nowrap}
+.tc-body{padding:.85rem 1.2rem 0}
+.tc-stats-row{display:flex;align-items:center;gap:.8rem;margin-bottom:.5rem;flex-wrap:wrap}
+.tc-drive-big{font-family:'Syne',sans-serif;font-size:1.6rem;font-weight:800;line-height:1;flex:1}
+.tc-drive-big span{font-size:.5em;font-weight:400;color:var(--t2)}
+.tc-chip{display:inline-flex;align-items:center;gap:3px;padding:.26rem .68rem;border-radius:8px;font-size:.68rem;font-weight:600;border:1px solid}
+.tc-chip svg{width:10px;height:10px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.tc-chip.clear{background:rgba(16,217,138,.1);border-color:rgba(16,217,138,.25);color:var(--green)}
+.tc-chip.moderate{background:rgba(245,166,35,.1);border-color:rgba(245,166,35,.25);color:var(--amber)}
+.tc-chip.heavy{background:rgba(240,82,82,.1);border-color:rgba(240,82,82,.25);color:var(--red)}
+.tc-route-sub{font-size:.7rem;color:var(--t2);margin-bottom:.65rem;padding:0 1.2rem}
+.tc-map{height:195px;overflow:hidden;border-top:1px solid var(--b1)}
+#dep-route-map{width:100%;height:100%}
+.tc-apps{display:flex;gap:.35rem;flex-wrap:wrap;padding:.75rem 1.2rem;border-top:1px solid var(--b1)}
+.tc-app{display:flex;align-items:center;gap:5px;padding:.38rem .78rem;border-radius:9px;font-size:.71rem;font-weight:600;text-decoration:none;border:1px solid var(--b2);background:var(--g1);color:var(--t2);transition:all .18s;white-space:nowrap;font-family:'DM Sans',sans-serif}
+.tc-app:hover{background:var(--g2);color:var(--t1);transform:translateY(-1px)}
+.tc-app svg{width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.tc-app.gmaps{border-color:rgba(66,133,244,.3);color:#4285f4;background:rgba(66,133,244,.08)}
+
+/* ── Departure lounge panel ── */
+.dep-lounge-panel{background:var(--s1);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--b2);border-radius:var(--r);overflow:hidden;margin-bottom:.9rem}
+.dlp-hdr{display:flex;align-items:center;gap:9px;padding:.8rem 1.2rem;border-bottom:1px solid var(--b1);background:linear-gradient(135deg,rgba(249,115,22,.09),rgba(239,68,68,.06))}
+.dlp-title{font-family:'Syne',sans-serif;font-size:.88rem;font-weight:700;flex:1}
+.dlp-body{padding:1rem 1.2rem}
+.dlp-lounge{background:var(--g2);border:1px solid var(--b2);border-radius:var(--rsm);padding:.85rem 1rem;margin-bottom:.65rem}
+.dlp-lounge:last-child{margin-bottom:0}
+.dlp-l-name{font-family:'Syne',sans-serif;font-size:.92rem;font-weight:800;margin-bottom:3px}
+.dlp-l-term{font-size:.72rem;color:var(--t2);margin-bottom:.5rem}
+.dlp-l-access{display:flex;flex-wrap:wrap;gap:.35rem;margin-bottom:.5rem}
+.dlp-l-acc-tag{padding:.22rem .65rem;border-radius:999px;font-size:.68rem;font-weight:600;background:rgba(249,115,22,.15);border:1px solid rgba(249,115,22,.3);color:#fb923c}
+.dlp-l-amenities{font-size:.75rem;color:var(--t2);line-height:1.5}
+.dlp-empty{text-align:center;padding:1.5rem;font-size:.82rem;color:var(--t2)}
+
+</style>
+</head>
+<body>
+<div id="bg-slideshow"></div>
+<div id="bg-overlay"></div>
+<div id="stars"></div>
+<div id="toast"></div>
+
+<!-- Mode switcher -->
+<nav class="mode-bar" aria-label="App sections">
+  <a href="/" class="mode-opt">🛬 Picking Up</a>
+  <a href="/depart.html" class="mode-opt active">🛫 My Departure</a>
+  <a href="/track.html" class="mode-opt">🗺️ Track</a>
+</nav>
+
+<main class="wrap" id="main-content">
+<div id="lang-sel">
+  <button id="lang-btn" onclick="toggleLangMenu()">🌐<span class="lang-label"> <span id="lang-code">EN</span> ▾</span></button>
+  <div id="lang-menu">
+    <div data-lang="en" onclick="applyLang('en')">🇺🇸 English</div>
+    <div data-lang="ar" onclick="applyLang('ar')">🇸🇦 العربية</div>
+    <div data-lang="hi" onclick="applyLang('hi')">🇮🇳 हिन्दी</div>
+    <div data-lang="te" onclick="applyLang('te')">🇮🇳 తెలుగు</div>
+    <div data-lang="ur" onclick="applyLang('ur')">🇵🇰 اردو</div>
+    <div data-lang="fr" onclick="applyLang('fr')">🇫🇷 Français</div>
+    <div data-lang="de" onclick="applyLang('de')">🇩🇪 Deutsch</div>
+    <div data-lang="es" onclick="applyLang('es')">🇪🇸 Español</div>
+    <div data-lang="zh" onclick="applyLang('zh')">🇨🇳 中文</div>
+    <div data-lang="ja" onclick="applyLang('ja')">🇯🇵 日本語</div>
+  </div>
+</div>
+
+<header>
+  <div class="logo-row">
+    <div class="logo-icon">🛫</div>
+    <span class="logo-name">Catch My Flight</span>
+  </div>
+
+  <div class="hero-badge">
+    <span class="hero-badge-dot"></span>
+    Departure Planner
+  </div>
+
+  <h1 class="hero-title" id="tagline">
+    Never Miss<br><span>Your Flight.</span>
+  </h1>
+
+  <p class="hero-sub">Enter your flight number and we'll calculate exactly when to leave home — including drive time, check-in and security.</p>
+  <div class="hero-divider"></div>
+</header>
+
+<!-- Ad slot: leaderboard (728×90 desktop / 320×50 mobile) -->
+<div class="ad-slot ad-slot--leaderboard" aria-label="Advertisement" role="complementary">
+  <!-- AdSense or ad network tag goes here -->
+</div>
+
+<!-- Back bar (results mode) -->
+<div class="back-bar" id="back-bar">
+  <button class="back-btn" onclick="goBackToSearch()">
+    <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    New Search
+  </button>
+  <span class="back-flight" id="back-flight-lbl"></span>
+</div>
+
+<!-- Saved flights -->
+<div class="saved-panel" id="saved-panel">
+  <div class="saved-lbl">Recent Flights</div>
+  <div class="saved-row" id="saved-row"></div>
+</div>
+
+<!-- Search card -->
+<div class="card" role="search">
+  <div class="sbody">
+    <div class="frow">
+      <div class="field">
+        <label>My Flight Number</label>
+        <input type="text" id="flight-input" placeholder="e.g. BA283, EK202" maxlength="8"
+          oninput="this.value=this.value.toUpperCase()"/>
+      </div>
+    </div>
+    <button class="sbtn" id="sbtn" onclick="doSearch()">🛫 Check My Flight</button>
+  </div>
+</div>
+
+<div class="err" id="err" aria-live="polite"></div>
+<div class="loading" id="loading">
+  <div class="plane-fly">🛫</div>
+  <p style="margin-top:.65rem;color:var(--t2)">Looking up your flight…</p>
+</div>
+
+<!-- Result card -->
+<div id="result-card" style="display:none;animation:fadeUp .4s ease">
+
+<!-- Leave banner -->
+<div class="leave-card card" id="leave-card">
+  <div class="leave-top" id="leave-top">
+    <div class="leave-icon" id="leave-icon"></div>
+    <div class="leave-main">
+      <div class="leave-title" id="leave-title"></div>
+    </div>
+    <span class="leave-badge" id="leave-badge"></span>
+  </div>
+  <div class="leave-calc">
+    <div class="calc-ttl">🛫 <span>Your departure timeline</span></div>
+
+    <!-- Visual timeline -->
+    <div class="dep-timeline" id="dep-timeline">
+      <div class="tl-step">
+        <div class="tl-ic" id="tl0-ic">🏠</div>
+        <div class="tl-time" id="tl0-time">—</div>
+        <div class="tl-lbl">Leave Home</div>
+      </div>
+      <div class="tl-line" id="tl-l0"></div>
+      <div class="tl-step">
+        <div class="tl-ic" id="tl1-ic">🚗</div>
+        <div class="tl-time" id="tl1-time">—</div>
+        <div class="tl-lbl">Arrive Airport</div>
+      </div>
+      <div class="tl-line" id="tl-l1"></div>
+      <div class="tl-step">
+        <div class="tl-ic" id="tl2-ic">🎫</div>
+        <div class="tl-time" id="tl2-time">—</div>
+        <div class="tl-lbl">Check-in</div>
+      </div>
+      <div class="tl-line" id="tl-l2"></div>
+      <div class="tl-step">
+        <div class="tl-ic" id="tl3-ic">🔒</div>
+        <div class="tl-time" id="tl3-time">—</div>
+        <div class="tl-lbl">Security</div>
+      </div>
+      <div class="tl-line" id="tl-l3"></div>
+      <div class="tl-step">
+        <div class="tl-ic" id="tl4-ic">🚪</div>
+        <div class="tl-time" id="tl4-time">—</div>
+        <div class="tl-lbl">At Gate</div>
+      </div>
+      <div class="tl-line" id="tl-l4"></div>
+      <div class="tl-step">
+        <div class="tl-ic" id="tl5-ic">🛫</div>
+        <div class="tl-time" id="tl5-time">—</div>
+        <div class="tl-lbl">Departure</div>
+      </div>
+    </div>
+
+    <!-- Key metrics -->
+    <div class="calc-grid">
+      <div class="cmet">
+        <div class="cmet-lbl">Leave Home By</div>
+        <div class="cmet-val orange" id="cm-leave-val">—</div>
+        <div class="cmet-sub" id="cm-leave-sub"></div>
+      </div>
+      <div class="cmet">
+        <div class="cmet-lbl">Departure Time</div>
+        <div class="cmet-val" id="cm-dep-val">—</div>
+        <div class="cmet-sub" id="cm-dep-sub"></div>
+      </div>
+    </div>
+
+    <!-- hidden drive-mins kept for recalc() -->
+    <input type="number" id="drive-mins" value="30" style="display:none" min="1" max="300" oninput="recalc()"/>
+
+    <!-- Calculation pillars -->
+    <div class="spc-pillars" style="border-top:1px solid var(--b1);margin:.4rem -1.4rem 0;padding:.65rem .7rem 0">
+      <div class="spc-p flt">
+        <div class="spc-p-ico"><svg viewBox="0 0 24 24"><path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z" stroke="none" fill="currentColor"/></svg></div>
+        <div class="spc-p-lbl">Flight Departs</div>
+        <div class="spc-p-val" id="sdc-dep">—</div>
+        <div class="spc-p-sub" id="sdc-dep-sub">enter flight</div>
+      </div>
+      <div class="spc-sep">−</div>
+      <div class="spc-p buf" onclick="toggleDepBuf()" style="cursor:pointer">
+        <div class="spc-p-ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+        <div class="spc-p-lbl">Airport Buffer</div>
+        <div class="spc-p-val" id="sdc-buf-val">2 hr</div>
+        <div class="spc-p-sub">tap to change</div>
+      </div>
+      <div class="spc-sep">−</div>
+      <div class="spc-p drv">
+        <div class="spc-p-ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2a7 7 0 0 1 7 7c0 5-7 13-7 13S5 14 5 9a7 7 0 0 1 7-7z"/></svg></div>
+        <div class="spc-p-lbl">Drive Time</div>
+        <button class="spc-loc-btn" id="sdc-loc-btn" onclick="reqLoc()">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2a7 7 0 0 1 7 7c0 5-7 13-7 13S5 14 5 9a7 7 0 0 1 7-7z"/></svg>
+          Enable
+        </button>
+        <div class="spc-p-val" id="sdc-drive-val" style="display:none">—</div>
+        <div class="spc-p-sub" id="sdc-drive-sub">live traffic</div>
+      </div>
+    </div>
+    <div class="loc-nav" id="loc-nav" style="padding:.55rem .2rem 0">
+      <a id="loc-gmaps" title="Google Maps" target="_blank" rel="noopener">🗺</a>
+      <a id="loc-apple" title="Apple Maps" target="_blank" rel="noopener">🍎</a>
+      <a id="loc-waze" title="Waze" target="_blank" rel="noopener">🚦</a>
+    </div>
+  </div>
+</div>
+
+<!-- Live Flight Status Monitor -->
+<div class="status-monitor" id="status-monitor" style="display:none">
+  <div class="sm-hdr">
+    <div class="sm-dot green" id="sm-dot"></div>
+    <span class="sm-hdr-title">Live Flight Status</span>
+    <button class="sm-ref" onclick="refreshCurrent()">↻ Refresh</button>
+  </div>
+  <div class="sm-main">
+    <div class="sm-icon-box green" id="sm-icon-box"><span id="sm-icon">🛫</span></div>
+    <div class="sm-text">
+      <div class="sm-label" id="sm-label">—</div>
+      <div class="sm-sub" id="sm-sub"></div>
+    </div>
+    <span class="sm-pill green" id="sm-pill">—</span>
+  </div>
+  <div class="sm-alert green" id="sm-alert" style="display:none">
+    <span class="sm-alert-ic" id="sm-alert-ic"></span>
+    <div>
+      <div class="sm-alert-ttl" id="sm-alert-ttl"></div>
+      <div class="sm-alert-body" id="sm-alert-body"></div>
+    </div>
+  </div>
+  <div class="sm-route" id="sm-route" style="display:none">
+    <div class="sm-route-lbl">Flight Progress</div>
+    <div class="sm-route-bar">
+      <span class="sm-rt-iata" id="sm-from-iata">—</span>
+      <div class="sm-track">
+        <div class="sm-track-fill" id="sm-fill" style="width:0%"></div>
+        <span class="sm-plane-dot" id="sm-plane" style="left:0%">✈️</span>
+      </div>
+      <span class="sm-rt-iata r" id="sm-to-iata">—</span>
+    </div>
+    <div class="sm-rt-stats" id="sm-rt-stats"></div>
+  </div>
+</div>
+
+<div id="flight-layout">
+<!-- Flight info card (middle) -->
+<div class="fi" id="fi-card">
+  <div class="fi-hdr">
+    <div>
+      <div class="fi-num" id="fi-num">—</div>
+      <div class="fi-airline" id="fi-airline"></div>
+    </div>
+    <span class="spill" id="fi-spill"></span>
+  </div>
+  <div class="rroute">
+    <div class="apt"><div class="apt-iata" id="fi-dep-iata"></div><div class="apt-city" id="fi-dep-city"></div><div class="apt-name" id="fi-dep-name"></div></div>
+    <div class="rmid"><div class="rbar"></div></div>
+    <div class="apt r"><div class="apt-iata" id="fi-arr-iata"></div><div class="apt-city" id="fi-arr-city"></div><div class="apt-name" id="fi-arr-name"></div></div>
+  </div>
+  <div class="tgrid">
+    <div class="tblk">
+      <div class="tlbl">Departure</div>
+      <div class="ttime" id="fi-dep-time">—</div>
+      <div class="tdate" id="fi-dep-date"></div>
+      <div class="tdelay" id="fi-dep-delay"></div>
+      <div class="tinfo" id="fi-dep-info"></div>
+    </div>
+    <div class="tblk">
+      <div class="tlbl">Arrival</div>
+      <div class="ttime" id="fi-arr-time">—</div>
+      <div class="tdate" id="fi-arr-date"></div>
+      <div class="tdelay" id="fi-arr-delay"></div>
+      <div class="tinfo" id="fi-arr-info"></div>
+    </div>
+  </div>
+  <div class="fi-status" id="fi-live-row">
+    <div class="fi-st-dot green" id="fi-st-dot"></div>
+    <span class="fi-st-ico" id="fi-st-ico"></span>
+    <span class="fi-st-lbl" id="fi-st-lbl">—</span>
+    <span class="spill" id="fi-st-pill"></span>
+  </div>
+  <div class="dstrip" id="dstrip"></div>
+  <div class="wx-strip" id="wx-strip">
+    <div class="wx-icon" id="wx-icon"></div>
+    <div class="wx-main"><div class="wx-temp" id="wx-temp"></div><div class="wx-desc" id="wx-desc"></div></div>
+    <div class="wx-stats" id="wx-stats"></div>
+  </div>
+  <div class="cfoot"><span id="fetched-at"></span><button class="rfbtn" onclick="refreshCurrent()">↻ Refresh</button></div>
+</div>
+
+<!-- Pre-Flight Prep: Baggage + Checklist -->
+<div class="prep-card" id="prep-card">
+  <div class="bp-hdr">
+    <span>🧳</span>
+    <span class="bp-title">Baggage &amp; Checklist</span>
+    <span class="bp-airline" id="prep-airline-name"></span>
+  </div>
+  <div style="padding:.85rem 1.2rem .5rem;border-bottom:1px solid var(--b1)">
+    <div class="bp-grid">
+      <div class="bp-item">
+        <div class="bp-item-lbl">🎒 Carry-on</div>
+        <div class="bp-item-val" id="prep-carry-val">—</div>
+        <div class="bp-item-sub" id="prep-carry-sub">Cabin bag allowance</div>
+      </div>
+      <div class="bp-item">
+        <div class="bp-item-lbl">🧳 Checked Bag</div>
+        <div class="bp-item-val" id="prep-check-val">—</div>
+        <div class="bp-item-sub" id="prep-check-sub">Max 23 kg</div>
+      </div>
+    </div>
+    <div class="bp-notes" id="prep-notes" style="display:none;margin-top:.6rem"></div>
+  </div>
+  <div class="cl-body">
+    <div class="cl-items" id="cl-items">
+      <div class="cl-item" onclick="toggleCheck(this)"><div class="cl-check"></div><span class="cl-text">📄 Passport / ID</span></div>
+      <div class="cl-item" onclick="toggleCheck(this)"><div class="cl-check"></div><span class="cl-text">📱 Boarding Pass</span></div>
+      <div class="cl-item" onclick="toggleCheck(this)"><div class="cl-check"></div><span class="cl-text">🧳 Baggage Packed</span></div>
+      <div class="cl-item" onclick="toggleCheck(this)"><div class="cl-check"></div><span class="cl-text">💳 Payment Cards</span></div>
+      <div class="cl-item" onclick="toggleCheck(this)"><div class="cl-check"></div><span class="cl-text">🔋 Phone Charged</span></div>
+      <div class="cl-item" onclick="toggleCheck(this)"><div class="cl-check"></div><span class="cl-text">🔑 House Keys</span></div>
+      <div class="cl-item" onclick="toggleCheck(this)"><div class="cl-check"></div><span class="cl-text">💊 Medications</span></div>
+      <div class="cl-item" onclick="toggleCheck(this)"><div class="cl-check"></div><span class="cl-text">✈️ Travel Insurance</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- Action bar -->
+<div class="act-bar">
+  <button class="ab-btn ab-save" id="save-flight-btn" onclick="saveFlightBtn()">
+    <span class="ab-ic"><svg viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></span>
+    <span class="ab-lbl" id="save-btn-txt">Save</span>
+  </button>
+  <button class="ab-btn ab-nav" onclick="qaiNavigate()">
+    <span class="ab-ic"><svg viewBox="0 0 24 24"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg></span>
+    <span class="ab-lbl">Navigate</span>
+  </button>
+  <button class="ab-btn ab-wa" onclick="shareWhatsApp()">
+    <span class="ab-ic"><svg viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg></span>
+    <span class="ab-lbl">WhatsApp</span>
+  </button>
+  <button class="ab-btn ab-copy" onclick="shareLink()">
+    <span class="ab-ic"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></span>
+    <span class="ab-lbl">Copy</span>
+  </button>
+  <button class="ab-btn ab-share" onclick="shareNative()">
+    <span class="ab-ic"><svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></span>
+    <span class="ab-lbl">Share</span>
+  </button>
+  <button class="ab-btn ab-notif" id="ab-notif-btn" onclick="toggleNotifBtn()">
+    <span class="ab-ic"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></span>
+    <span class="ab-lbl" id="ab-notif-lbl">Remind</span>
+  </button>
+</div>
+
+<!-- Notification Toggle Panel -->
+<div class="notif-panel-dep" id="notif-panel-dep" style="display:none">
+  <div class="np-dep-inner">
+    <span class="np-dep-ic">🔔</span>
+    <div class="np-dep-info">
+      <div class="np-dep-title">Flight Reminders</div>
+      <div class="np-dep-sub">Notify me every 15 min until departure</div>
+    </div>
+    <label class="np-switch">
+      <input type="checkbox" id="notif-toggle" onchange="toggleAutoNotifs(this.checked)">
+      <span class="np-slider"></span>
+    </label>
+  </div>
+  <div class="np-status" id="notif-status"></div>
+</div>
+
+<!-- Security Wait Times Panel -->
+<div class="security-panel" id="security-panel" style="display:none">
+  <div class="secp-hdr">
+    <span>🔒</span>
+    <span class="secp-title">Security Wait Times</span>
+    <span style="font-size:.72rem;color:var(--t3);margin-left:auto">Est. right now</span>
+  </div>
+  <div class="secp-body" id="secp-body">
+    <div class="bp-loading">Estimating wait times…</div>
+  </div>
+</div>
+
+<!-- Departure Lounge Panel -->
+<div class="dep-lounge-panel" id="dep-lounge-panel" style="display:none">
+  <div class="dlp-hdr">
+    <span>🛋️</span>
+    <span class="dlp-title">Airport Lounges</span>
+    <span id="dlp-iata" style="font-size:.72rem;color:var(--t3);margin-left:auto"></span>
+  </div>
+  <div class="dlp-body" id="dlp-body">
+    <div class="bp-loading">Loading lounge info…</div>
+  </div>
+</div>
+
+
+
+</div><!-- end result-card -->
+
+<!-- ── Traffic + Route to Airport Card ── -->
+<div class="tc-card" id="dep-tc-card">
+  <div class="tc-hdr">
+    <div class="tc-dot"></div>
+    <span class="tc-hdr-ttl">Live Route to Airport</span>
+    <span class="tc-live" id="dep-tc-live">enable location to calculate</span>
+  </div>
+  <div class="tc-body">
+    <div class="tc-stats-row">
+      <div class="tc-drive-big" id="dep-tc-drive">— <span>min drive</span></div>
+      <div class="tc-chip clear" id="dep-tc-chip">
+        <svg viewBox="0 0 24 24"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z"/></svg>
+        <span id="dep-tc-traffic">Clear roads</span>
+      </div>
+    </div>
+    <div class="tc-route-sub" id="dep-tc-sub">Enable location to calculate your route with live traffic</div>
+  </div>
+  <div class="tc-map"><div id="dep-route-map"></div></div>
+  <div class="tc-apps">
+    <a class="tc-app gmaps" id="dep-nav-google" href="#" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+      Google Maps
+    </a>
+    <a class="tc-app" id="dep-nav-apple" href="#" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+      Apple Maps
+    </a>
+  </div>
+</div>
+
+<!-- Live flight map -->
+<div class="map-card" id="map-card">
+  <div class="map-hdr">
+    <div class="map-ttl"><div class="mldot"></div><span>Live Flight Tracker</span></div>
+    <div class="map-info" id="map-info"></div>
+  </div>
+  <div id="flight-map"></div>
+</div>
+</div><!-- end flight-layout -->
+
+<!-- App store download -->
+<div class="app-dl">
+  <div class="app-dl-eyebrow">Get the full experience</div>
+  <div class="app-dl-title">Download Catch My Flight</div>
+  <div class="app-dl-badges">
+    <a href="#" class="store-badge" id="ios-store-link" aria-label="Download on the App Store">
+      <span class="sb-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z" fill="white"/>
+        </svg>
+      </span>
+      <span class="sb-txt">
+        <span class="sb-pre">Download on the</span>
+        <span class="sb-name">App Store</span>
+      </span>
+    </a>
+    <a href="#" class="store-badge" id="android-store-link" aria-label="Get it on Google Play">
+      <span class="sb-icon">
+        <svg width="20" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M3.18 23.76c.37.2.8.2 1.17 0L14.89 12 4.35.24C3.98.04 3.55.04 3.18.24 2.46.65 2 1.42 2 2.27v19.46c0 .85.46 1.62 1.18 2.03zM17.11 9.28 5.66 2.64l8.95 9.17-7.6 7.6 10.1-5.86c.8-.47 1.3-1.3 1.3-2.14s-.5-1.67-1.3-2.13z" fill="white"/>
+        </svg>
+      </span>
+      <span class="sb-txt">
+        <span class="sb-pre">Get it on</span>
+        <span class="sb-name">Google Play</span>
+      </span>
+    </a>
+  </div>
+</div>
+
+<footer class="site-footer">
+  Catch My Flight &nbsp;·&nbsp;
+  <a href="/legal.html#privacy" style="color:var(--t3);text-decoration:underline">Privacy Policy</a> &nbsp;·&nbsp;
+  <a href="/legal.html#terms" style="color:var(--t3);text-decoration:underline">Terms of Use</a><br>
+  <span style="font-size:.65rem;opacity:.7">Departure times shown are estimates only. Always verify with your airline.</span>
+</footer>
+
+</main><!-- end wrap -->
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
+<script>
+const API = window.location.hostname==='localhost' ? 'http://localhost:3001/api' : '/api';
+
+// ─── DEMO FLIGHT ─────────────────────────────────────────────────────────────
+function getDemoFlight(){
+  const now=new Date();
+  const dep=new Date(now); dep.setHours(17,30,0,0); // 5:30 PM departure
+  const arr=new Date(dep.getTime()+7*3600000);       // 7h flight
+  return {
+    flightNumber:'BA283', airline:'British Airways', airlineIata:'BA',
+    aircraft:'Boeing 777-236ER', status:'scheduled',
+    departure:{iata:'LHR',city:'London',airport:'Heathrow Airport',
+      scheduled:dep.toISOString(),terminal:'5',gate:'B36',delay:0,lat:51.4775,lng:-0.4614},
+    arrival:{iata:'JFK',city:'New York',airport:'John F. Kennedy International',
+      scheduled:arr.toISOString(),terminal:'7',gate:'B12',delay:0,lat:40.6413,lng:-73.7781},
+    live:null,
+    weather:{temp:14,feels:11,desc:'partly cloudy',wind:22,humidity:64,rain:null,visibility:16},
+    buffer:{bufferColor:'green',bufferLabel:'On Schedule',advice:'Your flight is on time. Based on your buffer and drive time, you have a comfortable window.'},
+    fetchedAt:now.toISOString()
+  };
+}
+const DEMO_FLIGHTS={'BA283':getDemoFlight};
+
+// ─── STATE ───────────────────────────────────────────────────────────────────
+let curFlight=null, curData=null;
+let notifIntervalId=null;
+let userLat=null, userLng=null;
+let driveMins=30, bufMins=120;
+let autoTimer=null;
+let lmap=null, planeMarker=null, userMarker=null;
+
+// ─── LANGUAGE ─────────────────────────────────────────────────────────────────
+function applyLang(l){
+  const codeEl=document.getElementById('lang-code');
+  if(codeEl)codeEl.textContent=l.toUpperCase().slice(0,2);
+  const rtl=['ar','ur'];
+  document.body.style.direction=rtl.includes(l)?'rtl':'ltr';
+  document.querySelectorAll('#lang-menu div').forEach(d=>d.classList.toggle('lng-active',d.dataset.lang===l));
+  document.getElementById('lang-menu').classList.remove('open');
+}
+function toggleLangMenu(){document.getElementById('lang-menu').classList.toggle('open')}
+document.addEventListener('click',e=>{if(!document.getElementById('lang-sel').contains(e.target))document.getElementById('lang-menu').classList.remove('open')});
+document.addEventListener('keydown',e=>{if(e.key==='Enter')doSearch()});
+
+// ─── BUFFER SELECTOR ─────────────────────────────────────────────────────────
+function setBuf(mins){
+  bufMins=mins;
+  document.querySelectorAll('.buf-btn').forEach(b=>b.classList.toggle('active',+b.dataset.buf===mins));
+  recalc();
+}
+
+// ─── CHECKLIST ───────────────────────────────────────────────────────────────
+function toggleCheck(el){el.classList.toggle('checked');const c=el.querySelector('.cl-check');c.textContent=el.classList.contains('checked')?'✓':''}
+
+// ─── SEARCH ──────────────────────────────────────────────────────────────────
+function doSearch(){
+  const num=document.getElementById('flight-input').value.trim().toUpperCase();
+  if(!num){showErr('Please enter your flight number (e.g. BA283)');return}
+  if(!document.body.classList.contains('results-mode')){
+    window.location.href='?fn='+encodeURIComponent(num);
+    return;
+  }
+  clearResults();showLoading(true);
+  if(DEMO_FLIGHTS[num]){
+    setTimeout(()=>{
+      const d=DEMO_FLIGHTS[num]();
+      curFlight=num; curData=d;
+      renderFlight(d);
+      showLoading(false);
+    },900);
+    return;
+  }
+  fetch(`${API}/flight/${encodeURIComponent(num)}`)
+    .then(r=>r.json().then(d=>({ok:r.ok,d})))
+    .then(({ok,d})=>{if(!ok)throw new Error(d.error||'Not found');curFlight=num;curData=d;renderFlight(d)})
+    .catch(e=>showErr(e.message||'Cannot reach server.'))
+    .finally(()=>showLoading(false));
+}
+
+// ─── RENDER ──────────────────────────────────────────────────────────────────
+function renderFlight(d){
+  const b=d.buffer;
+  // Leave banner
+  const color=b.bufferColor==='orange'?'orange':b.bufferColor;
+  document.getElementById('leave-top').className=`leave-top ${color}`;
+  document.getElementById('leave-icon').textContent=depIcon(color,d.status);
+  document.getElementById('leave-title').textContent=depTitle(d);
+  const bdg=document.getElementById('leave-badge');
+  bdg.className=`leave-badge ${color}`;
+  bdg.textContent=b.bufferLabel;
+
+  // Flight header
+  document.getElementById('fi-num').textContent=d.flightNumber;
+  document.getElementById('fi-airline').textContent=d.airline;
+  const st=(d.status||'unknown').toLowerCase().replace(/[-\s]/g,'');
+  const pill=document.getElementById('fi-spill');
+  const statusLabel={scheduled:'Scheduled',active:'In Flight',enroute:'In Flight',landed:'Landed',cancelled:'Cancelled',diverted:'Diverted'};
+  pill.textContent=statusLabel[st]||cap(d.status);
+  pill.className=`spill sp-${st}`;
+
+  document.getElementById('fi-dep-iata').textContent=d.departure.iata||'—';
+  document.getElementById('fi-dep-city').textContent=d.departure.city||'';
+  document.getElementById('fi-dep-name').textContent=d.departure.airport||'';
+  document.getElementById('fi-arr-iata').textContent=d.arrival.iata||'—';
+  document.getElementById('fi-arr-city').textContent=d.arrival.city||'';
+  document.getElementById('fi-arr-name').textContent=d.arrival.airport||'';
+
+  const depSched=new Date(d.departure.scheduled);
+  document.getElementById('fi-dep-time').textContent=fmtTime(depSched);
+  document.getElementById('fi-dep-date').textContent=fmtDate(depSched);
+  if(d.departure.delay>0)document.getElementById('fi-dep-delay').textContent=`+${d.departure.delay} min delay`;
+  if(d.departure.terminal)document.getElementById('fi-dep-info').textContent=`Terminal ${d.departure.terminal}${d.departure.gate?' · Gate '+d.departure.gate:''}`;
+
+  const arrSched=new Date(d.arrival.scheduled);
+  document.getElementById('fi-arr-time').textContent=fmtTime(arrSched);
+  document.getElementById('fi-arr-date').textContent=fmtDate(arrSched);
+  if(d.arrival.delay>0)document.getElementById('fi-arr-delay').textContent=`+${d.arrival.delay} min delay`;
+  if(d.arrival.terminal)document.getElementById('fi-arr-info').textContent=`Terminal ${d.arrival.terminal}${d.arrival.gate?' · Gate '+d.arrival.gate:''}`;
+
+  // Details strip
+  const strips=[];
+  if(d.aircraft)strips.push({l:'Aircraft',v:d.aircraft});
+  if(d.departure.gate)strips.push({l:'Gate',v:d.departure.gate});
+  if(d.departure.terminal)strips.push({l:'Terminal',v:d.departure.terminal});
+  if(d.arrival.baggage)strips.push({l:'Baggage Belt',v:d.arrival.baggage});
+  document.getElementById('dstrip').innerHTML=strips.map(s=>`<div class="di"><div class="di-lbl">${s.l}</div><div class="di-val">${s.v}</div></div>`).join('');
+
+  // Weather at departure city
+  if(d.weather){
+    const w=d.weather;
+    document.getElementById('wx-icon').textContent=wxIcon(w.desc);
+    const wxTUnit=w.unit==='imperial'?'°F':'°C';
+    const wxWUnit=w.unit==='imperial'?'mph':'km/h';
+    document.getElementById('wx-temp').textContent=`${w.temp}${wxTUnit}`;
+    document.getElementById('wx-desc').textContent=`${w.desc} · Feels ${w.feels}${wxTUnit}`;
+    document.getElementById('wx-stats').innerHTML=
+      `<div class="wx-stat"><div class="wx-stat-lbl">Wind</div><div class="wx-stat-val">${w.wind} ${wxWUnit}</div></div>`+
+      `<div class="wx-stat"><div class="wx-stat-lbl">Humidity</div><div class="wx-stat-val">${w.humidity}%</div></div>`+
+      (w.visibility?`<div class="wx-stat"><div class="wx-stat-lbl">Visibility</div><div class="wx-stat-val">${w.visibility} km</div></div>`:'');
+    document.getElementById('wx-strip').classList.add('show');
+  }
+
+  document.getElementById('fetched-at').textContent='Updated '+new Date(d.fetchedAt||Date.now()).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+
+  renderStatusMonitor(d);
+  recalc();
+  renderMap(d);
+  loadSaved();
+  renderNotifPanelDep();
+  renderBaggagePanel(d);
+  renderSecurityWait(d.departure?.iata||'');
+  renderDepartureLounges(d.departure?.iata||'');
+  document.getElementById('lang-sel').style.display='block';
+  document.getElementById('result-card').style.display='block';
+  document.getElementById('result-card').scrollIntoView({behavior:'smooth',block:'start'});
+  if(userLat&&userLng)renderDepTcCard();
+}
+
+function recalc(){
+  if(!curData)return;
+  driveMins=parseInt(document.getElementById('drive-mins').value)||30;
+  const dep=new Date(curData.departure.scheduled);
+
+  // Timeline:
+  // depart = dep
+  // gate   = dep - 45min
+  // security = dep - 65min
+  // checkin = dep - (bufMins - 15)  ≈ dep - 105 / 165 / 225 min
+  // arriveAirport = dep - bufMins
+  // leaveHome = arriveAirport - driveMins
+
+  const gateTime    = new Date(dep.getTime() - 45*60000);
+  const secTime     = new Date(dep.getTime() - 65*60000);
+  const checkinTime = new Date(dep.getTime() - (bufMins-15)*60000);
+  const arrAirport  = new Date(dep.getTime() - bufMins*60000);
+  const leaveHome   = new Date(arrAirport.getTime() - driveMins*60000);
+
+  document.getElementById('tl0-time').textContent=fmtTime(leaveHome);
+  document.getElementById('tl1-time').textContent=fmtTime(arrAirport);
+  document.getElementById('tl2-time').textContent=fmtTime(checkinTime);
+  document.getElementById('tl3-time').textContent=fmtTime(secTime);
+  document.getElementById('tl4-time').textContent=fmtTime(gateTime);
+  document.getElementById('tl5-time').textContent=fmtTime(dep);
+
+  // Colour the "active" step based on now
+  const now=Date.now();
+  const steps=[leaveHome,arrAirport,checkinTime,secTime,gateTime,dep];
+  steps.forEach((t,i)=>{
+    const ic=document.getElementById(`tl${i}-ic`);
+    const line=document.getElementById(`tl-l${i}`);
+    if(now>=t.getTime()){ic.classList.remove('active');ic.classList.add('done')}
+    else if(i===steps.findIndex(s=>now<s.getTime())){ic.classList.add('active');ic.classList.remove('done')}
+    else{ic.classList.remove('active','done')}
+    if(line){line.classList.toggle('done',now>=t.getTime())}
+  });
+
+  // Key metrics
+  document.getElementById('cm-leave-val').textContent=fmtTime(leaveHome);
+  const minsLeft=Math.round((leaveHome.getTime()-now)/60000);
+  document.getElementById('cm-leave-sub').textContent=minsLeft>0?`in ${minsLeft} min`:'Should have left!';
+  document.getElementById('cm-dep-val').textContent=fmtTime(dep);
+  document.getElementById('cm-dep-sub').textContent=fmtDate(dep);
+
+  // Update leave banner title dynamically
+  document.getElementById('leave-title').textContent=depTitle(curData);
+  updateLocNav();
+  updateSdcCard();
+  if(userLat&&userLng)renderDepTcCard();
+}
+
+function depTitle(d){
+  if(!curData)return'';
+  const dep=new Date(d.departure.scheduled);
+  driveMins=parseInt(document.getElementById('drive-mins')?.value||'30')||30;
+  const leave=new Date(dep.getTime()-(bufMins+driveMins)*60000);
+  const minsLeft=Math.round((leave.getTime()-Date.now())/60000);
+  if(d.status&&d.status.toLowerCase().includes('cancel'))return'Flight Cancelled';
+  if(minsLeft<0)return'You should have left already!';
+  if(minsLeft<30)return`Leave NOW — you have ${minsLeft} min`;
+  return`Leave home by ${fmtTime(leave)}`;
+}
+
+function depIcon(c,st){
+  const s=(st||'').toLowerCase();
+  if(s.includes('cancel'))return'❌';
+  if(s.includes('divert'))return'⚠️';
+  if(s.includes('land'))return'🛬';
+  if(s.includes('active')||s.includes('route'))return'✈️';
+  return c==='red'?'🚨':c==='amber'?'⚠️':'🛫';
+}
+
+
+// ─── SMART DEPARTURE COMMANDER ───────────────────────────────────────────────
+function updateSdcCard(){
+  if(!curData)return;
+  const dep=new Date(curData.departure.scheduled);
+  const sdcDep=document.getElementById('sdc-dep');
+  const sdcDepSub=document.getElementById('sdc-dep-sub');
+  if(sdcDep)sdcDep.textContent=fmtTime(dep);
+  if(sdcDepSub)sdcDepSub.textContent=fmtDate(dep);
+  const bufLbl=bufMins>=180?'3 hr':bufMins>=120?'2 hr':'1.5 hr';
+  const sdcBuf=document.getElementById('sdc-buf-val');
+  if(sdcBuf)sdcBuf.textContent=bufLbl;
+}
+
+function toggleDepBuf(){
+  const opts=[90,120,180];
+  const idx=opts.indexOf(bufMins);
+  setBuf(opts[(idx+1)%opts.length]);
+}
+
+// ─── LEAFLET MAP ─────────────────────────────────────────────────────────────
+function mkPlane(h){
+  const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><g transform="rotate(${h||0},16,16)"><path d="M16 2 L20 14 L30 16 L20 18 L18 28 L16 24 L14 28 L12 18 L2 16 L12 14 Z" fill="white" stroke="rgba(0,0,0,0.35)" stroke-width="1" stroke-linejoin="round"/></g></svg>`;
+  return L.divIcon({className:'',html:`<div style="filter:drop-shadow(0 2px 8px rgba(0,0,0,.7))">${svg}</div>`,iconSize:[32,32],iconAnchor:[16,16]});
+}
+function renderMap(d){
+  if(!d.live)return;
+  const mc=document.getElementById('map-card');
+  mc.classList.add('show');
+  if(!lmap){
+    lmap=L.map('flight-map',{zoomControl:true,attributionControl:false});
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:13}).addTo(lmap);
+  }
+  const{latitude:lat,longitude:lng,heading:h,altitude:alt,speed:spd}=d.live;
+  lmap.setView([lat,lng],5);
+  if(planeMarker)lmap.removeLayer(planeMarker);
+  planeMarker=L.marker([lat,lng],{icon:mkPlane(h||0)}).addTo(lmap)
+    .bindPopup(`<b>${d.flightNumber}</b><br>${alt?'Alt: '+alt+' ft':''}${spd?' · '+spd+' km/h':''}`);
+  const mi=document.getElementById('map-info');
+  if(mi)mi.innerHTML=`<span>Alt: <strong>${alt?.toLocaleString()||'—'} ft</strong></span><span>Speed: <strong>${spd||'—'} km/h</strong></span>`;
+}
+function toggleFlightMap(){
+  const mc=document.getElementById('map-card');
+  const btn=document.getElementById('map-toggle-btn');
+  const showing=mc.classList.toggle('show');
+  if(btn)btn.classList.toggle('active',showing);
+  if(showing){setTimeout(()=>{mc.scrollIntoView({behavior:'smooth',block:'start'});if(lmap){lmap.invalidateSize();if(planeMarker)lmap.setView(planeMarker.getLatLng(),5);}},200);}
+}
+
+// ─── LOCATION ─────────────────────────────────────────────────────────────────
+let locationWatchId=null;
+
+function reqLoc(){
+  if(!navigator.geolocation){showToast('Location not supported');return}
+  const locBtn=document.getElementById('sdc-loc-btn');
+  const driveVal=document.getElementById('sdc-drive-val');
+  const driveSub=document.getElementById('sdc-drive-sub');
+  if(locBtn)locBtn.classList.add('hidden');
+  if(driveVal)driveVal.style.display='';
+  if(driveVal)driveVal.textContent='…';
+  if(driveSub)driveSub.textContent='Getting location…';
+  if(locationWatchId!==null){navigator.geolocation.clearWatch(locationWatchId);locationWatchId=null;}
+  locationWatchId=navigator.geolocation.watchPosition(async pos=>{
+    const isFirst=!userLat&&!userLng;
+    userLat=pos.coords.latitude; userLng=pos.coords.longitude;
+    updateLocNav();
+    if(curData&&curData.departure&&curData.departure.lat){
+      if(driveSub)driveSub.textContent='Calculating…';
+      const result=await fetchRoute(userLat,userLng,curData.departure.lat,curData.departure.lng);
+      if(result){
+        depOsrmDrive=result;
+        driveMins=result.driveMins;
+        document.getElementById('drive-mins').value=driveMins;
+        const tfLbl={heavy:'🔴 Heavy',moderate:'🟡 Moderate',clear:'🟢 Clear'};
+        if(driveVal)driveVal.textContent=`${result.driveMins} min`;
+        if(driveSub)driveSub.textContent=`${result.distanceKm}km · ${tfLbl[result.trafficLevel]||'Live'}`;
+        recalc();
+      }
+      if(isFirst)renderDepTcCard();
+      else updateDepTcCard(result);
+    }else{
+      if(driveVal)driveVal.textContent='📍 Ready';
+      if(driveSub)driveSub.textContent='Search a flight to calculate';
+    }
+  },()=>{
+    if(locBtn)locBtn.classList.remove('hidden');
+    if(driveVal)driveVal.style.display='none';
+    if(driveSub)driveSub.textContent='live traffic';
+    showToast('Enable location in your browser for live traffic');
+  },{enableHighAccuracy:true,timeout:15000,maximumAge:30000});
+}
+
+async function fetchRoute(fLat,fLng,tLat,tLng){
+  try{
+    const r=await fetch(`${API}/drive-route?originLat=${fLat}&originLng=${fLng}&destLat=${tLat}&destLng=${tLng}`);
+    const d=await r.json();
+    if(d.driveMins)return d;
+  }catch(e){}
+  return null;
+}
+
+function updateDepTcCard(result){
+  if(!result||!depTcMap)return;
+  if(depTcUserM)depTcMap.removeLayer(depTcUserM);
+  depTcUserM=L.marker([userLat,userLng],{icon:mkUser()}).addTo(depTcMap);
+  if(depTcPath)depTcMap.removeLayer(depTcPath);
+  depTcPath=L.polyline(result.routeCoords||[[userLat,userLng]],{color:'#fb923c',weight:4,opacity:.85}).addTo(depTcMap);
+  depTcMap.fitBounds(L.latLngBounds(result.routeCoords||[[userLat,userLng]]),{padding:[28,28]});
+  const tfMap={heavy:{cls:'heavy',txt:'Heavy traffic'},moderate:{cls:'moderate',txt:'Moderate traffic'},clear:{cls:'clear',txt:'Clear roads'}};
+  const tf=tfMap[result.trafficLevel]||tfMap.clear;
+  document.getElementById('dep-tc-drive').innerHTML=`${result.driveMins} <span>min drive</span>`;
+  document.getElementById('dep-tc-chip').className=`tc-chip ${tf.cls}`;
+  document.getElementById('dep-tc-traffic').textContent=tf.txt;
+}
+
+function trafficStatus(){
+  const h=new Date().getHours();
+  if((h>=7&&h<9)||(h>=17&&h<19))return{cls:'heavy',txt:'Heavy traffic',extra:15};
+  if((h>=9&&h<12)||(h>=15&&h<17)||(h>=19&&h<21))return{cls:'moderate',txt:'Moderate traffic',extra:7};
+  return{cls:'clear',txt:'Clear roads',extra:0};
+}
+
+let depOsrmDrive=null, depTcMap=null, depTcUserM=null, depTcArrM=null, depTcPath=null;
+
+function renderDepTcCard(){
+  if(!userLat||!userLng||!curData||!curData.departure||!curData.departure.lat)return;
+  const card=document.getElementById('dep-tc-card');
+  card.classList.add('show');
+  const dep=curData.departure;
+  const orig=`${userLat},${userLng}`;
+  const driveMinsVal=parseInt(document.getElementById('drive-mins').value)||30;
+  const tfMap={heavy:{cls:'heavy',txt:'Heavy traffic'},moderate:{cls:'moderate',txt:'Moderate traffic'},clear:{cls:'clear',txt:'Clear roads'}};
+  const tf=tfMap[depOsrmDrive?.trafficLevel]||tfMap.clear;
+  document.getElementById('dep-tc-drive').innerHTML=`${driveMinsVal} <span>min drive</span>`;
+  const chip=document.getElementById('dep-tc-chip');
+  chip.className=`tc-chip ${tf.cls}`;
+  document.getElementById('dep-tc-traffic').textContent=tf.txt;
+  const km=depOsrmDrive?`${depOsrmDrive.distanceKm||depOsrmDrive.km||''}km · `:'';
+  document.getElementById('dep-tc-live').textContent=`${km}${tf.txt}`;
+  document.getElementById('dep-tc-sub').textContent=`From your location to ${dep.airport||dep.iata||'airport'}`;
+  document.getElementById('dep-nav-google').href=`https://www.google.com/maps/dir/?api=1&origin=${orig}&destination=${dep.lat},${dep.lng}&travelmode=driving`;
+  document.getElementById('dep-nav-apple').href=`https://maps.apple.com/?saddr=${orig}&daddr=${dep.lat},${dep.lng}&dirflg=d`;
+  const isDark=window.matchMedia('(prefers-color-scheme:dark)').matches;
+  const tile=isDark?'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png':'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
+  if(!depTcMap){
+    depTcMap=L.map('dep-route-map',{zoomControl:false,attributionControl:false,scrollWheelZoom:false});
+    L.tileLayer(tile,{maxZoom:18,subdomains:'abcd'}).addTo(depTcMap);
+  }
+  [depTcUserM,depTcArrM,depTcPath].forEach(l=>{if(l&&depTcMap)depTcMap.removeLayer(l)});
+  const mkUser=()=>L.divIcon({className:'',html:'<div style="width:18px;height:18px;background:#4f9cf9;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 5px rgba(79,156,249,.28),0 2px 10px rgba(0,0,0,.5)"></div>',iconSize:[18,18],iconAnchor:[9,9]});
+  const mkDot=c=>L.divIcon({className:'',html:`<div style="width:12px;height:12px;background:${c};border:2.5px solid #fff;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,.5)"></div>`,iconSize:[12,12],iconAnchor:[6,6]});
+  depTcUserM=L.marker([userLat,userLng],{icon:mkUser()}).addTo(depTcMap).bindPopup('<b>📍 You are here</b>');
+  depTcArrM=L.marker([dep.lat,dep.lng],{icon:mkDot('#fb923c')}).addTo(depTcMap).bindPopup(`<b>${dep.iata}</b><br>${dep.airport||dep.city}`);
+  const routeCoords=depOsrmDrive?.routeCoords||[[userLat,userLng],[dep.lat,dep.lng]];
+  depTcPath=L.polyline(routeCoords,{color:'#fb923c',weight:4,opacity:.85,dashArray:depOsrmDrive?.routeCoords?null:'7,9'}).addTo(depTcMap);
+  depTcMap.fitBounds(L.latLngBounds(routeCoords),{padding:[30,30]});
+  setTimeout(()=>{if(depTcMap)depTcMap.invalidateSize()},200);
+}
+
+function updateLocNav(){
+  if(!userLat||!userLng||!curData||!curData.departure||!curData.departure.lat)return;
+  const{lat,lng}=curData.departure;
+  const orig=`${userLat},${userLng}`;
+  document.getElementById('loc-gmaps').href=`https://www.google.com/maps/dir/?api=1&origin=${orig}&destination=${lat},${lng}&travelmode=driving`;
+  document.getElementById('loc-apple').href=`https://maps.apple.com/?saddr=${orig}&daddr=${lat},${lng}&dirflg=d`;
+  document.getElementById('loc-nav').classList.add('show');
+}
+
+function qaiNavigate(){
+  const gmaps=document.getElementById('loc-gmaps');
+  if(gmaps&&gmaps.href&&gmaps.href!=='#'){window.open(gmaps.href,'_blank');return}
+  if(curData&&curData.departure&&curData.departure.lat){
+    const{lat,lng}=curData.departure;
+    window.open(`https://www.google.com/maps/search/?api=1&query=${lat},${lng}`,'_blank');
+  }else showToast('Search for your flight first');
+}
+
+// ─── SHARE / SAVE ─────────────────────────────────────────────────────────────
+function shareWhatsApp(){
+  if(!curData){showToast('Search for your flight first');return}
+  const dep=new Date(curData.departure.scheduled);
+  const leaveTime=new Date(dep.getTime()-(bufMins+driveMins)*60000);
+  const txt=`✈️ My flight ${curData.flightNumber} (${curData.airline}) departs ${curData.departure.iata}→${curData.arrival.iata} at ${fmtTime(dep)}. I need to leave home by ${fmtTime(leaveTime)}. Tracking with Airport Pickup Helper.`;
+  window.open(`https://wa.me/?text=${encodeURIComponent(txt)}`,'_blank');
+}
+function shareLink(){
+  const url=`${location.origin}/depart.html?fn=${curData?.flightNumber||''}`;
+  navigator.clipboard?.writeText(url).then(()=>showToast('Link copied!')).catch(()=>showToast('Copy failed'));
+}
+function shareNative(){
+  if(!curData){showToast('Search for your flight first');return}
+  const dep=new Date(curData.departure.scheduled);
+  const leaveTime=new Date(dep.getTime()-(bufMins+driveMins)*60000);
+  const text=`My flight ${curData.flightNumber} departs at ${fmtTime(dep)}. Leave home by ${fmtTime(leaveTime)}.`;
+  if(navigator.share)navigator.share({title:'Catch My Flight',text,url:location.href}).catch(()=>{});
+  else shareLink();
+}
+
+function saveFlightBtn(){
+  if(!curData)return;
+  const fn=curData.flightNumber;
+  const key='dep_saved';
+  let saved=JSON.parse(localStorage.getItem(key)||'[]');
+  const exists=saved.find(s=>s.fn===fn);
+  const btn=document.getElementById('save-flight-btn');
+  if(exists){
+    localStorage.setItem(key,JSON.stringify(saved.filter(s=>s.fn!==fn)));
+    document.getElementById('save-btn-txt').textContent='Save';
+    btn.classList.remove('saved-state');
+    showToast('Flight removed');
+  }else{
+    saved.unshift({fn,airline:curData.airline,status:curData.status,ts:Date.now()});
+    localStorage.setItem(key,JSON.stringify(saved.slice(0,10)));
+    document.getElementById('save-btn-txt').textContent='Saved ✓';
+    btn.classList.add('saved-state');
+    showToast('Flight saved!');
+  }
+  loadSaved();
+}
+
+function loadSaved(){
+  const saved=JSON.parse(localStorage.getItem('dep_saved')||'[]');
+  const panel=document.getElementById('saved-panel');
+  const row=document.getElementById('saved-row');
+  if(!saved.length){panel.classList.remove('show');return}
+  row.innerHTML=saved.map(s=>
+    `<div class="saved-item" onclick="quickSearch('${s.fn}')">
+      <span class="saved-fn">${s.fn}</span>
+      <span class="saved-st">${s.airline||''}</span>
+      <button class="saved-del" onclick="event.stopPropagation();delSaved('${s.fn}')">✕</button>
+    </div>`
+  ).join('');
+  panel.classList.add('show');
+}
+
+function delSaved(fn){
+  const key='dep_saved';
+  localStorage.setItem(key,JSON.stringify(JSON.parse(localStorage.getItem(key)||'[]').filter(s=>s.fn!==fn)));
+  loadSaved();
+}
+
+function quickSearch(fn){
+  document.getElementById('flight-input').value=fn;
+  doSearch();
+}
+
+function refreshCurrent(){if(curFlight)quickSearch(curFlight)}
+
+
+
+// ─── STATUS MONITOR (inline inside fi-card) ──────────────────────────────────
+function renderStatusMonitor(d){
+  const row=document.getElementById('fi-live-row');
+  if(!row)return;
+  const delay=d.departure.delay||0;
+  const st=(d.status||'unknown').toLowerCase().replace(/[-\s]/g,'');
+  const cancelled=st.includes('cancel');
+  const inFlight=st==='active'||st==='enroute';
+  const landed=st==='landed';
+
+  let color='green';
+  if(cancelled)color='red';
+  else if(inFlight||landed)color='blue';
+  else if(delay>=30)color='red';
+  else if(delay>0)color='amber';
+
+  const icon=cancelled?'❌':inFlight?'✈️':landed?'🛬':delay>0?'⏰':'🛫';
+  const dep=new Date(d.departure.scheduled);
+  const newDep=delay>0?new Date(dep.getTime()+delay*60000):dep;
+
+  let label,pillTxt,pillCls;
+  if(cancelled){label='Flight Cancelled — contact your airline';pillTxt='Cancelled';pillCls='sp-cancelled';}
+  else if(inFlight){label=`In Flight · ${d.departure.iata} → ${d.arrival.iata}`;pillTxt='In Flight';pillCls='sp-active';}
+  else if(landed){label=`Landed at ${d.arrival.iata}`;pillTxt='Landed';pillCls='sp-landed';}
+  else if(delay>=30){label=`Delayed ${delay} min · New departure ${fmtTime(newDep)}`;pillTxt='Delayed';pillCls='sp-cancelled';}
+  else if(delay>0){label=`Minor delay ${delay} min · Dep ${fmtTime(newDep)}`;pillTxt='Minor Delay';pillCls='sp-diverted';}
+  else{label=`On time · Departure ${fmtTime(dep)}`;pillTxt='On Time';pillCls='sp-scheduled';}
+
+  document.getElementById('fi-st-dot').className=`fi-st-dot ${color}`;
+  document.getElementById('fi-st-ico').textContent=icon;
+  document.getElementById('fi-st-lbl').textContent=label;
+  const pill=document.getElementById('fi-st-pill');
+  pill.textContent=pillTxt;
+  pill.className=`spill ${pillCls}`;
+  row.style.display='flex';
+}
+
+function geoDistKm(lat1,lng1,lat2,lng2){
+  const R=6371,r=Math.PI/180;
+  const dL=(lat2-lat1)*r,dG=(lng2-lng1)*r;
+  const a=Math.sin(dL/2)**2+Math.cos(lat1*r)*Math.cos(lat2*r)*Math.sin(dG/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+
+// ─── UTILITY ─────────────────────────────────────────────────────────────────
+function fmtTime(d){return new Date(d).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}
+function fmtDate(d){return new Date(d).toLocaleDateString([],{weekday:'short',month:'short',day:'numeric'})}
+function cap(s){return s?(s[0].toUpperCase()+s.slice(1)):''}
+function wxIcon(desc){const d=(desc||'').toLowerCase();if(d.includes('thunder'))return'⛈';if(d.includes('rain')||d.includes('shower'))return'🌧';if(d.includes('snow'))return'❄️';if(d.includes('cloud'))return'☁️';if(d.includes('fog')||d.includes('mist'))return'🌫';return'☀️'}
+function showErr(m){const e=document.getElementById('err');e.textContent=m;e.classList.add('show')}
+function showLoading(v){document.getElementById('loading').classList.toggle('show',v);document.getElementById('sbtn').disabled=v}
+function clearResults(){
+  if(locationWatchId!==null){navigator.geolocation.clearWatch(locationWatchId);locationWatchId=null;}
+  userLat=null;userLng=null;
+  document.getElementById('err').classList.remove('show');
+  document.getElementById('result-card').style.display='none';
+  document.getElementById('map-card').classList.remove('show');
+  document.getElementById('status-monitor').style.display='none';
+  document.getElementById('lang-sel').style.display='none';
+  ['notif-panel-dep','security-panel','dep-lounge-panel'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.style.display='none';
+  });
+  if(notifIntervalId){clearInterval(notifIntervalId);notifIntervalId=null;}
+  const tog=document.getElementById('notif-toggle');if(tog)tog.checked=false;
+  const nst=document.getElementById('notif-status');if(nst){nst.className='np-status';nst.textContent='';}
+  const nb=document.getElementById('ab-notif-btn');if(nb){nb.classList.remove('active');document.getElementById('ab-notif-lbl').textContent='Remind';}
+  const tcCard=document.getElementById('dep-tc-card');if(tcCard)tcCard.classList.remove('show');
+  depOsrmDrive=null;
+  // Reset SDC drive pillar
+  const sdcLocBtn=document.getElementById('sdc-loc-btn');
+  const sdcDriveVal=document.getElementById('sdc-drive-val');
+  if(sdcLocBtn)sdcLocBtn.classList.remove('hidden');
+  if(sdcDriveVal){sdcDriveVal.style.display='none';sdcDriveVal.textContent='—';}
+  const sdcDriveSub=document.getElementById('sdc-drive-sub');
+  if(sdcDriveSub)sdcDriveSub.textContent='live traffic';
+  const sdcDep=document.getElementById('sdc-dep');
+  if(sdcDep)sdcDep.textContent='—';
+  const sdcDepSub=document.getElementById('sdc-dep-sub');
+  if(sdcDepSub)sdcDepSub.textContent='enter flight';
+}
+let _toastTimer=null;
+function showToast(m){
+  const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');
+  clearTimeout(_toastTimer);_toastTimer=setTimeout(()=>t.classList.remove('show'),2800);
+}
+
+// ─── URL PARAMS ───────────────────────────────────────────────────────────────
+function enterResultsMode(fn){
+  document.body.classList.add('results-mode');
+  const bar=document.getElementById('back-bar');
+  if(bar)bar.classList.add('show');
+  const lbl=document.getElementById('back-flight-lbl');
+  if(lbl)lbl.textContent=fn.toUpperCase();
+}
+function goBackToSearch(){window.location.href=window.location.pathname;}
+function checkUrlParams(){
+  const params=new URLSearchParams(location.search);
+  const fn=params.get('fn');
+  if(fn){document.getElementById('flight-input').value=fn.toUpperCase();enterResultsMode(fn);doSearch()}
+}
+
+// ─── AUTO-NOTIFICATION PANEL ─────────────────────────────────────────────────
+function renderNotifPanelDep(){
+  const tog=document.getElementById('notif-toggle');
+  if(tog)tog.checked=false;
+  const btn=document.getElementById('ab-notif-btn');
+  if(btn){btn.classList.remove('active');document.getElementById('ab-notif-lbl').textContent='Remind';}
+}
+function toggleNotifBtn(){
+  if(!curData){showToast('Search for your flight first');return;}
+  const tog=document.getElementById('notif-toggle');
+  const btn=document.getElementById('ab-notif-btn');
+  const lbl=document.getElementById('ab-notif-lbl');
+  const newState=!tog.checked;
+  tog.checked=newState;
+  toggleAutoNotifs(newState);
+  btn.classList.toggle('active',newState);
+  lbl.textContent=newState?'On':'Remind';
+}
+function toggleAutoNotifs(on){
+  if(!on){
+    if(notifIntervalId){clearInterval(notifIntervalId);notifIntervalId=null;}
+    const st=document.getElementById('notif-status');
+    if(st){st.className='np-status';st.textContent='';}
+    return;
+  }
+  if(!('Notification' in window)){
+    showToast('Notifications not supported in this browser');
+    document.getElementById('notif-toggle').checked=false;
+    return;
+  }
+  if(Notification.permission==='denied'){
+    showToast('Notifications blocked — open browser Settings → allow this site');
+    document.getElementById('notif-toggle').checked=false;
+    return;
+  }
+  const start=()=>{
+    fireFlightNotif();
+    notifIntervalId=setInterval(fireFlightNotif,15*60*1000);
+    const st=document.getElementById('notif-status');
+    if(st){st.className='np-status show';st.textContent='✓ Reminders active — you\'ll be notified every 15 min until departure';}
+  };
+  if(Notification.permission==='granted'){start();return;}
+  Notification.requestPermission().then(p=>{
+    if(p==='granted')start();
+    else{showToast('Enable notifications in browser settings');document.getElementById('notif-toggle').checked=false;}
+  });
+}
+function fireFlightNotif(){
+  if(!curData)return;
+  const dep=new Date(curData.departure.scheduled);
+  const now=Date.now();
+  if(now>dep.getTime()){
+    if(notifIntervalId){clearInterval(notifIntervalId);notifIntervalId=null;}
+    return;
+  }
+  const minsLeft=Math.round((dep.getTime()-now)/60000);
+  const leave=new Date(dep.getTime()-(bufMins+driveMins)*60000);
+  const minsToLeave=Math.round((leave.getTime()-now)/60000);
+  const body=minsToLeave>0
+    ?`Leave home in ${minsToLeave} min · Departure in ${minsLeft} min`
+    :minsToLeave>-15
+    ?'Head to the airport now — you\'re at your leave time!'
+    :`Flight departs in ${minsLeft} min`;
+  try{
+    new Notification(`✈️ ${curData.flightNumber} · ${curData.departure.iata}→${curData.arrival.iata}`,{
+      body,icon:'/icons/icon-192.png',tag:'flight-reminder'
+    });
+  }catch(e){}
+}
+
+// ─── BAGGAGE PANEL (populates prep-card baggage tiles) ────────────────────────
+function renderBaggagePanel(d){
+  const aIata=(d.airlineIata||d.airline||'XX').toUpperCase().replace(/\s.*/,'').slice(0,2);
+  const nameEl=document.getElementById('prep-airline-name');
+  if(nameEl)nameEl.textContent=d.airline||aIata;
+  const carryEl=document.getElementById('prep-carry-val');
+  const checkEl=document.getElementById('prep-check-val');
+  const checkSub=document.getElementById('prep-check-sub');
+  const notesEl=document.getElementById('prep-notes');
+  if(carryEl)carryEl.textContent='…';
+  if(checkEl)checkEl.textContent='…';
+  fetch(`${API}/baggage/${encodeURIComponent(aIata)}`)
+    .then(r=>r.ok?r.json():null)
+    .then(b=>{
+      if(!b)return;
+      if(carryEl)carryEl.textContent=b.carryOn||'1 bag';
+      if(checkEl)checkEl.textContent=b.checked1||'—';
+      if(checkSub)checkSub.textContent=`Max ${b.weight||'23 kg'}`;
+      if(notesEl&&b.notes){notesEl.innerHTML=`<strong>Note:</strong> ${b.notes}`;notesEl.style.display='block';}
+    })
+    .catch(()=>{});
+}
+
+// ─── SECURITY WAIT TIMES PANEL ────────────────────────────────────────────────
+function renderSecurityWait(iata){
+  const panel=document.getElementById('security-panel');
+  if(!panel)return;
+  panel.style.display='block';
+  const body=document.getElementById('secp-body');
+  if(!body)return;
+  const hour=new Date().getHours();
+  const busy=(hour>=6&&hour<=9)||(hour>=16&&hour<=19);
+  const moderate=hour>=10&&hour<=15;
+  const queues=[
+    {name:'Regular Lane',mins:busy?28:moderate?15:8,level:busy?'high':moderate?'mid':'low'},
+    {name:'Priority / Business Lane',mins:busy?12:moderate?7:4,level:busy?'mid':'low'},
+    {name:'TSA PreCheck / Fast Track',mins:busy?6:moderate?3:2,level:'low'},
+  ];
+  const maxMins=Math.max(...queues.map(q=>q.mins));
+  const tips=busy
+    ?'<strong>Peak hours</strong> — queues are longer than usual. We recommend arriving earlier than your planned time.'
+    :'Wait times appear <strong>low</strong> at this hour. Good time to pass through security.';
+  body.innerHTML=queues.map(q=>`
+    <div class="secp-bar-wrap">
+      <div class="secp-queue-lbl">
+        <span class="secp-queue-name">${q.name}</span>
+        <span class="secp-queue-time">~${q.mins} min</span>
+      </div>
+      <div class="secp-bar"><div class="secp-bar-fill ${q.level}" style="width:${Math.round((q.mins/maxMins)*100)}%"></div></div>
+    </div>
+  `).join('')+`
+    <div class="secp-tip">
+      ${tips}<br><br>
+      • Have your boarding pass &amp; ID ready before reaching the queue<br>
+      • Remove laptops and tablets from your bag at the scanner<br>
+      • Wear slip-on shoes and avoid excessive metal accessories
+    </div>
+  `;
+}
+
+// ─── DEPARTURE LOUNGES PANEL ──────────────────────────────────────────────────
+function renderDepartureLounges(iata){
+  const panel=document.getElementById('dep-lounge-panel');
+  if(!panel)return;
+  panel.style.display='block';
+  const iataEl=document.getElementById('dlp-iata');
+  if(iataEl)iataEl.textContent=iata;
+  const body=document.getElementById('dlp-body');
+  if(!body)return;
+  fetch(`${API}/airport/${encodeURIComponent(iata)}/info`)
+    .then(r=>r.ok?r.json():null)
+    .then(data=>{
+      const lounges=data?.lounges||[];
+      if(!lounges.length){body.innerHTML=`<div class="dlp-empty">No lounge data on file for ${iata}.</div>`;return}
+      const lat=curData?.departure?.lat,lng=curData?.departure?.lng;
+      body.innerHTML=lounges.slice(0,4).map(l=>{
+        const mq=encodeURIComponent(`${l.name} ${iata} airport terminal ${l.terminal||''}`);
+        const mapsUrl=lat?`https://www.google.com/maps/search/?api=1&query=${mq}&center=${lat},${lng}`:`https://www.google.com/maps/search/?api=1&query=${mq}`;
+        return`<div class="dlp-lounge">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:.5rem">
+            <div class="dlp-l-name">${l.name}</div>
+            <a href="${mapsUrl}" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="font-size:.65rem;color:var(--acc);white-space:nowrap;text-decoration:none;font-weight:700;flex-shrink:0;margin-top:2px">📍 Map ↗</a>
+          </div>
+          <div class="dlp-l-term">Terminal ${l.terminal||'—'} · ${l.hours||'Hours vary'}</div>
+          <div class="dlp-l-access">${(l.access||[]).map(a=>`<span class="dlp-l-acc-tag">${a}</span>`).join('')}</div>
+          ${Array.isArray(l.amenities)&&l.amenities.length?`<div class="dlp-l-amenities">✦ ${l.amenities.join(' · ')}</div>`:''}
+        </div>`;
+      }).join('');
+    })
+    .catch(()=>{body.innerHTML=`<div class="dlp-empty">Unable to load lounge data for ${iata}.</div>`});
+}
+
+
+// ─── BACKGROUND SLIDESHOW ────────────────────────────────────────────────────
+const BG_COUNT=74;
+const BG_FILTER='brightness(1.06) contrast(1.1) saturate(1.18)';
+let bgSlides=[],bgCur=0,bgTimer=null;
+function shuffleArr(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function initBgSlideshow(){
+  const ss=document.getElementById('bg-slideshow');
+  if(!ss||bgSlides.length)return;
+  const nums=shuffleArr([...Array(BG_COUNT)].map((_,i)=>String(i+1).padStart(3,'0')));
+  // Create first slide immediately
+  function makeSlide(n){
+    const d=document.createElement('div');
+    d.className='bg-slide';
+    d.style.backgroundImage=`url('images/bg-${n}.jpg')`;
+    d.style.filter=BG_FILTER;
+    ss.appendChild(d);
+    return d;
+  }
+  bgSlides.push(makeSlide(nums[0]));
+  bgSlides[0].classList.add('active');
+  let nextIdx=1;
+  bgTimer=setInterval(()=>{
+    // Lazily create next slide just before it's needed
+    if(nextIdx<nums.length&&!bgSlides[nextIdx]){
+      bgSlides.push(makeSlide(nums[nextIdx]));
+    }
+    if(bgSlides.length>1){
+      bgSlides[bgCur].classList.remove('active');
+      bgCur=(bgCur+1)%bgSlides.length;
+      bgSlides[bgCur].classList.add('active');
+      nextIdx=bgCur+1;
+    }
+  },27000);
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+loadSaved();
+checkUrlParams();
+applyLang((navigator.language||'en').slice(0,2).toLowerCase());
+initBgSlideshow();
+if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js').catch(()=>{});
+
+</script>
+</body>
+</html>

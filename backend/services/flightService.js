@@ -39,15 +39,40 @@ async function fetchFlight(flightNumber) {
   const cached = cache.get(cacheKey);
   if (cached) return { ...cached, cached: true };
 
-  const aeroResponse = await axios.get(
-  `https://aerodatabox.p.rapidapi.com/flights/number/${flightNumber}/${date}`,
-  {
-    headers: {
-      "X-RapidAPI-Key": process.env.RAPIDAPI_KEY,
-      "X-RapidAPI-Host": "aerodatabox.p.rapidapi.com"
+ let response;
+
+try {
+  // 🟢 Try Aviationstack first
+  response = await axios.get('http://api.aviationstack.com/v1/flights', {
+    params: { 
+      access_key: process.env.AVIATIONSTACK_API_KEY, 
+      flight_iata: flightNumber, 
+      limit: 1 
     }
+  });
+
+  if (!response.data.data || response.data.data.length === 0) {
+    throw new Error("No data from Aviationstack");
   }
-);
+
+  console.log("Using Aviationstack");
+  return response.data;
+
+} catch (error) {
+  console.log("Switching to AeroDataBox...");
+
+  const aeroResponse = await axios.get(
+    `https://aerodatabox.p.rapidapi.com/flights/number/${flightNumber}/${date}`,
+    {
+      headers: {
+        "X-RapidAPI-Key": process.env.RAPIDAPI_KEY,
+        "X-RapidAPI-Host": "aerodatabox.p.rapidapi.com"
+      }
+    }
+  );
+
+  return aeroResponse.data;
+}
 
   if (!response.data?.data?.length) throw new Error('Flight not found. Please check the flight number and try again.');
 

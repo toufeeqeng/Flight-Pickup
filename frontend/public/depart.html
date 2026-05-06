@@ -88,21 +88,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t1);min-h
   .mode-opt.active{background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff}
 }
 
-/* ── Language selector ── */
-#lang-sel{position:fixed;top:12px;right:14px;z-index:500;display:none}
-#lang-btn{display:flex;align-items:center;gap:5px;padding:5px 12px;background:rgba(10,8,4,.55);border:1px solid rgba(255,255,255,.18);border-radius:999px;color:rgba(255,255,255,.88);font-size:.78rem;cursor:pointer;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);font-family:'DM Sans',sans-serif;transition:background .2s}
-#lang-btn:hover{background:rgba(10,8,4,.75)}
-#lang-menu{display:none;position:absolute;top:calc(100% + 7px);right:0;background:rgba(14,10,4,.93);border:1px solid rgba(255,255,255,.13);border-radius:12px;padding:5px;min-width:148px;backdrop-filter:blur(16px);box-shadow:0 8px 32px rgba(0,0,0,.5)}
-#lang-menu.open{display:block}
-#lang-menu div{padding:7px 11px;border-radius:8px;cursor:pointer;font-size:.8rem;color:rgba(255,255,255,.8);white-space:nowrap;transition:background .15s}
-#lang-menu div:hover{background:rgba(255,255,255,.1)}
-#lang-menu div.lng-active{background:rgba(249,115,22,.25);color:#fff}
-@media(prefers-color-scheme:light){
-  #lang-btn{background:rgba(255,255,255,.85);border-color:rgba(0,0,0,.12);color:#1a0f00}
-  #lang-menu{background:rgba(255,252,248,.97);border-color:rgba(0,0,0,.1)}
-  #lang-menu div{color:#6b5240}
-  #lang-menu div.lng-active{background:rgba(249,115,22,.12);color:#c2410c}
-}
 
 .wrap{position:relative;z-index:2;max-width:720px;margin:0 auto;padding:0 1rem 5rem}
 
@@ -467,10 +452,6 @@ body.results-mode .leave-card{display:block}
   .hero-divider{margin-bottom:1rem}
   .mode-bar{top:8px;padding:3px}
   .mode-opt{padding:.22rem .42rem;font-size:.63rem}
-  #lang-sel{position:fixed;top:8px;right:8px;bottom:auto;margin:0;z-index:500}
-  #lang-menu{top:calc(100% + 7px);bottom:auto}
-  .lang-label{display:none}
-  #lang-btn{padding:3px 8px;font-size:.68rem}
   /* baggage panel */
   .bp-body{padding:.75rem .9rem}
   .bp-grid{grid-template-columns:1fr;gap:.45rem}
@@ -645,14 +626,6 @@ body.results-mode .leave-card{display:block}
 </nav>
 
 <main class="wrap" id="main-content">
-<div id="lang-sel">
-  <button id="lang-btn" onclick="toggleLangMenu()">🌐<span class="lang-label"> <span id="lang-code">EN</span> ▾</span></button>
-  <div id="lang-menu">
-    <div data-lang="en" onclick="applyLang('en')">🇺🇸 English</div>
-    <div data-lang="es" onclick="applyLang('es')">🇪🇸 Español</div>
-    <div data-lang="fr" onclick="applyLang('fr')">🇫🇷 Français</div>
-  </div>
-</div>
 
 <div id="dp-notif-bar" style="display:none"></div>
 
@@ -1139,28 +1112,7 @@ let autoTimer=null;
 let lmap=null, planeMarker=null, userMarker=null;
 
 // ─── LANGUAGE ─────────────────────────────────────────────────────────────────
-const DLANGS={
-  en:{sbtn:'Search Flight',loading:'Looking up your flight…',depLbl:'Departure',arrLbl:'Arrival',st_inflight:'In Flight',st_scheduled:'Scheduled',st_landed:'Landed',st_cancelled:'Cancelled',st_diverted:'Diverted',wxFeels:'Feels',wxWind:'Wind',wxHumidity:'Humidity',wxVis:'Visibility',noFlights:'No flights found.',savedLbl:'Saved Flights'},
-  es:{sbtn:'Buscar',loading:'Buscando vuelo…',depLbl:'Salida',arrLbl:'Llegada',st_inflight:'En vuelo',st_scheduled:'Programado',st_landed:'Aterrizado',st_cancelled:'Cancelado',st_diverted:'Desviado',wxFeels:'Sensación',wxWind:'Viento',wxHumidity:'Humedad',wxVis:'Visibilidad',noFlights:'No hay vuelos.',savedLbl:'Vuelos guardados'},
-  fr:{sbtn:'Rechercher',loading:'Recherche en cours…',depLbl:'Départ',arrLbl:'Arrivée',st_inflight:'En vol',st_scheduled:'Prévu',st_landed:'Atterri',st_cancelled:'Annulé',st_diverted:'Dérouté',wxFeels:'Ressenti',wxWind:'Vent',wxHumidity:'Humidité',wxVis:'Visibilité',noFlights:'Aucun vol trouvé.',savedLbl:'Vols sauvegardés'},
-};
-let DT=DLANGS.en;
 function setText(id,txt){const el=document.getElementById(id);if(el&&txt)el.textContent=txt}
-function applyLang(l){
-  DT=DLANGS[l]||DLANGS.en;
-  const codeEl=document.getElementById('lang-code');
-  if(codeEl)codeEl.textContent=l.toUpperCase().slice(0,2);
-  document.querySelectorAll('#lang-menu div').forEach(d=>d.classList.toggle('lng-active',d.dataset.lang===l));
-  document.getElementById('lang-menu').classList.remove('open');
-  setText('sbtn-txt',DT.sbtn);
-  setText('loading-txt',DT.loading);
-  setText('lbl-dep',DT.depLbl);
-  setText('lbl-arr',DT.arrLbl);
-  setText('saved-lbl',DT.savedLbl);
-  if(curData)renderFlight(curData);
-}
-function toggleLangMenu(){document.getElementById('lang-menu').classList.toggle('open')}
-document.addEventListener('click',e=>{if(!document.getElementById('lang-sel').contains(e.target))document.getElementById('lang-menu').classList.remove('open')});
 document.addEventListener('keydown',e=>{if(e.key==='Enter')doSearch()});
 
 // ─── BUFFER SELECTOR ─────────────────────────────────────────────────────────
@@ -1215,7 +1167,7 @@ function renderFlight(d){
   document.getElementById('fi-airline').textContent=d.airline;
   const st=(d.status||'unknown').toLowerCase().replace(/[-\s]/g,'');
   const pill=document.getElementById('fi-spill');
-  const statusLabel={scheduled:DT.st_scheduled,active:DT.st_inflight,enroute:DT.st_inflight,landed:DT.st_landed,cancelled:DT.st_cancelled,diverted:DT.st_diverted};
+  const statusLabel={scheduled:'Scheduled',active:'In Flight',enroute:'In Flight',landed:'Landed',cancelled:'Cancelled',diverted:'Diverted'};
   pill.textContent=statusLabel[st]||cap(d.status);
   pill.className=`spill sp-${st}`;
 
@@ -1271,7 +1223,6 @@ function renderFlight(d){
   renderBaggagePanel(d);
   renderSecurityWait(d.departure?.iata||'');
   renderDepartureLounges(d.departure?.iata||'');
-  document.getElementById('lang-sel').style.display='block';
   document.getElementById('result-card').style.display='block';
   document.getElementById('result-card').scrollIntoView({behavior:'smooth',block:'start'});
   if(userLat&&userLng)renderDepTcCard();
@@ -1666,7 +1617,6 @@ function clearResults(){
   document.getElementById('result-card').style.display='none';
   document.getElementById('map-card').classList.remove('show');
   document.getElementById('status-monitor').style.display='none';
-  document.getElementById('lang-sel').style.display='none';
   ['notif-panel-dep','security-panel','dep-lounge-panel'].forEach(id=>{
     const el=document.getElementById(id);if(el)el.style.display='none';
   });
@@ -1939,7 +1889,6 @@ function initBgSlideshow(){
 // ─── INIT ─────────────────────────────────────────────────────────────────────
 loadSaved();
 checkUrlParams();
-applyLang(DLANGS[(navigator.language||'en').slice(0,2).toLowerCase()]?((navigator.language||'en').slice(0,2).toLowerCase()):'en');
 initBgSlideshow();
 if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js').catch(()=>{});
 

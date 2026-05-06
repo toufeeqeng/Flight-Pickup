@@ -129,22 +129,6 @@ header::before{content:'';position:absolute;top:0;left:50%;transform:translateX(
   .hero-title{color:var(--t1);text-shadow:none}
   .hero-sub{color:var(--t2)}
 }
-#lang-sel{position:fixed;top:12px;right:14px;z-index:500;display:none}
-#lang-btn{display:flex;align-items:center;gap:5px;padding:5px 12px;background:rgba(15,23,42,.55);border:1px solid rgba(255,255,255,.18);border-radius:999px;color:rgba(255,255,255,.88);font-size:.78rem;cursor:pointer;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);font-family:'DM Sans',sans-serif;transition:background .2s}
-#lang-btn:hover{background:rgba(15,23,42,.75)}
-#lang-menu{display:none;position:absolute;top:calc(100% + 7px);right:0;background:rgba(10,16,32,.92);border:1px solid rgba(255,255,255,.13);border-radius:12px;padding:5px;min-width:148px;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);box-shadow:0 8px 32px rgba(0,0,0,.45)}
-#lang-menu.open{display:block}
-#lang-menu div{padding:7px 11px;border-radius:8px;cursor:pointer;font-size:.8rem;color:rgba(255,255,255,.8);white-space:nowrap;transition:background .15s}
-#lang-menu div:hover{background:rgba(255,255,255,.1)}
-#lang-menu div.lng-active{background:rgba(79,156,249,.25);color:#fff}
-@media(prefers-color-scheme:light){
-  #lang-btn{background:rgba(255,255,255,.85);border-color:rgba(0,0,0,.12);color:#0f172a}
-  #lang-btn:hover{background:#fff}
-  #lang-menu{background:rgba(255,255,255,.97);border-color:rgba(0,0,0,.1);box-shadow:0 8px 32px rgba(0,0,0,.15)}
-  #lang-menu div{color:#475569}
-  #lang-menu div:hover{background:rgba(0,0,0,.05)}
-  #lang-menu div.lng-active{background:rgba(37,99,235,.1);color:#2563eb}
-}
 
 /* ── Card ── */
 .card{background:var(--s1);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--b2);border-radius:var(--r);margin-bottom:.9rem}
@@ -479,10 +463,6 @@ body.results-mode .card{display:none}
   .hero-divider{margin-bottom:1rem}
   .mode-bar{top:8px;padding:3px}
   .mode-opt{padding:.22rem .42rem;font-size:.63rem}
-  #lang-sel{position:fixed;top:8px;right:8px;bottom:auto;margin:0;z-index:500}
-  #lang-menu{top:calc(100% + 7px);bottom:auto}
-  .lang-label{display:none}
-  #lang-btn{padding:3px 8px;font-size:.68rem}
   /* flight card compact */
   .apt-iata{font-size:1.1rem}
   .apt-city{font-size:.72rem}
@@ -711,14 +691,6 @@ body.results-mode .how-card{display:none}
 </nav>
 
 <main class="wrap" id="main-content">
-<div id="lang-sel">
-  <button id="lang-btn" onclick="toggleLangMenu()">🌐<span class="lang-label"> <span id="lang-code">EN</span> ▾</span></button>
-  <div id="lang-menu">
-    <div data-lang="en" onclick="applyLang('en')">🇺🇸 English</div>
-    <div data-lang="es" onclick="applyLang('es')">🇪🇸 Español</div>
-    <div data-lang="fr" onclick="applyLang('fr')">🇫🇷 Français</div>
-  </div>
-</div>
 
 <header>
   <div class="logo-row">
@@ -1215,53 +1187,7 @@ function getDemoRoute(){
 }
 const DEMO_ROUTES={'LHR-JFK':getDemoRoute,'JFK-LHR':getDemoRoute};
 
-// ─── LANGUAGE ────────────────────────────────────────────────────────────────
-const LANGS = {
-  en:{tagline:'Know exactly when to leave home to pick someone up',tabFlight:'✈ Flight Number',tabRoute:'🔍 By Route',lblFn:'Flight Number',lblFrom:'From — City or Airport',lblTo:'To — City or Airport',sbtn:'Search Flight',loading:'Looking up your flight…',autobar:'Auto-refreshing every 60 seconds',calcLbl:'When should I leave home?',cmArrLbl:'Expected Arrival',cmLeaveLbl:'Leave Home By',locTxt:'Location not enabled',locBtn:'📍 Use My Location',driveLbl:'Drive time:',rfLbl:'Refresh',savedLbl:'Saved Flights',tipsLbl:'Quick Tips',leavingIn:'Leave in',leavingNow:'Leave NOW',overdue:'Overdue — leave immediately!',depLbl:'Departure',arrLbl:'Arrival',st_inflight:'In Flight',st_scheduled:'Scheduled',st_landed:'Landed',st_cancelled:'Cancelled',st_diverted:'Diverted',wxFeels:'Feels',wxWind:'Wind',wxHumidity:'Humidity',wxRain:'Rain',wxVis:'Visibility',liveAlt:'Altitude',liveSpd:'Speed',detAircraft:'Aircraft',detDate:'Date',detGate:'Gate',detAirline:'Airline',noFlights:'No flights found.',notGo:'Do not go to airport',headArr:'Head to arrivals',leaveImm:'Leave immediately',
-  tips:[{i:'🚗',t:'Main feature',b:'Enter your drive time to know exactly when to leave home.'},{i:'🕐',t:'Arrivals buffer',b:'Add 20–30 min after landing for baggage & customs.'},{i:'📍',t:'Check terminal',b:'Wrong terminal = long walk. Always verify before leaving.'},{i:'🔔',t:'Get notified',b:'Enable notifications for instant alerts on delays or landing.'},{i:'📱',t:'Install the app',b:'Tap "Add to Home Screen" to use like a native app.'},{i:'💬',t:'Share status',b:'Use WhatsApp share to send live status to your passenger.'},{i:'🌦',t:'Weather check',b:'See arrival city weather — is it raining? Cold? Plan ahead.'},{i:'🔁',t:'Auto-refresh',b:'Flight data refreshes every 60 seconds automatically.'}]},
-  es:{tagline:'Sepa exactamente cuándo salir para recoger a alguien',tabFlight:'✈ Número de vuelo',tabRoute:'🔍 Por ruta',lblFn:'Número de vuelo',lblFrom:'Desde — Ciudad o aeropuerto',lblTo:'Hasta — Ciudad o aeropuerto',sbtn:'Buscar',loading:'Buscando vuelo…',autobar:'Actualización cada 60 segundos',calcLbl:'¿Cuándo debo salir?',cmArrLbl:'Llegada prevista',cmLeaveLbl:'Salir antes de',locTxt:'Ubicación no activada',locBtn:'📍 Mi ubicación',driveLbl:'Tiempo de viaje:',rfLbl:'Actualizar',savedLbl:'Vuelos guardados',tipsLbl:'Consejos',leavingIn:'Salir en',leavingNow:'Salir AHORA',overdue:'¡Tarde — salga ya!',depLbl:'Salida',arrLbl:'Llegada',st_inflight:'En vuelo',st_scheduled:'Programado',st_landed:'Aterrizado',st_cancelled:'Cancelado',st_diverted:'Desviado',wxFeels:'Sensación',wxWind:'Viento',wxHumidity:'Humedad',wxRain:'Lluvia',wxVis:'Visibilidad',liveAlt:'Altitud',liveSpd:'Velocidad',detAircraft:'Avión',detDate:'Fecha',detGate:'Puerta',detAirline:'Aerolínea',noFlights:'No hay vuelos.',notGo:'No ir al aeropuerto',headArr:'A llegadas',leaveImm:'Salir inmediatamente',
-  tips:[{i:'🚗',t:'Función principal',b:'Ingrese su tiempo de viaje para saber cuándo salir.'},{i:'🕐',t:'Margen llegada',b:'Añada 20-30 min tras aterrizar para equipaje.'},{i:'📍',t:'Revisar terminal',b:'Terminal incorrecta = caminata larga.'},{i:'🔔',t:'Notificaciones',b:'Alertas al aterrizar o retrasarse.'},{i:'📱',t:'Instalar app',b:'Añadir a pantalla de inicio.'},{i:'💬',t:'Compartir',b:'Comparta estado por WhatsApp.'},{i:'🌦',t:'Clima',b:'Consulte el clima en destino.'},{i:'🔁',t:'Auto-actualización',b:'Actualiza cada 60 segundos.'}]},
-  fr:{tagline:"Sachez exactement quand partir pour chercher quelqu'un",tabFlight:'✈ Numéro de vol',tabRoute:'🔍 Par trajet',lblFn:'Numéro de vol',lblFrom:'De — Ville ou aéroport',lblTo:'À — Ville ou aéroport',sbtn:'Rechercher',loading:'Recherche en cours…',autobar:'Actualisation toutes les 60 secondes',calcLbl:'Quand partir de chez moi ?',cmArrLbl:'Arrivée prévue',cmLeaveLbl:'Partir au plus tard',locTxt:'Position non activée',locBtn:'📍 Ma position',driveLbl:'Temps de trajet :',rfLbl:'Actualiser',savedLbl:'Vols sauvegardés',tipsLbl:'Conseils',leavingIn:'Partir dans',leavingNow:'Partez MAINTENANT',overdue:'En retard — partez immédiatement !',depLbl:'Départ',arrLbl:'Arrivée',st_inflight:'En vol',st_scheduled:'Prévu',st_landed:'Atterri',st_cancelled:'Annulé',st_diverted:'Dérouté',wxFeels:'Ressenti',wxWind:'Vent',wxHumidity:'Humidité',wxRain:'Pluie',wxVis:'Visibilité',liveAlt:'Altitude',liveSpd:'Vitesse',detAircraft:'Avion',detDate:'Date',detGate:'Porte',detAirline:'Compagnie',noFlights:'Aucun vol trouvé.',notGo:'Ne pas aller',headArr:'Direction arrivées',leaveImm:'Partez immédiatement',
-  tips:[{i:'🚗',t:'Fonction principale',b:'Entrez votre temps de trajet pour savoir quand partir.'},{i:'🕐',t:'Marge arrivée',b:'Ajoutez 20-30 min après atterrissage pour bagages.'},{i:'📍',t:'Vérifier terminal',b:'Mauvais terminal = longue marche.'},{i:'🔔',t:'Notifications',b:'Activez pour alertes atterrissage/retard.'},{i:'📱',t:'Installer app',b:'Ajouter à écran accueil.'},{i:'💬',t:'Partager',b:'Partagez le statut via WhatsApp.'},{i:'🌦',t:'Météo',b:"Consultez la météo à l'arrivée."},{i:'🔁',t:'Auto-actualisation',b:'Mise à jour toutes les 60 secondes.'}]},
-};
-let lang='en', T=LANGS.en;
-
-function detectLang(){
-  const c=(navigator.language||'en').slice(0,2).toLowerCase();
-  return LANGS[c]?c:'en';
-}
-function applyLang(l){
-  lang=l; T=LANGS[l]||LANGS.en;
-  setText('tagline',T.tagline);
-  setText('tab-flight',T.tabFlight);
-  setText('tab-route',T.tabRoute);
-  setText('lbl-fn',T.lblFn);
-  setText('lbl-from',T.lblFrom);
-  setText('lbl-to',T.lblTo);
-  setText('sbtn-txt',T.sbtn);
-  setText('loading-txt',T.loading);
-
-  setText('calc-lbl',T.calcLbl);
-  setText('cm-arr-lbl',T.cmArrLbl);
-  setText('cm-leave-lbl',T.cmLeaveLbl);
-  setText('loc-txt',T.locTxt);
-  setText('loc-btn',T.locBtn);
-  setText('drive-lbl',T.driveLbl);
-  setText('rf-lbl',T.rfLbl);
-  setText('saved-lbl',T.savedLbl||'Saved Flights');
-  setText('lbl-dep',T.depLbl);
-  setText('lbl-arr',T.arrLbl);
-  const codeEl=document.getElementById('lang-code');
-  if(codeEl)codeEl.textContent=l.toUpperCase().slice(0,2);
-  document.querySelectorAll('#lang-menu div').forEach(d=>{
-    d.classList.toggle('lng-active',d.dataset.lang===l);
-  });
-  renderTips();
-  if(curData){renderFlight(curData);updateLeaveTime(curData);}
-}
 function setText(id,txt){const el=document.getElementById(id);if(el)el.textContent=txt}
-function toggleLangMenu(){document.getElementById('lang-menu').classList.toggle('open')}
-document.addEventListener('click',e=>{if(!document.getElementById('lang-sel').contains(e.target))document.getElementById('lang-menu').classList.remove('open')})
 
 // ─── QUICK ACTION ICONS ───────────────────────────────────────────────────────
 function qaiLocation(){reqLoc()}
@@ -1297,10 +1223,11 @@ function qaiShare(){
   shareNative();
 }
 
+const TIPS=[{i:'🚗',t:'Main feature',b:'Enter your drive time to know exactly when to leave home.'},{i:'🕐',t:'Arrivals buffer',b:'Add 20–30 min after landing for baggage & customs.'},{i:'📍',t:'Check terminal',b:'Wrong terminal = long walk. Always verify before leaving.'},{i:'🔔',t:'Get notified',b:'Enable notifications for instant alerts on delays or landing.'},{i:'📱',t:'Install the app',b:'Tap "Add to Home Screen" to use like a native app.'},{i:'💬',t:'Share status',b:'Use WhatsApp share to send live status to your passenger.'},{i:'🌦',t:'Weather check',b:'See arrival city weather — is it raining? Cold? Plan ahead.'},{i:'🔁',t:'Auto-refresh',b:'Flight data refreshes every 60 seconds automatically.'}];
 function renderTips(){
   const el=document.getElementById('tips-list');
-  if(!el||!T.tips)return;
-  el.innerHTML=T.tips.map(t=>`<div class="tip-item"><span class="tip-ico">${t.i}</span><div><div class="tip-ttl">${t.t}</div><div class="tip-body">${t.b}</div></div></div>`).join('');
+  if(!el)return;
+  el.innerHTML=TIPS.map(t=>`<div class="tip-item"><span class="tip-ico">${t.i}</span><div><div class="tip-ttl">${t.t}</div><div class="tip-body">${t.b}</div></div></div>`).join('');
 }
 
 // ─── STATE ────────────────────────────────────────────────────────────────────
@@ -1667,7 +1594,7 @@ function renderFlight(d){
   setText('fi-airline',d.airline);
   const pill=document.getElementById('fi-spill');
   const st=(d.status||'unknown').toLowerCase().replace(/[-\s]/g,'');
-  const statusLabel={'enroute':T.st_inflight,'active':T.st_inflight,'scheduled':T.st_scheduled,'landed':T.st_landed,'cancelled':T.st_cancelled,'diverted':T.st_diverted};
+  const statusLabel={'enroute':'In Flight','active':'In Flight','scheduled':'Scheduled','landed':'Landed','cancelled':'Cancelled','diverted':'Diverted'};
   pill.textContent=statusLabel[st]||cap(d.status);
   pill.className=`spill sp-${st}`;
 
@@ -1691,16 +1618,16 @@ function renderFlight(d){
 
   // Details
   const det=[];
-  if(d.aircraft)det.push({l:T.detAircraft,v:d.aircraft});
-  det.push({l:T.detDate,v:fmtD(d.departure.scheduled)});
-  if(d.arrival.gate)det.push({l:T.detGate,v:d.arrival.gate});
-  if(d.airlineIata)det.push({l:T.detAirline,v:d.airlineIata});
+  if(d.aircraft)det.push({l:'Aircraft',v:d.aircraft});
+  det.push({l:'Date',v:fmtD(d.departure.scheduled)});
+  if(d.arrival.gate)det.push({l:'Gate',v:d.arrival.gate});
+  if(d.airlineIata)det.push({l:'Airline',v:d.airlineIata});
   document.getElementById('dstrip').innerHTML=det.map(x=>`<div class="di"><div class="di-lbl">${x.l}</div><div class="di-val">${x.v}</div></div>`).join('');
 
   // Live
   if(d.live){
     document.getElementById('live-strip').classList.add('show');
-    document.getElementById('lstats').innerHTML=`<div class="ls"><div class="ls-lbl">${T.liveAlt}</div><div class="ls-val">${Math.round(d.live.altitude||0).toLocaleString()} ft</div></div><div class="ls"><div class="ls-lbl">${T.liveSpd}</div><div class="ls-val">${Math.round(d.live.speed||0)} km/h</div></div>`;
+    document.getElementById('lstats').innerHTML=`<div class="ls"><div class="ls-lbl">Altitude</div><div class="ls-val">${Math.round(d.live.altitude||0).toLocaleString()} ft</div></div><div class="ls"><div class="ls-lbl">Speed</div><div class="ls-val">${Math.round(d.live.speed||0)} km/h</div></div>`;
   }
 
   // Weather
@@ -1713,11 +1640,11 @@ function renderFlight(d){
     setText('wx-temp',`${wx.temp}${wxTUnit}`);
     setText('wx-desc',`${wx.desc} at ${d.arrival.city||d.arrival.airport}`);
     document.getElementById('wx-stats').innerHTML=`
-      <div class="wx-stat"><div class="wx-stat-lbl">${T.wxFeels}</div><div class="wx-stat-val">${wx.feels}${wxTUnit}</div></div>
-      <div class="wx-stat"><div class="wx-stat-lbl">${T.wxWind}</div><div class="wx-stat-val">${wx.wind} ${wxWUnit}</div></div>
-      <div class="wx-stat"><div class="wx-stat-lbl">${T.wxHumidity}</div><div class="wx-stat-val">${wx.humidity}%</div></div>
-      ${wx.rain?`<div class="wx-stat"><div class="wx-stat-lbl">${T.wxRain}</div><div class="wx-stat-val">${wx.rain}mm</div></div>`:''}
-      <div class="wx-stat"><div class="wx-stat-lbl">${T.wxVis}</div><div class="wx-stat-val">${wx.visibility}km</div></div>
+      <div class="wx-stat"><div class="wx-stat-lbl">Feels</div><div class="wx-stat-val">${wx.feels}${wxTUnit}</div></div>
+      <div class="wx-stat"><div class="wx-stat-lbl">Wind</div><div class="wx-stat-val">${wx.wind} ${wxWUnit}</div></div>
+      <div class="wx-stat"><div class="wx-stat-lbl">Humidity</div><div class="wx-stat-val">${wx.humidity}%</div></div>
+      ${wx.rain?`<div class="wx-stat"><div class="wx-stat-lbl">Rain</div><div class="wx-stat-val">${wx.rain}mm</div></div>`:''}
+      <div class="wx-stat"><div class="wx-stat-lbl">Visibility</div><div class="wx-stat-val">${wx.visibility}km</div></div>
     `;
   }
 
@@ -1726,7 +1653,6 @@ function renderFlight(d){
   renderNotifPanel();
   renderBufSteps();
   renderAirportPanel(d.arrival?.iata);
-  document.getElementById('lang-sel').style.display='block';
   document.getElementById('result-card').style.display='block';
   loadSaved();
   updateLocNav();
@@ -1770,11 +1696,11 @@ function updateLeaveTime(d){
   setText('cm-arr-sub',`${fmtD(arrISO)} · +${bufMins}min exit buffer`);
   const el=document.getElementById('cm-leave-val');
   let lv,cls,sub;
-  if(d.status==='cancelled'||d.status==='diverted'){lv='—';cls='red';sub=T.notGo}
-  else if(d.status==='landed'){lv=T.leavingNow;cls='green';sub=T.headArr}
-  else if(minsLeft<=0){lv=T.overdue;cls='red';sub=T.leaveImm}
-  else if(minsLeft<=15){lv=T.leavingNow;cls='amber';sub=`${driveMins} min drive`}
-  else if(minsLeft<60){lv=`${T.leavingIn} ${minsLeft} min`;cls='blue';sub=`Leave at ${fmtT(leaveDate.toISOString())}`}
+  if(d.status==='cancelled'||d.status==='diverted'){lv='—';cls='red';sub='Do not go to airport'}
+  else if(d.status==='landed'){lv='Leave NOW';cls='green';sub='Head to arrivals'}
+  else if(minsLeft<=0){lv='Overdue — leave immediately!';cls='red';sub='Leave immediately'}
+  else if(minsLeft<=15){lv='Leave NOW';cls='amber';sub=`${driveMins} min drive`}
+  else if(minsLeft<60){lv=`Leave in ${minsLeft} min`;cls='blue';sub=`Leave at ${fmtT(leaveDate.toISOString())}`}
   else{const h=Math.floor(minsLeft/60),m=minsLeft%60;lv=fmtT(leaveDate.toISOString());cls='green';sub=`${h}h ${m}m from now · ${driveMins}min drive`;}
   if(el){el.textContent=lv;el.className=`cmet-val ${cls}`;}
   setText('cm-leave-sub',sub);
@@ -1818,7 +1744,7 @@ function renderRoute(data,dep,arr){
   setText('rr-hdr',`${list.length} flights found: ${dep} → ${arr}`);
   document.getElementById('rr-list').innerHTML=list.length
     ?list.map(f=>`<div class="rri" onclick="searchFlight('${f.flightNumber}')"><span class="rri-fn">${f.flightNumber}</span><span class="rri-al">${f.airline}</span><span class="rri-time">${fmtT(f.scheduledDep)} → ${fmtT(f.scheduledArr)}</span><span class="rri-bdg ${f.buffer.bufferColor}">${f.buffer.bufferLabel}</span></div>`).join('')
-    :`<div style="padding:1rem 1.3rem;color:var(--t2);font-size:.85rem">${T.noFlights}</div>`;
+    :`<div style="padding:1rem 1.3rem;color:var(--t2);font-size:.85rem">No flights found.</div>`;
   document.getElementById('rr-card').classList.add('show');
 }
 
@@ -2138,7 +2064,6 @@ function clearResults(){
   setText('spc-drive-sub','live traffic');
   document.getElementById('err').classList.remove('show');
   document.getElementById('result-card').style.display='none';
-  document.getElementById('lang-sel').style.display='none';
   document.getElementById('spc-pz').style.display='none';
   document.getElementById('loc-nav').classList.remove('show');
   document.getElementById('map-card').classList.remove('show');
@@ -2547,7 +2472,6 @@ function setBgForAirport(iata){initBgSlideshow();}
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
 (function(){
-  applyLang(detectLang());
   loadRecents();
   loadSaved();
   checkNotifBar();

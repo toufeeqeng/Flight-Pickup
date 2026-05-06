@@ -685,6 +685,11 @@ body.results-mode .leave-card{display:block}
   <!-- AdSense or ad network tag goes here -->
 </div>
 
+<!-- Ad slot: in-content rectangle (336×280) -->
+<div class="ad-slot ad-slot--rectangle" aria-label="Advertisement" role="complementary">
+  <!-- AdSense or ad network tag goes here -->
+</div>
+
 <!-- Back bar (results mode) -->
 <div class="back-bar" id="back-bar">
   <button class="back-btn" onclick="goBackToSearch()">
@@ -1117,7 +1122,26 @@ function getDemoFlight(){
     fetchedAt:now.toISOString()
   };
 }
-const DEMO_FLIGHTS={'BA283':getDemoFlight};
+// ─── DEMO FLIGHT (F94602) ─────────────────────────────────────────────────────
+function getDemoFlightF94602(){
+  const now=new Date();
+  const dep=new Date(now); dep.setHours(22,46,0,0);
+  const arr=new Date(now); arr.setHours(1,6,0,0);
+  if(arr<=dep) arr.setDate(arr.getDate()+1);
+  return {
+    flightNumber:'F94602', airline:'Frontier Airlines', airlineIata:'F9',
+    aircraft:'Airbus A321neo', status:'scheduled',
+    departure:{iata:'ATL',city:'Atlanta',airport:'Hartsfield-Jackson Atlanta International',
+      scheduled:dep.toISOString(),terminal:'S',gate:'S6',delay:0,lat:33.6407,lng:-84.4277},
+    arrival:{iata:'EWR',city:'Newark',airport:'Newark Liberty International Airport',
+      scheduled:arr.toISOString(),terminal:'B',gate:'B34',delay:0,lat:40.6895,lng:-74.1745},
+    live:null,
+    weather:{temp:58,feels:54,desc:'clear sky',wind:9,humidity:55,rain:null,visibility:16,unit:'imperial'},
+    buffer:{bufferColor:'green',bufferLabel:'On Schedule',advice:'Your flight is on time. Departs late night — allow extra time for airport check-in.'},
+    fetchedAt:now.toISOString()
+  };
+}
+const DEMO_FLIGHTS={'BA283':getDemoFlight,'F94602':getDemoFlightF94602};
 
 // ─── STATE ───────────────────────────────────────────────────────────────────
 let curFlight=null, curData=null;

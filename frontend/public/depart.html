@@ -70,8 +70,8 @@
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t1);min-height:100vh;overflow-x:hidden}
 
 /* ── Background slideshow ── */
-#bg-slideshow{position:fixed;top:0;right:0;bottom:0;left:0;z-index:0}
-.bg-slide{position:absolute;inset:0;background-size:cover;background-position:center;background-repeat:no-repeat;opacity:0;transition:opacity 1.8s ease;image-rendering:-webkit-optimize-contrast;image-rendering:crisp-edges;will-change:opacity,filter}
+#bg-slideshow{position:fixed;top:0;right:0;bottom:0;left:0;z-index:0;transform:translateZ(0);-webkit-transform:translateZ(0)}
+.bg-slide{position:absolute;inset:0;background-size:cover;background-position:center;background-repeat:no-repeat;opacity:0}
 .bg-slide.active{opacity:1}
 #bg-overlay{position:fixed;top:0;right:0;bottom:0;left:0;background:linear-gradient(to bottom,rgba(10,8,4,.65) 0%,rgba(10,8,4,.32) 30%,rgba(10,8,4,.62) 62%,rgba(10,8,4,.97) 100%);z-index:1}
 #stars{position:fixed;top:0;right:0;bottom:0;left:0;z-index:0;background-image:radial-gradient(1px 1px at 15% 20%,rgba(255,200,100,.3) 0%,transparent 100%),radial-gradient(1px 1px at 65% 12%,rgba(255,200,100,.25) 0%,transparent 100%),radial-gradient(1.5px 1.5px at 85% 55%,rgba(255,200,100,.18) 0%,transparent 100%),radial-gradient(1px 1px at 40% 70%,rgba(255,200,100,.18) 0%,transparent 100%)}
@@ -1841,39 +1841,18 @@ function renderDepartureLounges(iata){
 }
 
 
-// ─── BACKGROUND SLIDESHOW ────────────────────────────────────────────────────
+// ─── BACKGROUND ──────────────────────────────────────────────────────────────
 const BG_COUNT=74;
 const BG_FILTER='brightness(1.06) contrast(1.1) saturate(1.18)';
-let bgSlides=[],bgCur=0,bgTimer=null;
-function shuffleArr(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 function initBgSlideshow(){
   const ss=document.getElementById('bg-slideshow');
-  if(!ss||bgSlides.length)return;
-  const nums=shuffleArr([...Array(BG_COUNT)].map((_,i)=>String(i+1).padStart(3,'0')));
-  // Create first slide immediately
-  function makeSlide(n){
-    const d=document.createElement('div');
-    d.className='bg-slide';
-    d.style.backgroundImage=`url('images/bg-${n}.jpg')`;
-    d.style.filter=BG_FILTER;
-    ss.appendChild(d);
-    return d;
-  }
-  bgSlides.push(makeSlide(nums[0]));
-  bgSlides[0].classList.add('active');
-  let nextIdx=1;
-  bgTimer=setInterval(()=>{
-    // Lazily create next slide just before it's needed
-    if(nextIdx<nums.length&&!bgSlides[nextIdx]){
-      bgSlides.push(makeSlide(nums[nextIdx]));
-    }
-    if(bgSlides.length>1){
-      bgSlides[bgCur].classList.remove('active');
-      bgCur=(bgCur+1)%bgSlides.length;
-      bgSlides[bgCur].classList.add('active');
-      nextIdx=bgCur+1;
-    }
-  },27000);
+  if(!ss||ss.children.length)return;
+  const n=String(Math.floor(Math.random()*BG_COUNT)+1).padStart(3,'0');
+  const d=document.createElement('div');
+  d.className='bg-slide active';
+  d.style.backgroundImage=`url('images/bg-${n}.jpg')`;
+  d.style.filter=BG_FILTER;
+  ss.appendChild(d);
 }
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────

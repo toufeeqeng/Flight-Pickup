@@ -1,16 +1,10 @@
 const cache = require('./cache');
 const axios = require('axios');
 
-const IMPERIAL_COUNTRIES = new Set(['US', 'USA', 'UNITED STATES', 'UNITED STATES OF AMERICA']);
-
-function usesImperial(country) {
-  return IMPERIAL_COUNTRIES.has((country || '').toUpperCase().trim());
-}
-
 async function getWeather(city, country) {
   if (!process.env.OPENWEATHER_API_KEY || !city) return null;
-  const imperial = usesImperial(country);
-  const units = imperial ? 'imperial' : 'metric';
+  const imperial = true;
+  const units = 'imperial';
   const cacheKey = `wx_${city}_${units}`;
   const cached = cache.get(cacheKey);
   if (cached) return cached;

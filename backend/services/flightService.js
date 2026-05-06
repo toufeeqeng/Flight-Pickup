@@ -39,10 +39,6 @@ async function fetchFlight(flightNumber) {
   const cached = cache.get(cacheKey);
   if (cached) return { ...cached, cached: true };
 
-  const response = await axios.get('http://api.aviationstack.com/v1/flights', {
-    params: { access_key: process.env.AVIATIONSTACK_API_KEY, flight_iata: flightNumber, limit: 1 }
-  });
-
   const aeroResponse = await axios.get(
   `https://aerodatabox.p.rapidapi.com/flights/number/${flightNumber}/${date}`,
   {

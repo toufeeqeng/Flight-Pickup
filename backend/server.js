@@ -132,5 +132,11 @@ app.get('/api/drive-route', async (req, res) => {
 // ─── Health ────────────────────────────────────────────────────────────────────
 app.get('/health', (req, res) => res.json({ status: 'ok', time: new Date().toISOString(), version: '4.0.0' }));
 
+// ─── Serve frontend static files ───────────────────────────────────────────────
+const path = require('path');
+const FRONTEND = path.join(__dirname, '../frontend/public');
+app.use(express.static(FRONTEND));
+app.get('*', (req, res) => res.sendFile(path.join(FRONTEND, 'index.html')));
+
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => console.log(`\n✈  Flight Pickup Backend v4.0 running on port ${PORT}\n`));

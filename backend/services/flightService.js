@@ -43,6 +43,16 @@ async function fetchFlight(flightNumber) {
     params: { access_key: process.env.AVIATIONSTACK_API_KEY, flight_iata: flightNumber, limit: 1 }
   });
 
+  const aeroResponse = await axios.get(
+  `https://aerodatabox.p.rapidapi.com/flights/number/${flightNumber}/${date}`,
+  {
+    headers: {
+      "X-RapidAPI-Key": process.env.RAPIDAPI_KEY,
+      "X-RapidAPI-Host": "aerodatabox.p.rapidapi.com"
+    }
+  }
+);
+
   if (!response.data?.data?.length) throw new Error('Flight not found. Please check the flight number and try again.');
 
   const flight = response.data.data[0];

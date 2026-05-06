@@ -715,15 +715,8 @@ body.results-mode .how-card{display:none}
   <button id="lang-btn" onclick="toggleLangMenu()">🌐<span class="lang-label"> <span id="lang-code">EN</span> ▾</span></button>
   <div id="lang-menu">
     <div data-lang="en" onclick="applyLang('en')">🇺🇸 English</div>
-    <div data-lang="ar" onclick="applyLang('ar')">🇸🇦 العربية</div>
-    <div data-lang="hi" onclick="applyLang('hi')">🇮🇳 हिन्दी</div>
-    <div data-lang="te" onclick="applyLang('te')">🇮🇳 తెలుగు</div>
-    <div data-lang="ur" onclick="applyLang('ur')">🇵🇰 اردو</div>
-    <div data-lang="fr" onclick="applyLang('fr')">🇫🇷 Français</div>
-    <div data-lang="de" onclick="applyLang('de')">🇩🇪 Deutsch</div>
     <div data-lang="es" onclick="applyLang('es')">🇪🇸 Español</div>
-    <div data-lang="zh" onclick="applyLang('zh')">🇨🇳 中文</div>
-    <div data-lang="ja" onclick="applyLang('ja')">🇯🇵 日本語</div>
+    <div data-lang="fr" onclick="applyLang('fr')">🇫🇷 Français</div>
   </div>
 </div>
 
@@ -1224,44 +1217,21 @@ const DEMO_ROUTES={'LHR-JFK':getDemoRoute,'JFK-LHR':getDemoRoute};
 
 // ─── LANGUAGE ────────────────────────────────────────────────────────────────
 const LANGS = {
-  en:{tagline:'Know exactly when to leave home to pick someone up',tabFlight:'✈ Flight Number',tabRoute:'🔍 By Route',lblFn:'Flight Number',lblFrom:'From — City or Airport',lblTo:'To — City or Airport',sbtn:'Search Flight',loading:'Looking up your flight…',autobar:'Auto-refreshing every 60 seconds',calcLbl:'When should I leave home?',cmArrLbl:'Expected Arrival',cmLeaveLbl:'Leave Home By',locTxt:'Location not enabled',locBtn:'📍 Use My Location',driveLbl:'Drive time:',rfLbl:'Refresh',savedLbl:'Saved Flights',tipsLbl:'Quick Tips',leavingIn:'Leave in',leavingNow:'Leave NOW',overdue:'Overdue — leave immediately!',depLbl:'Departure',arrLbl:'Arrival',
+  en:{tagline:'Know exactly when to leave home to pick someone up',tabFlight:'✈ Flight Number',tabRoute:'🔍 By Route',lblFn:'Flight Number',lblFrom:'From — City or Airport',lblTo:'To — City or Airport',sbtn:'Search Flight',loading:'Looking up your flight…',autobar:'Auto-refreshing every 60 seconds',calcLbl:'When should I leave home?',cmArrLbl:'Expected Arrival',cmLeaveLbl:'Leave Home By',locTxt:'Location not enabled',locBtn:'📍 Use My Location',driveLbl:'Drive time:',rfLbl:'Refresh',savedLbl:'Saved Flights',tipsLbl:'Quick Tips',leavingIn:'Leave in',leavingNow:'Leave NOW',overdue:'Overdue — leave immediately!',depLbl:'Departure',arrLbl:'Arrival',st_inflight:'In Flight',st_scheduled:'Scheduled',st_landed:'Landed',st_cancelled:'Cancelled',st_diverted:'Diverted',wxFeels:'Feels',wxWind:'Wind',wxHumidity:'Humidity',wxRain:'Rain',wxVis:'Visibility',liveAlt:'Altitude',liveSpd:'Speed',detAircraft:'Aircraft',detDate:'Date',detGate:'Gate',detAirline:'Airline',noFlights:'No flights found.',notGo:'Do not go to airport',headArr:'Head to arrivals',leaveImm:'Leave immediately',
   tips:[{i:'🚗',t:'Main feature',b:'Enter your drive time to know exactly when to leave home.'},{i:'🕐',t:'Arrivals buffer',b:'Add 20–30 min after landing for baggage & customs.'},{i:'📍',t:'Check terminal',b:'Wrong terminal = long walk. Always verify before leaving.'},{i:'🔔',t:'Get notified',b:'Enable notifications for instant alerts on delays or landing.'},{i:'📱',t:'Install the app',b:'Tap "Add to Home Screen" to use like a native app.'},{i:'💬',t:'Share status',b:'Use WhatsApp share to send live status to your passenger.'},{i:'🌦',t:'Weather check',b:'See arrival city weather — is it raining? Cold? Plan ahead.'},{i:'🔁',t:'Auto-refresh',b:'Flight data refreshes every 60 seconds automatically.'}]},
-  ar:{tagline:'اعرف متى تغادر المنزل لاستقبال شخص ما',tabFlight:'✈ رقم الرحلة',tabRoute:'🔍 بحث بالمسار',lblFn:'رقم الرحلة',lblFrom:'من — المدينة أو المطار',lblTo:'إلى — المدينة أو المطار',sbtn:'ابحث',loading:'جار البحث…',autobar:'يتجدد كل 60 ثانية',calcLbl:'متى أغادر المنزل؟',cmArrLbl:'وقت الوصول',cmLeaveLbl:'اغادر قبل',locTxt:'الموقع غير مفعّل',locBtn:'📍 موقعي',driveLbl:'وقت القيادة:',rfLbl:'تحديث',savedLbl:'الرحلات المحفوظة',tipsLbl:'نصائح',leavingIn:'اغادر خلال',leavingNow:'اغادر الآن',overdue:'تأخرت — اغادر فوراً!',depLbl:'المغادرة',arrLbl:'الوصول',tips:[{i:'🚗',t:'الميزة الرئيسية',b:'أدخل وقت القيادة لمعرفة متى تغادر.'},{i:'🕐',t:'وقت إضافي',b:'أضف 20-30 دقيقة للأمتعة والجمارك.'},{i:'📍',t:'تحقق من الصالة',b:'الصالة الخاطئة تعني مسيرة طويلة.'},{i:'🔔',t:'التنبيهات',b:'فعّل الإشعارات للتنبيه عند الهبوط.'},{i:'📱',t:'ثبّت التطبيق',b:'أضف إلى الشاشة الرئيسية.'},{i:'💬',t:'مشاركة',b:'شارك الحالة عبر واتساب.'},{i:'🌦',t:'الطقس',b:'تحقق من طقس المطار.'},{i:'🔁',t:'تحديث تلقائي',b:'يتجدد كل 60 ثانية.'}]},
-  hi:{tagline:'जानें कब घर से निकलें किसी को लेने के लिए',tabFlight:'✈ उड़ान संख्या',tabRoute:'🔍 मार्ग',lblFn:'उड़ान संख्या',lblFrom:'से — शहर या हवाई अड्डा',lblTo:'तक — शहर या हवाई अड्डा',sbtn:'खोजें',loading:'उड़ान खोज रहे हैं…',autobar:'हर 60 सेकंड में अपडेट',calcLbl:'कब निकलूं?',cmArrLbl:'अपेक्षित आगमन',cmLeaveLbl:'घर छोड़ने का समय',locTxt:'स्थान सक्षम नहीं',locBtn:'📍 मेरा स्थान',driveLbl:'ड्राइव समय:',rfLbl:'ताज़ा करें',savedLbl:'सहेजी गई उड़ानें',tipsLbl:'सुझाव',leavingIn:'में निकलें',leavingNow:'अभी निकलें',overdue:'देरी — तुरंत निकलें!',depLbl:'प्रस्थान',arrLbl:'आगमन',tips:[{i:'🚗',t:'मुख्य सुविधा',b:'ड्राइव समय डालें और जानें कब निकलना है।'},{i:'🕐',t:'आगमन बफर',b:'सामान के लिए 20-30 मिनट जोड़ें।'},{i:'📍',t:'टर्मिनल जांचें',b:'हमेशा टर्मिनल पहले चेक करें।'},{i:'🔔',t:'सूचनाएं',b:'लैंडिंग पर तुरंत अलर्ट पाएं।'},{i:'📱',t:'ऐप इंस्टॉल करें',b:'होम स्क्रीन में जोड़ें।'},{i:'💬',t:'शेयर करें',b:'WhatsApp पर स्थिति शेयर करें।'},{i:'🌦',t:'मौसम',b:'आगमन शहर का मौसम देखें।'},{i:'🔁',t:'ऑटो रिफ्रेश',b:'हर 60 सेकंड में अपडेट होता है।'}]},
-  ur:{tagline:'جانیں کب گھر سے نکلیں کسی کو لینے کے لیے',tabFlight:'✈ پرواز نمبر',tabRoute:'🔍 راستہ',lblFn:'پرواز نمبر',lblFrom:'سے — شہر یا ہوائی اڈہ',lblTo:'تک — شہر یا ہوائی اڈہ',sbtn:'تلاش کریں',loading:'پرواز تلاش ہو رہی ہے…',autobar:'ہر 60 سیکنڈ میں اپڈیٹ',calcLbl:'کب گھر سے نکلوں؟',cmArrLbl:'متوقع آمد',cmLeaveLbl:'گھر چھوڑنے کا وقت',locTxt:'مقام فعال نہیں',locBtn:'📍 میرا مقام',driveLbl:'ڈرائیو وقت:',rfLbl:'تازہ کریں',savedLbl:'محفوظ پروازیں',tipsLbl:'اشارے',leavingIn:'میں نکلیں',leavingNow:'ابھی نکلیں',overdue:'دیر — فوری نکلیں!',depLbl:'روانگی',arrLbl:'آمد',tips:[{i:'🚗',t:'اہم خصوصیت',b:'ڈرائیو وقت ڈالیں اور جانیں کب نکلنا ہے۔'},{i:'🕐',t:'آمد بفر',b:'سامان کے لیے 20-30 منٹ شامل کریں۔'},{i:'📍',t:'ٹرمینل چیک',b:'ٹرمینل ہمیشہ پہلے چیک کریں۔'},{i:'🔔',t:'اطلاعات',b:'لینڈنگ پر فوری الرٹ پائیں۔'},{i:'📱',t:'ایپ انسٹال',b:'ہوم اسکرین میں شامل کریں۔'},{i:'💬',t:'شیئر',b:'WhatsApp پر حالت شیئر کریں۔'},{i:'🌦',t:'موسم',b:'آمد شہر کا موسم دیکھیں۔'},{i:'🔁',t:'آٹو ریفریش',b:'ہر 60 سیکنڈ میں اپڈیٹ۔'}]},
-  fr:{tagline:"Sachez exactement quand partir pour chercher quelqu'un",tabFlight:'✈ Numéro de vol',tabRoute:'🔍 Par trajet',lblFn:'Numéro de vol',lblFrom:'De — Ville ou aéroport',lblTo:'À — Ville ou aéroport',sbtn:'Rechercher',loading:'Recherche en cours…',autobar:'Actualisation toutes les 60 secondes',calcLbl:'Quand partir de chez moi ?',cmArrLbl:'Arrivée prévue',cmLeaveLbl:'Partir au plus tard',locTxt:'Position non activée',locBtn:'📍 Ma position',driveLbl:'Temps de trajet :',rfLbl:'Actualiser',savedLbl:'Vols sauvegardés',tipsLbl:'Conseils',leavingIn:'Partir dans',leavingNow:'Partez MAINTENANT',overdue:'En retard — partez immédiatement !',depLbl:'Départ',arrLbl:'Arrivée',tips:[{i:'🚗',t:'Fonction principale',b:'Entrez votre temps de trajet pour savoir quand partir.'},{i:'🕐',t:'Marge arrivée',b:'Ajoutez 20-30 min après atterrissage pour bagages.'},{i:'📍',t:'Vérifier terminal',b:'Mauvais terminal = longue marche.'},{i:'🔔',t:'Notifications',b:'Activez pour alertes atterrissage/retard.'},{i:'📱',t:'Installer app',b:'Ajouter à écran accueil.'},{i:'💬',t:'Partager',b:'Partagez le statut via WhatsApp.'},{i:'🌦',t:'Météo',b:"Consultez la météo à l'arrivée."},{i:'🔁',t:'Auto-actualisation',b:'Mise à jour toutes les 60 secondes.'}]},
-  de:{tagline:'Wissen Sie genau, wann Sie losfahren müssen',tabFlight:'✈ Flugnummer',tabRoute:'🔍 Route',lblFn:'Flugnummer',lblFrom:'Von — Stadt oder Flughafen',lblTo:'Nach — Stadt oder Flughafen',sbtn:'Suchen',loading:'Flug wird gesucht…',autobar:'Aktualisierung alle 60 Sekunden',calcLbl:'Wann soll ich losfahren?',cmArrLbl:'Erwartete Ankunft',cmLeaveLbl:'Späteste Abfahrt',locTxt:'Standort nicht aktiv',locBtn:'📍 Mein Standort',driveLbl:'Fahrzeit:',rfLbl:'Aktualisieren',savedLbl:'Gespeicherte Flüge',tipsLbl:'Tipps',leavingIn:'Abfahrt in',leavingNow:'JETZT losfahren',overdue:'Zu spät — sofort los!',depLbl:'Abflug',arrLbl:'Ankunft',tips:[{i:'🚗',t:'Hauptfunktion',b:'Fahrzeit eingeben und Abfahrtszeit berechnen.'},{i:'🕐',t:'Ankunftspuffer',b:'20-30 Min nach Landung für Gepäck einplanen.'},{i:'📍',t:'Terminal prüfen',b:'Falsches Terminal = langer Weg.'},{i:'🔔',t:'Benachrichtigungen',b:'Alarm bei Landung oder Verspätung.'},{i:'📱',t:'App installieren',b:'Zum Startbildschirm hinzufügen.'},{i:'💬',t:'Teilen',b:'Status per WhatsApp teilen.'},{i:'🌦',t:'Wetter',b:'Wetter am Zielflughafen prüfen.'},{i:'🔁',t:'Auto-Update',b:'Alle 60 Sekunden aktualisiert.'}]},
-  es:{tagline:'Sepa exactamente cuándo salir para recoger a alguien',tabFlight:'✈ Número de vuelo',tabRoute:'🔍 Por ruta',lblFn:'Número de vuelo',lblFrom:'Desde — Ciudad o aeropuerto',lblTo:'Hasta — Ciudad o aeropuerto',sbtn:'Buscar',loading:'Buscando vuelo…',autobar:'Actualización cada 60 segundos',calcLbl:'¿Cuándo debo salir?',cmArrLbl:'Llegada prevista',cmLeaveLbl:'Salir antes de',locTxt:'Ubicación no activada',locBtn:'📍 Mi ubicación',driveLbl:'Tiempo de viaje:',rfLbl:'Actualizar',savedLbl:'Vuelos guardados',tipsLbl:'Consejos',leavingIn:'Salir en',leavingNow:'Salir AHORA',overdue:'¡Tarde — salga ya!',depLbl:'Salida',arrLbl:'Llegada',tips:[{i:'🚗',t:'Función principal',b:'Ingrese su tiempo de viaje para saber cuándo salir.'},{i:'🕐',t:'Margen llegada',b:'Añada 20-30 min tras aterrizar para equipaje.'},{i:'📍',t:'Revisar terminal',b:'Terminal incorrecta = caminata larga.'},{i:'🔔',t:'Notificaciones',b:'Alertas al aterrizar o retrasarse.'},{i:'📱',t:'Instalar app',b:'Añadir a pantalla de inicio.'},{i:'💬',t:'Compartir',b:'Comparta estado por WhatsApp.'},{i:'🌦',t:'Clima',b:'Consulte el clima en destino.'},{i:'🔁',t:'Auto-actualización',b:'Actualiza cada 60 segundos.'}]},
-  zh:{tagline:'精确知道何时出发去接机',tabFlight:'✈ 航班号',tabRoute:'🔍 按路线',lblFn:'航班号',lblFrom:'出发地 — 城市或机场',lblTo:'目的地 — 城市或机场',sbtn:'搜索',loading:'正在查询…',autobar:'每60秒自动刷新',calcLbl:'我该几点出发？',cmArrLbl:'预计到达',cmLeaveLbl:'最晚出发',locTxt:'未启用位置',locBtn:'📍 使用位置',driveLbl:'行驶时间：',rfLbl:'刷新',savedLbl:'已保存航班',tipsLbl:'快速提示',leavingIn:'后出发',leavingNow:'立即出发',overdue:'已超时 — 立即出发！',depLbl:'出发',arrLbl:'到达',tips:[{i:'🚗',t:'核心功能',b:'输入行驶时间，精确计算出发时刻。'},{i:'🕐',t:'到达缓冲',b:'落地后留20-30分钟取行李过海关。'},{i:'📍',t:'确认航站楼',b:'走错航站楼意味着长距离步行。'},{i:'🔔',t:'通知提醒',b:'开启通知，落地或延误时立即提醒。'},{i:'📱',t:'安装应用',b:'添加到主屏幕使用。'},{i:'💬',t:'分享状态',b:'通过WhatsApp分享航班状态。'},{i:'🌦',t:'目的地天气',b:'查看到达城市天气情况。'},{i:'🔁',t:'自动刷新',b:'每60秒自动更新数据。'}]},
-  te:{tagline:'ఎవరినైనా తీసుకోవడానికి ఎప్పుడు వెళ్ళాలో తెలుసుకోండి',tabFlight:'✈ విమాన నంబర్',tabRoute:'🔍 మార్గం',lblFn:'విమాన నంబర్',lblFrom:'నుండి — నగరం లేదా విమానాశ్రయం',lblTo:'కు — నగరం లేదా విమానాశ్రయం',sbtn:'శోధించు',loading:'విమానం శోధిస్తున్నాం…',autobar:'60 సెకన్లలో స్వయంచాలక నవీకరణ',calcLbl:'నేను ఎప్పుడు బయలుదేరాలి?',cmArrLbl:'అంచనా రాక',cmLeaveLbl:'ఇంటి నుండి వెళ్ళే సమయం',locTxt:'స్థానం సక్రియం కాలేదు',locBtn:'📍 నా స్థానం',driveLbl:'డ్రైవ్ సమయం:',rfLbl:'నవీకరించు',savedLbl:'సేవ్ చేసిన విమానాలు',tipsLbl:'చిట్కాలు',leavingIn:'లో బయలుదేరండి',leavingNow:'ఇప్పుడే బయలుదేరండి',overdue:'ఆలస్యం — వెంటనే బయలుదేరండి!',depLbl:'బయలుదేరే సమయం',arrLbl:'రాక',tips:[{i:'🚗',t:'ప్రధాన లక్షణం',b:'మీ డ్రైవ్ సమయాన్ని నమోదు చేసి ఎప్పుడు బయలుదేరాలో తెలుసుకోండి.'},{i:'🕐',t:'రాక బఫర్',b:'లగేజ్ కోసం 20-30 నిమిషాలు జోడించండి.'},{i:'📍',t:'టర్మినల్ తనిఖీ',b:'తప్పు టర్మినల్ అంటే పొడవైన నడక.'},{i:'🔔',t:'నోటిఫికేషన్లు',b:'ల్యాండింగ్‌పై తక్షణ హెచ్చరికలు పొందండి.'},{i:'📱',t:'యాప్ ఇన్‌స్టాల్',b:'హోమ్ స్క్రీన్‌కు జోడించండి.'},{i:'💬',t:'షేర్ చేయండి',b:'WhatsApp ద్వారా స్థితిని షేర్ చేయండి.'},{i:'🌦',t:'వాతావరణం',b:'రాక నగరం వాతావరణం తనిఖీ చేయండి.'},{i:'🔁',t:'స్వయంచాలక నవీకరణ',b:'60 సెకన్లకు ఒకసారి నవీకరించబడుతుంది.'}]},
-  ja:{tagline:'迎えに行く時間を正確に把握しよう',tabFlight:'✈ 便名',tabRoute:'🔍 路線検索',lblFn:'便名',lblFrom:'出発地 — 都市または空港',lblTo:'目的地 — 都市または空港',sbtn:'検索',loading:'フライトを検索中…',autobar:'60秒ごとに自動更新',calcLbl:'何時に家を出る？',cmArrLbl:'到着予定',cmLeaveLbl:'出発時刻',locTxt:'位置情報無効',locBtn:'📍 現在地を使用',driveLbl:'所要時間：',rfLbl:'更新',savedLbl:'保存済みフライト',tipsLbl:'ヒント',leavingIn:'後に出発',leavingNow:'今すぐ出発',overdue:'遅れています — 今すぐ出発！',depLbl:'出発',arrLbl:'到着',tips:[{i:'🚗',t:'メイン機能',b:'所要時間を入力して出発時刻を計算。'},{i:'🕐',t:'到着バッファ',b:'着陸後20〜30分、手荷物と通関に。'},{i:'📍',t:'ターミナル確認',b:'間違えると長い移動になります。'},{i:'🔔',t:'通知',b:'着陸・遅延をすぐにお知らせ。'},{i:'📱',t:'インストール',b:'ホーム画面に追加して使用。'},{i:'💬',t:'共有',b:'WhatsAppで状況をシェア。'},{i:'🌦',t:'天気',b:'到着地の天気を確認。'},{i:'🔁',t:'自動更新',b:'60秒ごとに更新。'}]},
+  es:{tagline:'Sepa exactamente cuándo salir para recoger a alguien',tabFlight:'✈ Número de vuelo',tabRoute:'🔍 Por ruta',lblFn:'Número de vuelo',lblFrom:'Desde — Ciudad o aeropuerto',lblTo:'Hasta — Ciudad o aeropuerto',sbtn:'Buscar',loading:'Buscando vuelo…',autobar:'Actualización cada 60 segundos',calcLbl:'¿Cuándo debo salir?',cmArrLbl:'Llegada prevista',cmLeaveLbl:'Salir antes de',locTxt:'Ubicación no activada',locBtn:'📍 Mi ubicación',driveLbl:'Tiempo de viaje:',rfLbl:'Actualizar',savedLbl:'Vuelos guardados',tipsLbl:'Consejos',leavingIn:'Salir en',leavingNow:'Salir AHORA',overdue:'¡Tarde — salga ya!',depLbl:'Salida',arrLbl:'Llegada',st_inflight:'En vuelo',st_scheduled:'Programado',st_landed:'Aterrizado',st_cancelled:'Cancelado',st_diverted:'Desviado',wxFeels:'Sensación',wxWind:'Viento',wxHumidity:'Humedad',wxRain:'Lluvia',wxVis:'Visibilidad',liveAlt:'Altitud',liveSpd:'Velocidad',detAircraft:'Avión',detDate:'Fecha',detGate:'Puerta',detAirline:'Aerolínea',noFlights:'No hay vuelos.',notGo:'No ir al aeropuerto',headArr:'A llegadas',leaveImm:'Salir inmediatamente',
+  tips:[{i:'🚗',t:'Función principal',b:'Ingrese su tiempo de viaje para saber cuándo salir.'},{i:'🕐',t:'Margen llegada',b:'Añada 20-30 min tras aterrizar para equipaje.'},{i:'📍',t:'Revisar terminal',b:'Terminal incorrecta = caminata larga.'},{i:'🔔',t:'Notificaciones',b:'Alertas al aterrizar o retrasarse.'},{i:'📱',t:'Instalar app',b:'Añadir a pantalla de inicio.'},{i:'💬',t:'Compartir',b:'Comparta estado por WhatsApp.'},{i:'🌦',t:'Clima',b:'Consulte el clima en destino.'},{i:'🔁',t:'Auto-actualización',b:'Actualiza cada 60 segundos.'}]},
+  fr:{tagline:"Sachez exactement quand partir pour chercher quelqu'un",tabFlight:'✈ Numéro de vol',tabRoute:'🔍 Par trajet',lblFn:'Numéro de vol',lblFrom:'De — Ville ou aéroport',lblTo:'À — Ville ou aéroport',sbtn:'Rechercher',loading:'Recherche en cours…',autobar:'Actualisation toutes les 60 secondes',calcLbl:'Quand partir de chez moi ?',cmArrLbl:'Arrivée prévue',cmLeaveLbl:'Partir au plus tard',locTxt:'Position non activée',locBtn:'📍 Ma position',driveLbl:'Temps de trajet :',rfLbl:'Actualiser',savedLbl:'Vols sauvegardés',tipsLbl:'Conseils',leavingIn:'Partir dans',leavingNow:'Partez MAINTENANT',overdue:'En retard — partez immédiatement !',depLbl:'Départ',arrLbl:'Arrivée',st_inflight:'En vol',st_scheduled:'Prévu',st_landed:'Atterri',st_cancelled:'Annulé',st_diverted:'Dérouté',wxFeels:'Ressenti',wxWind:'Vent',wxHumidity:'Humidité',wxRain:'Pluie',wxVis:'Visibilité',liveAlt:'Altitude',liveSpd:'Vitesse',detAircraft:'Avion',detDate:'Date',detGate:'Porte',detAirline:'Compagnie',noFlights:'Aucun vol trouvé.',notGo:'Ne pas aller',headArr:'Direction arrivées',leaveImm:'Partez immédiatement',
+  tips:[{i:'🚗',t:'Fonction principale',b:'Entrez votre temps de trajet pour savoir quand partir.'},{i:'🕐',t:'Marge arrivée',b:'Ajoutez 20-30 min après atterrissage pour bagages.'},{i:'📍',t:'Vérifier terminal',b:'Mauvais terminal = longue marche.'},{i:'🔔',t:'Notifications',b:'Activez pour alertes atterrissage/retard.'},{i:'📱',t:'Installer app',b:'Ajouter à écran accueil.'},{i:'💬',t:'Partager',b:'Partagez le statut via WhatsApp.'},{i:'🌦',t:'Météo',b:"Consultez la météo à l'arrivée."},{i:'🔁',t:'Auto-actualisation',b:'Mise à jour toutes les 60 secondes.'}]},
 };
-const L2L={'ar':'ar','hi':'hi','te':'te','ur':'ur','fr':'fr','de':'de','es':'es','zh':'zh','ja':'ja','ko':'en','pt':'en','ru':'en'};
-// Extra translation keys merged into each language
-const _EX={
-  en:{st_inflight:'In Flight',st_scheduled:'Scheduled',st_landed:'Landed',st_cancelled:'Cancelled',st_diverted:'Diverted',wxFeels:'Feels',wxWind:'Wind',wxHumidity:'Humidity',wxRain:'Rain',wxVis:'Visibility',liveAlt:'Altitude',liveSpd:'Speed',detAircraft:'Aircraft',detDate:'Date',detGate:'Gate',detAirline:'Airline',noFlights:'No flights found.',notGo:'Do not go to airport',headArr:'Head to arrivals',leaveImm:'Leave immediately'},
-  ar:{st_inflight:'في الجو',st_scheduled:'مجدول',st_landed:'هبط',st_cancelled:'ملغى',st_diverted:'محوّل',wxFeels:'الإحساس',wxWind:'الرياح',wxHumidity:'الرطوبة',wxRain:'المطر',wxVis:'الرؤية',liveAlt:'الارتفاع',liveSpd:'السرعة',detAircraft:'الطائرة',detDate:'التاريخ',detGate:'البوابة',detAirline:'الخط الجوي',noFlights:'لا رحلات متاحة.',notGo:'لا تذهب للمطار',headArr:'توجه للاستقبال',leaveImm:'غادر فوراً'},
-  hi:{st_inflight:'उड़ान में',st_scheduled:'निर्धारित',st_landed:'उतरा',st_cancelled:'रद्द',st_diverted:'मार्ग बदला',wxFeels:'महसूस',wxWind:'हवा',wxHumidity:'आर्द्रता',wxRain:'बारिश',wxVis:'दृश्यता',liveAlt:'ऊंचाई',liveSpd:'गति',detAircraft:'विमान',detDate:'तारीख',detGate:'गेट',detAirline:'एयरलाइन',noFlights:'कोई उड़ान नहीं मिली.',notGo:'मत जाओ',headArr:'आगमन पर जाएं',leaveImm:'तुरंत निकलें'},
-  ur:{st_inflight:'پرواز میں',st_scheduled:'شیڈول',st_landed:'اتری',st_cancelled:'منسوخ',st_diverted:'راستہ بدلا',wxFeels:'محسوس',wxWind:'ہوا',wxHumidity:'نمی',wxRain:'بارش',wxVis:'مرئیت',liveAlt:'بلندی',liveSpd:'رفتار',detAircraft:'طیارہ',detDate:'تاریخ',detGate:'گیٹ',detAirline:'ایئرلائن',noFlights:'کوئی پرواز نہیں ملی.',notGo:'مت جائیں',headArr:'آمد کی طرف جائیں',leaveImm:'فوری نکلیں'},
-  fr:{st_inflight:'En vol',st_scheduled:'Prévu',st_landed:'Atterri',st_cancelled:'Annulé',st_diverted:'Dérouté',wxFeels:'Ressenti',wxWind:'Vent',wxHumidity:'Humidité',wxRain:'Pluie',wxVis:'Visibilité',liveAlt:'Altitude',liveSpd:'Vitesse',detAircraft:'Avion',detDate:'Date',detGate:'Porte',detAirline:'Compagnie',noFlights:'Aucun vol trouvé.',notGo:'Ne pas aller',headArr:'Direction arrivées',leaveImm:'Partez immédiatement'},
-  de:{st_inflight:'Im Flug',st_scheduled:'Geplant',st_landed:'Gelandet',st_cancelled:'Gestrichen',st_diverted:'Umgeleitet',wxFeels:'Gefühlt',wxWind:'Wind',wxHumidity:'Feuchtigkeit',wxRain:'Regen',wxVis:'Sicht',liveAlt:'Höhe',liveSpd:'Geschwindigkeit',detAircraft:'Flugzeug',detDate:'Datum',detGate:'Gate',detAirline:'Airline',noFlights:'Keine Flüge gefunden.',notGo:'Nicht hingehen',headArr:'Zu Ankünften',leaveImm:'Sofort losfahren'},
-  es:{st_inflight:'En vuelo',st_scheduled:'Programado',st_landed:'Aterrizado',st_cancelled:'Cancelado',st_diverted:'Desviado',wxFeels:'Sensación',wxWind:'Viento',wxHumidity:'Humedad',wxRain:'Lluvia',wxVis:'Visibilidad',liveAlt:'Altitud',liveSpd:'Velocidad',detAircraft:'Avión',detDate:'Fecha',detGate:'Puerta',detAirline:'Aerolínea',noFlights:'No hay vuelos.',notGo:'No ir al aeropuerto',headArr:'A llegadas',leaveImm:'Salir inmediatamente'},
-  zh:{st_inflight:'飞行中',st_scheduled:'计划中',st_landed:'已降落',st_cancelled:'已取消',st_diverted:'已改航',wxFeels:'体感',wxWind:'风速',wxHumidity:'湿度',wxRain:'降雨',wxVis:'能见度',liveAlt:'高度',liveSpd:'速度',detAircraft:'机型',detDate:'日期',detGate:'登机口',detAirline:'航空公司',noFlights:'未找到航班.',notGo:'不要前往机场',headArr:'前往到达区',leaveImm:'立即出发'},
-  te:{st_inflight:'విమానంలో',st_scheduled:'షెడ్యూల్డ్',st_landed:'దిగింది',st_cancelled:'రద్దు',st_diverted:'మళ్ళింపు',wxFeels:'అనుభవం',wxWind:'గాలి',wxHumidity:'తేమ',wxRain:'వర్షం',wxVis:'దృశ్యత',liveAlt:'ఎత్తు',liveSpd:'వేగం',detAircraft:'విమానం',detDate:'తేదీ',detGate:'గేట్',detAirline:'ఎయిర్‌లైన్',noFlights:'విమానాలు లేవు.',notGo:'వెళ్ళకండి',headArr:'ఆగమనానికి వెళ్ళండి',leaveImm:'వెంటనే వెళ్ళండి'},
-  ja:{st_inflight:'飛行中',st_scheduled:'予定',st_landed:'着陸済',st_cancelled:'欠航',st_diverted:'迂回',wxFeels:'体感',wxWind:'風',wxHumidity:'湿度',wxRain:'雨',wxVis:'視程',liveAlt:'高度',liveSpd:'速度',detAircraft:'機材',detDate:'日付',detGate:'ゲート',detAirline:'航空会社',noFlights:'便が見つかりません.',notGo:'空港へ行かないで',headArr:'到着ロビーへ',leaveImm:'今すぐ出発'},
-};
-Object.keys(_EX).forEach(l=>{if(LANGS[l])Object.assign(LANGS[l],_EX[l]);});
 let lang='en', T=LANGS.en;
 
 function detectLang(){
-  const n=navigator.language||'en';
-  const c=n.slice(0,2).toLowerCase();
-  return L2L[c]||( LANGS[c]?c:'en');
+  const c=(navigator.language||'en').slice(0,2).toLowerCase();
+  return LANGS[c]?c:'en';
 }
 function applyLang(l){
   lang=l; T=LANGS[l]||LANGS.en;
-  const rtl=['ar','ur'];
-  document.body.style.direction=rtl.includes(l)?'rtl':'ltr';
   setText('tagline',T.tagline);
   setText('tab-flight',T.tabFlight);
   setText('tab-route',T.tabRoute);
@@ -1339,6 +1309,7 @@ let selDep=null, selArr=null;
 let userLat=null, userLng=null, driveMins=30;
 let autoTimer=null, acTimers={};
 let notifIntervalId=null;
+let prevStatus=null, prevDelay=0, prevDriveTime=null, notifFirstRender=true;
 
 // ─── TABS ─────────────────────────────────────────────────────────────────────
 function switchTab(t){
@@ -1579,6 +1550,7 @@ function reqLoc(){
         osrmDriveTime=result;
         driveMins=result.driveMins;
         document.getElementById('drive-mins').value=driveMins;
+        detectTrafficChange();
         const tfLbl={heavy:'🔴 Heavy',moderate:'🟡 Moderate',clear:'🟢 Clear'};
         setText('spc-drive-val',`${driveMins} min`);
         setText('spc-drive-sub',`${result.distanceKm}km · ${tfLbl[result.trafficLevel]||'Live'}`);
@@ -1759,6 +1731,27 @@ function renderFlight(d){
   loadSaved();
   updateLocNav();
   renderPzCard(d);
+  setTimeout(()=>document.getElementById('result-card').scrollIntoView({behavior:'smooth',block:'start'}),100);
+  autoDetectFlightType(d);
+  if(notifFirstRender){
+    notifFirstRender=false;
+    prevStatus=(d.status||'').toLowerCase().replace(/[-\s]/g,'');
+    prevDelay=Math.max(d.arrival?.delay||0,d.departure?.delay||0);
+    prevDriveTime=null;
+    askNotifPermission();
+  }else{
+    detectFlightChanges(d);
+  }
+}
+
+function autoDetectFlightType(d){
+  const lookup=iata=>LOCAL_AIRPORTS.find(a=>a.iata===iata);
+  const dep=lookup(d.departure?.iata);
+  const arr=lookup(d.arrival?.iata);
+  if(!dep||!arr)return;
+  const type=dep.country===arr.country?'domestic':'international';
+  const btn=document.getElementById(type==='domestic'?'bft-dom':'bft-int');
+  if(btn)setFlightType(type,btn);
 }
 
 // ─── LEAVE TIME CALCULATOR ────────────────────────────────────────────────────
@@ -2012,28 +2005,82 @@ function loadRecents(){
 }
 
 // ─── NOTIFICATIONS ────────────────────────────────────────────────────────────
-function checkNotifBar(){
-  if('Notification' in window&&Notification.permission==='default'){
-    document.getElementById('notif-bar').classList.add('show');
-  }
+function sendNotif(title,body,tag,url){
+  if(!('Notification' in window)||Notification.permission!=='granted')return;
+  const opts={body,icon:'/icons/icon-192.png',badge:'/icons/icon-192.png',tag:tag||'fp-alert',vibrate:[200,100,200],data:{url:url||window.location.href}};
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.ready.then(reg=>reg.showNotification(title,opts)).catch(()=>{try{new Notification(title,opts)}catch(e){}});
+  }else{try{new Notification(title,opts)}catch(e){}}
 }
+
+function checkNotifBar(){askNotifPermission();}
+
+function askNotifPermission(){
+  if(!('Notification' in window)||Notification.permission!=='default')return;
+  const bar=document.getElementById('notif-bar');
+  bar.innerHTML=`<div style="display:flex;align-items:center;gap:.75rem;padding:.8rem 1rem;background:rgba(79,156,249,.1);border-bottom:1px solid rgba(79,156,249,.18)"><span style="font-size:1.2rem;flex-shrink:0">🔔</span><span style="flex:1;font-size:.82rem;color:var(--t1);line-height:1.35">Get instant alerts for <b>delays</b>, <b>landing</b> &amp; <b>traffic changes</b></span><button onclick="requestNotif()" style="background:#4f9cf9;color:#fff;border:none;border-radius:8px;padding:.42rem 1rem;font-size:.78rem;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0">Allow</button><button onclick="this.closest('#notif-bar').style.display='none'" style="background:none;border:none;color:var(--t2);cursor:pointer;font-size:1.1rem;line-height:1;padding:0 .2rem;flex-shrink:0">✕</button></div>`;
+  bar.style.display='block';
+}
+
 function requestNotif(){
   Notification.requestPermission().then(p=>{
-    document.getElementById('notif-bar').classList.remove('show');
-    if(p==='granted')showToast('Notifications enabled!');
+    document.getElementById('notif-bar').style.display='none';
+    if(p==='granted'){
+      showToast('Notifications on — alerts for delays, landing & traffic');
+      sendNotif('✈️ Flight Pickup alerts active','You\'ll be notified for delays, landing, and traffic changes.','fp-welcome');
+    }else{
+      showToast('Notifications blocked — you can enable them in browser settings');
+    }
   });
 }
+
+function detectFlightChanges(d){
+  if(!('Notification' in window)||Notification.permission!=='granted')return;
+  const newStatus=(d.status||'').toLowerCase().replace(/[-\s]/g,'');
+  const newDelay=Math.max(d.arrival?.delay||0,d.departure?.delay||0);
+  const fn=d.flightNumber||'';
+  const arrIata=d.arrival?.iata||'';
+  const url=window.location.href;
+
+  if(prevStatus!==null){
+    if(!prevStatus.includes('land')&&newStatus.includes('land')){
+      sendNotif(`🛬 ${fn} has landed!`,`Arrived at ${arrIata}. Head to arrivals — exit in ~20 min.`,'fp-landed',url);
+    } else if(prevStatus!=='cancelled'&&newStatus==='cancelled'){
+      sendNotif(`❌ ${fn} Cancelled`,`Flight cancelled. Do not go to the airport.`,'fp-cancelled',url);
+    } else if(prevStatus!=='diverted'&&newStatus==='diverted'){
+      sendNotif(`⚠️ ${fn} Diverted`,`Flight diverted — check the new arrival airport.`,'fp-diverted',url);
+    } else if((prevStatus==='scheduled'||prevStatus==='')&&(newStatus==='active'||newStatus==='enroute')){
+      sendNotif(`✈️ ${fn} is now in the air`,`${d.departure?.iata||''} → ${arrIata}`,`fp-departed`,url);
+    }
+    if(newDelay>prevDelay&&(newDelay-prevDelay)>=15){
+      const extra=newDelay-prevDelay;
+      const newArr=fmtT(d.arrival?.estimated||d.arrival?.scheduled||'');
+      sendNotif(`⏱ ${fn} delayed +${extra} min`,`New arrival: ${newArr} at ${arrIata}`,'fp-delay',url);
+    }
+  }
+  prevStatus=newStatus;
+  prevDelay=newDelay;
+}
+
+function detectTrafficChange(){
+  if(!('Notification' in window)||Notification.permission!=='granted')return;
+  if(prevDriveTime!==null&&driveMins>=(prevDriveTime+10)&&curData){
+    const fn=curData.flightNumber||'';
+    sendNotif(`🚗 Traffic increasing for ${fn}`,`Drive time is now ${driveMins} min — consider leaving earlier.`,'fp-traffic',window.location.href);
+  }
+  prevDriveTime=driveMins;
+}
+
 function scheduleNotif(d){
   if(!('Notification' in window)||Notification.permission!=='granted')return;
   const arrISO=d.arrival.estimated||d.arrival.scheduled;
   if(!arrISO)return;
-  const arrTime=new Date(arrISO).getTime();
-  const now=Date.now();
-  const alertTime=arrTime-(driveMins*60000);
-  const delay=alertTime-now;
+  const alertTime=new Date(arrISO).getTime()-(driveMins*60000);
+  const delay=alertTime-Date.now();
   if(delay>0&&delay<4*3600*1000){
     setTimeout(()=>{
-      new Notification('✈ Time to leave!',{body:`${d.flightNumber} arrives at ${fmtT(arrISO)}. Leave now to arrive on time.`,icon:'/icons/icon-192.png'});
+      if(Notification.permission==='granted')
+        sendNotif('✈ Time to leave!',`${d.flightNumber} arrives at ${fmtT(arrISO)}. Leave now to arrive on time.`,'fp-leavenow',window.location.href);
     },delay);
   }
 }
@@ -2100,6 +2147,7 @@ function clearResults(){
   document.getElementById('route-map-card').classList.remove('show');
   osrmDriveTime=null;
   clearAuto();
+  notifFirstRender=true; prevStatus=null; prevDelay=0; prevDriveTime=null;
 }
 // ─── STATUS MONITOR (inline inside fi-card) ──────────────────────────────────
 function renderStatusMonitor(d){
@@ -2230,11 +2278,7 @@ function fireArrivalNotif(){
     :minsLeft>0
     ?`Landing in ${minsLeft} min · ${curData.arrival.iata} · ${curData.status||'On time'}`
     :`${curData.flightNumber} should be on the ground now — check arrivals`;
-  try{
-    new Notification(`✈️ ${curData.flightNumber} · ${curData.departure.iata}→${curData.arrival.iata}`,{
-      body,icon:'/icons/icon-192.png',tag:'arrival-reminder'
-    });
-  }catch(e){}
+  sendNotif(`✈️ ${curData.flightNumber} · ${curData.departure.iata}→${curData.arrival.iata}`,body,'arrival-reminder');
 }
 
 // ─── AIRPORT INFO PANEL ──────────────────────────────────────────────────────
@@ -2281,7 +2325,9 @@ function renderTransport(t){
   `).join('');
 }
 function openMaps(url){
-  window.open(url,'_blank','noopener');
+  const a=document.createElement('a');
+  a.href=url;a.target='_blank';a.rel='noopener noreferrer';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
 }
 function renderLounges(lounges,iata){
   const el=document.getElementById('lounges-list');

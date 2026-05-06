@@ -649,17 +649,12 @@ body.results-mode .leave-card{display:block}
   <button id="lang-btn" onclick="toggleLangMenu()">🌐<span class="lang-label"> <span id="lang-code">EN</span> ▾</span></button>
   <div id="lang-menu">
     <div data-lang="en" onclick="applyLang('en')">🇺🇸 English</div>
-    <div data-lang="ar" onclick="applyLang('ar')">🇸🇦 العربية</div>
-    <div data-lang="hi" onclick="applyLang('hi')">🇮🇳 हिन्दी</div>
-    <div data-lang="te" onclick="applyLang('te')">🇮🇳 తెలుగు</div>
-    <div data-lang="ur" onclick="applyLang('ur')">🇵🇰 اردو</div>
-    <div data-lang="fr" onclick="applyLang('fr')">🇫🇷 Français</div>
-    <div data-lang="de" onclick="applyLang('de')">🇩🇪 Deutsch</div>
     <div data-lang="es" onclick="applyLang('es')">🇪🇸 Español</div>
-    <div data-lang="zh" onclick="applyLang('zh')">🇨🇳 中文</div>
-    <div data-lang="ja" onclick="applyLang('ja')">🇯🇵 日本語</div>
+    <div data-lang="fr" onclick="applyLang('fr')">🇫🇷 Français</div>
   </div>
 </div>
+
+<div id="dp-notif-bar" style="display:none"></div>
 
 <header>
   <div class="logo-row">
@@ -1082,15 +1077,6 @@ body.results-mode .leave-card{display:block}
   </div>
 </div>
 
-<!-- Ad slot: leaderboard -->
-<div class="ad-slot ad-slot--leaderboard" aria-label="Advertisement" role="complementary">
-  <!-- AdSense or ad network tag goes here -->
-</div>
-<!-- Ad slot: rectangle -->
-<div class="ad-slot ad-slot--rectangle" aria-label="Advertisement" role="complementary">
-  <!-- AdSense or ad network tag goes here -->
-</div>
-
 <footer class="site-footer">
   Catch My Flight &nbsp;·&nbsp;
   <a href="/legal.html#privacy" style="color:var(--t3);text-decoration:underline">Privacy Policy</a> &nbsp;·&nbsp;
@@ -1146,19 +1132,32 @@ const DEMO_FLIGHTS={'BA283':getDemoFlight,'F94602':getDemoFlightF94602};
 // ─── STATE ───────────────────────────────────────────────────────────────────
 let curFlight=null, curData=null;
 let notifIntervalId=null;
+let dpPrevStatus=null, dpPrevDelay=0, dpNotifFirst=true;
 let userLat=null, userLng=null;
 let driveMins=30, bufMins=120;
 let autoTimer=null;
 let lmap=null, planeMarker=null, userMarker=null;
 
 // ─── LANGUAGE ─────────────────────────────────────────────────────────────────
+const DLANGS={
+  en:{sbtn:'Search Flight',loading:'Looking up your flight…',depLbl:'Departure',arrLbl:'Arrival',st_inflight:'In Flight',st_scheduled:'Scheduled',st_landed:'Landed',st_cancelled:'Cancelled',st_diverted:'Diverted',wxFeels:'Feels',wxWind:'Wind',wxHumidity:'Humidity',wxVis:'Visibility',noFlights:'No flights found.',savedLbl:'Saved Flights'},
+  es:{sbtn:'Buscar',loading:'Buscando vuelo…',depLbl:'Salida',arrLbl:'Llegada',st_inflight:'En vuelo',st_scheduled:'Programado',st_landed:'Aterrizado',st_cancelled:'Cancelado',st_diverted:'Desviado',wxFeels:'Sensación',wxWind:'Viento',wxHumidity:'Humedad',wxVis:'Visibilidad',noFlights:'No hay vuelos.',savedLbl:'Vuelos guardados'},
+  fr:{sbtn:'Rechercher',loading:'Recherche en cours…',depLbl:'Départ',arrLbl:'Arrivée',st_inflight:'En vol',st_scheduled:'Prévu',st_landed:'Atterri',st_cancelled:'Annulé',st_diverted:'Dérouté',wxFeels:'Ressenti',wxWind:'Vent',wxHumidity:'Humidité',wxVis:'Visibilité',noFlights:'Aucun vol trouvé.',savedLbl:'Vols sauvegardés'},
+};
+let DT=DLANGS.en;
+function setText(id,txt){const el=document.getElementById(id);if(el&&txt)el.textContent=txt}
 function applyLang(l){
+  DT=DLANGS[l]||DLANGS.en;
   const codeEl=document.getElementById('lang-code');
   if(codeEl)codeEl.textContent=l.toUpperCase().slice(0,2);
-  const rtl=['ar','ur'];
-  document.body.style.direction=rtl.includes(l)?'rtl':'ltr';
   document.querySelectorAll('#lang-menu div').forEach(d=>d.classList.toggle('lng-active',d.dataset.lang===l));
   document.getElementById('lang-menu').classList.remove('open');
+  setText('sbtn-txt',DT.sbtn);
+  setText('loading-txt',DT.loading);
+  setText('lbl-dep',DT.depLbl);
+  setText('lbl-arr',DT.arrLbl);
+  setText('saved-lbl',DT.savedLbl);
+  if(curData)renderFlight(curData);
 }
 function toggleLangMenu(){document.getElementById('lang-menu').classList.toggle('open')}
 document.addEventListener('click',e=>{if(!document.getElementById('lang-sel').contains(e.target))document.getElementById('lang-menu').classList.remove('open')});
@@ -1216,7 +1215,7 @@ function renderFlight(d){
   document.getElementById('fi-airline').textContent=d.airline;
   const st=(d.status||'unknown').toLowerCase().replace(/[-\s]/g,'');
   const pill=document.getElementById('fi-spill');
-  const statusLabel={scheduled:'Scheduled',active:'In Flight',enroute:'In Flight',landed:'Landed',cancelled:'Cancelled',diverted:'Diverted'};
+  const statusLabel={scheduled:DT.st_scheduled,active:DT.st_inflight,enroute:DT.st_inflight,landed:DT.st_landed,cancelled:DT.st_cancelled,diverted:DT.st_diverted};
   pill.textContent=statusLabel[st]||cap(d.status);
   pill.className=`spill sp-${st}`;
 
@@ -1276,6 +1275,14 @@ function renderFlight(d){
   document.getElementById('result-card').style.display='block';
   document.getElementById('result-card').scrollIntoView({behavior:'smooth',block:'start'});
   if(userLat&&userLng)renderDepTcCard();
+  if(dpNotifFirst){
+    dpNotifFirst=false;
+    dpPrevStatus=(d.status||'').toLowerCase().replace(/[-\s]/g,'');
+    dpPrevDelay=Math.max(d.arrival?.delay||0,d.departure?.delay||0);
+    dpAskNotifPermission();
+  }else{
+    detectDepChanges(d);
+  }
 }
 
 function recalc(){
@@ -1680,6 +1687,7 @@ function clearResults(){
   if(sdcDep)sdcDep.textContent='—';
   const sdcDepSub=document.getElementById('sdc-dep-sub');
   if(sdcDepSub)sdcDepSub.textContent='enter flight';
+  dpNotifFirst=true; dpPrevStatus=null; dpPrevDelay=0;
 }
 let _toastTimer=null;
 function showToast(m){
@@ -1700,6 +1708,59 @@ function checkUrlParams(){
   const params=new URLSearchParams(location.search);
   const fn=params.get('fn');
   if(fn){document.getElementById('flight-input').value=fn.toUpperCase();enterResultsMode(fn);doSearch()}
+}
+
+// ─── NOTIFICATIONS ────────────────────────────────────────────────────────────
+function sendNotif(title,body,tag,url){
+  if(!('Notification' in window)||Notification.permission!=='granted')return;
+  const opts={body,icon:'/icons/icon-192.png',badge:'/icons/icon-192.png',tag:tag||'dp-alert',vibrate:[200,100,200],data:{url:url||window.location.href}};
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.ready.then(reg=>reg.showNotification(title,opts)).catch(()=>{try{new Notification(title,opts)}catch(e){}});
+  }else{try{new Notification(title,opts)}catch(e){}}
+}
+
+function dpAskNotifPermission(){
+  if(!('Notification' in window)||Notification.permission!=='default')return;
+  const bar=document.getElementById('dp-notif-bar');
+  bar.innerHTML=`<div style="display:flex;align-items:center;gap:.75rem;padding:.8rem 1rem;background:rgba(79,156,249,.1);border-bottom:1px solid rgba(79,156,249,.18)"><span style="font-size:1.2rem;flex-shrink:0">🔔</span><span style="flex:1;font-size:.82rem;color:var(--t1);line-height:1.35">Get instant alerts for <b>delays</b>, <b>gate changes</b> &amp; <b>departure reminders</b></span><button onclick="dpRequestNotif()" style="background:#4f9cf9;color:#fff;border:none;border-radius:8px;padding:.42rem 1rem;font-size:.78rem;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0">Allow</button><button onclick="this.closest('#dp-notif-bar').style.display='none'" style="background:none;border:none;color:var(--t2);cursor:pointer;font-size:1.1rem;line-height:1;padding:0 .2rem;flex-shrink:0">✕</button></div>`;
+  bar.style.display='block';
+}
+
+function dpRequestNotif(){
+  Notification.requestPermission().then(p=>{
+    document.getElementById('dp-notif-bar').style.display='none';
+    if(p==='granted'){
+      showToast('Notifications on — alerts for delays, gate changes & departure');
+      sendNotif('✈️ Flight alerts active','You\'ll be notified for delays, gate changes, and departure time.','dp-welcome');
+    }else{
+      showToast('Notifications blocked — enable in browser settings');
+    }
+  });
+}
+
+function detectDepChanges(d){
+  if(!('Notification' in window)||Notification.permission!=='granted')return;
+  const newStatus=(d.status||'').toLowerCase().replace(/[-\s]/g,'');
+  const newDelay=Math.max(d.arrival?.delay||0,d.departure?.delay||0);
+  const fn=d.flightNumber||'';
+  const url=window.location.href;
+
+  if(dpPrevStatus!==null){
+    if(dpPrevStatus!=='cancelled'&&newStatus==='cancelled'){
+      sendNotif(`❌ ${fn} Cancelled`,`Your flight has been cancelled.`,'dp-cancelled',url);
+    } else if(dpPrevStatus!=='diverted'&&newStatus==='diverted'){
+      sendNotif(`⚠️ ${fn} Diverted`,`Flight diverted — check updated departure info.`,'dp-diverted',url);
+    } else if((dpPrevStatus==='scheduled'||dpPrevStatus==='')&&(newStatus==='active'||newStatus==='enroute')){
+      sendNotif(`✈️ ${fn} has departed`,`Your flight is now in the air.`,'dp-departed',url);
+    }
+    if(newDelay>dpPrevDelay&&(newDelay-dpPrevDelay)>=15){
+      const extra=newDelay-dpPrevDelay;
+      const newDep=fmtTime(new Date(d.departure?.estimated||d.departure?.scheduled||''));
+      sendNotif(`⏱ ${fn} delayed +${extra} min`,`New departure time: ${newDep} from ${d.departure?.iata||''}`,'dp-delay',url);
+    }
+  }
+  dpPrevStatus=newStatus;
+  dpPrevDelay=newDelay;
 }
 
 // ─── AUTO-NOTIFICATION PANEL ─────────────────────────────────────────────────
@@ -1765,11 +1826,7 @@ function fireFlightNotif(){
     :minsToLeave>-15
     ?'Head to the airport now — you\'re at your leave time!'
     :`Flight departs in ${minsLeft} min`;
-  try{
-    new Notification(`✈️ ${curData.flightNumber} · ${curData.departure.iata}→${curData.arrival.iata}`,{
-      body,icon:'/icons/icon-192.png',tag:'flight-reminder'
-    });
-  }catch(e){}
+  sendNotif(`✈️ ${curData.flightNumber} · ${curData.departure.iata}→${curData.arrival.iata}`,body,'flight-reminder');
 }
 
 // ─── BAGGAGE PANEL (populates prep-card baggage tiles) ────────────────────────
@@ -1882,7 +1939,7 @@ function initBgSlideshow(){
 // ─── INIT ─────────────────────────────────────────────────────────────────────
 loadSaved();
 checkUrlParams();
-applyLang((navigator.language||'en').slice(0,2).toLowerCase());
+applyLang(DLANGS[(navigator.language||'en').slice(0,2).toLowerCase()]?((navigator.language||'en').slice(0,2).toLowerCase()):'en');
 initBgSlideshow();
 if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js').catch(()=>{});
 

@@ -31,6 +31,9 @@ function calcBuffer(status, depDelay, arrDelay) {
   return { bufferMinutes, bufferLabel, bufferColor, advice };
 }
 
+// AeroDataBox returns "2024-05-06 14:30+00:00" (space instead of T) — fix to valid ISO 8601
+function fixTime(t) { return t ? t.replace(' ', 'T') : null; }
+
 // ── Normalize AeroDataBox response ──────────────────────────────────────────
 function normalizeAeroDataBox(f, flightNumber, arrAirport, depAirport, weather) {
   const dep = f.departure || {};
@@ -59,9 +62,9 @@ function normalizeAeroDataBox(f, flightNumber, arrAirport, depAirport, weather) 
       iata: depInfo.iata || '',
       city: depAirport?.city || depInfo.municipalityName || '',
       country: depAirport?.country || '',
-      scheduled: dep.scheduledTimeUtc || dep.scheduledTimeLocal || null,
-      estimated: dep.estimatedTimeUtc || dep.estimatedTimeLocal || null,
-      actual: dep.actualTimeUtc || dep.actualTimeLocal || null,
+      scheduled: fixTime(dep.scheduledTimeUtc || dep.scheduledTimeLocal || null),
+      estimated: fixTime(dep.estimatedTimeUtc || dep.estimatedTimeLocal || null),
+      actual: fixTime(dep.actualTimeUtc || dep.actualTimeLocal || null),
       delay: depDelay,
       terminal: dep.terminal || null,
       gate: dep.gate || null,
@@ -73,9 +76,9 @@ function normalizeAeroDataBox(f, flightNumber, arrAirport, depAirport, weather) 
       iata: arrInfo.iata || '',
       city: arrAirport?.city || arrInfo.municipalityName || '',
       country: arrAirport?.country || '',
-      scheduled: arr.scheduledTimeUtc || arr.scheduledTimeLocal || null,
-      estimated: arr.estimatedTimeUtc || arr.estimatedTimeLocal || null,
-      actual: arr.actualTimeUtc || arr.actualTimeLocal || null,
+      scheduled: fixTime(arr.scheduledTimeUtc || arr.scheduledTimeLocal || null),
+      estimated: fixTime(arr.estimatedTimeUtc || arr.estimatedTimeLocal || null),
+      actual: fixTime(arr.actualTimeUtc || arr.actualTimeLocal || null),
       delay: arrDelay,
       terminal: arr.terminal || null,
       gate: arr.gate || null,

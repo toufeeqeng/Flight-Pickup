@@ -743,7 +743,7 @@ body.results-mode .how-card{display:none}
   </div>
 
   <h1 class="hero-title">Never Miss<br><span>Their Landing.</span></h1>
-  <p class="hero-sub">Enter any flight number and we'll calculate exactly when to leave home — so you arrive right as they walk out.</p>
+  <p class="hero-sub" id="tagline">Enter any flight number and we'll calculate exactly when to leave home — so you arrive right as they walk out.</p>
   <div class="hero-divider"></div>
 
 </header>
@@ -1189,7 +1189,37 @@ function getDemoFlight(){
     fetchedAt:now.toISOString()
   };
 }
-const DEMO_FLIGHTS={'BA283':getDemoFlight};
+// ─── DEMO FLIGHT (F94602) ─────────────────────────────────────────────────────
+function getDemoFlightF94602(){
+  const now=new Date();
+  const dep=new Date(now); dep.setHours(22,46,0,0);
+  const arr=new Date(now); arr.setDate(arr.getDate()+(now.getHours()>=22&&now.getMinutes()>=46?1:0)); arr.setHours(1,6,0,0);
+  if(arr<=dep) arr.setDate(arr.getDate()+1);
+  return {
+    flightNumber:'F94602',
+    airline:'Frontier Airlines',
+    airlineIata:'F9',
+    aircraft:'Airbus A321neo',
+    status:'en-route',
+    departure:{
+      iata:'ATL', city:'Atlanta', airport:'Hartsfield-Jackson Atlanta International',
+      scheduled:dep.toISOString(), terminal:'S', gate:'S6',
+      delay:0, lat:33.6407, lng:-84.4277
+    },
+    arrival:{
+      iata:'EWR', city:'Newark', airport:'Newark Liberty International Airport',
+      scheduled:new Date(arr.getTime()+10*60000).toISOString(),
+      estimated:arr.toISOString(),
+      terminal:'B', gate:'B34', baggage:'3',
+      delay:10, lat:40.6895, lng:-74.1745
+    },
+    live:{latitude:36.8,longitude:-79.2,altitude:34000,speed:836,heading:42},
+    weather:{temp:58,feels:54,desc:'clear sky',wind:9,humidity:55,rain:null,visibility:16,unit:'imperial'},
+    buffer:{bufferColor:'green',bufferLabel:'On Time',advice:'Flight is on track. Arrives just after midnight — plan for light late-night traffic.'},
+    fetchedAt:now.toISOString()
+  };
+}
+const DEMO_FLIGHTS={'BA283':getDemoFlight,'F94602':getDemoFlightF94602};
 
 // ─── DEMO ROUTE (LHR→JFK) ────────────────────────────────────────────────────
 function getDemoRoute(){
@@ -1219,6 +1249,20 @@ const LANGS = {
   ja:{tagline:'迎えに行く時間を正確に把握しよう',tabFlight:'✈ 便名',tabRoute:'🔍 路線検索',lblFn:'便名',lblFrom:'出発地 — 都市または空港',lblTo:'目的地 — 都市または空港',sbtn:'検索',loading:'フライトを検索中…',autobar:'60秒ごとに自動更新',calcLbl:'何時に家を出る？',cmArrLbl:'到着予定',cmLeaveLbl:'出発時刻',locTxt:'位置情報無効',locBtn:'📍 現在地を使用',driveLbl:'所要時間：',rfLbl:'更新',savedLbl:'保存済みフライト',tipsLbl:'ヒント',leavingIn:'後に出発',leavingNow:'今すぐ出発',overdue:'遅れています — 今すぐ出発！',depLbl:'出発',arrLbl:'到着',tips:[{i:'🚗',t:'メイン機能',b:'所要時間を入力して出発時刻を計算。'},{i:'🕐',t:'到着バッファ',b:'着陸後20〜30分、手荷物と通関に。'},{i:'📍',t:'ターミナル確認',b:'間違えると長い移動になります。'},{i:'🔔',t:'通知',b:'着陸・遅延をすぐにお知らせ。'},{i:'📱',t:'インストール',b:'ホーム画面に追加して使用。'},{i:'💬',t:'共有',b:'WhatsAppで状況をシェア。'},{i:'🌦',t:'天気',b:'到着地の天気を確認。'},{i:'🔁',t:'自動更新',b:'60秒ごとに更新。'}]},
 };
 const L2L={'ar':'ar','hi':'hi','te':'te','ur':'ur','fr':'fr','de':'de','es':'es','zh':'zh','ja':'ja','ko':'en','pt':'en','ru':'en'};
+// Extra translation keys merged into each language
+const _EX={
+  en:{st_inflight:'In Flight',st_scheduled:'Scheduled',st_landed:'Landed',st_cancelled:'Cancelled',st_diverted:'Diverted',wxFeels:'Feels',wxWind:'Wind',wxHumidity:'Humidity',wxRain:'Rain',wxVis:'Visibility',liveAlt:'Altitude',liveSpd:'Speed',detAircraft:'Aircraft',detDate:'Date',detGate:'Gate',detAirline:'Airline',noFlights:'No flights found.',notGo:'Do not go to airport',headArr:'Head to arrivals',leaveImm:'Leave immediately'},
+  ar:{st_inflight:'في الجو',st_scheduled:'مجدول',st_landed:'هبط',st_cancelled:'ملغى',st_diverted:'محوّل',wxFeels:'الإحساس',wxWind:'الرياح',wxHumidity:'الرطوبة',wxRain:'المطر',wxVis:'الرؤية',liveAlt:'الارتفاع',liveSpd:'السرعة',detAircraft:'الطائرة',detDate:'التاريخ',detGate:'البوابة',detAirline:'الخط الجوي',noFlights:'لا رحلات متاحة.',notGo:'لا تذهب للمطار',headArr:'توجه للاستقبال',leaveImm:'غادر فوراً'},
+  hi:{st_inflight:'उड़ान में',st_scheduled:'निर्धारित',st_landed:'उतरा',st_cancelled:'रद्द',st_diverted:'मार्ग बदला',wxFeels:'महसूस',wxWind:'हवा',wxHumidity:'आर्द्रता',wxRain:'बारिश',wxVis:'दृश्यता',liveAlt:'ऊंचाई',liveSpd:'गति',detAircraft:'विमान',detDate:'तारीख',detGate:'गेट',detAirline:'एयरलाइन',noFlights:'कोई उड़ान नहीं मिली.',notGo:'मत जाओ',headArr:'आगमन पर जाएं',leaveImm:'तुरंत निकलें'},
+  ur:{st_inflight:'پرواز میں',st_scheduled:'شیڈول',st_landed:'اتری',st_cancelled:'منسوخ',st_diverted:'راستہ بدلا',wxFeels:'محسوس',wxWind:'ہوا',wxHumidity:'نمی',wxRain:'بارش',wxVis:'مرئیت',liveAlt:'بلندی',liveSpd:'رفتار',detAircraft:'طیارہ',detDate:'تاریخ',detGate:'گیٹ',detAirline:'ایئرلائن',noFlights:'کوئی پرواز نہیں ملی.',notGo:'مت جائیں',headArr:'آمد کی طرف جائیں',leaveImm:'فوری نکلیں'},
+  fr:{st_inflight:'En vol',st_scheduled:'Prévu',st_landed:'Atterri',st_cancelled:'Annulé',st_diverted:'Dérouté',wxFeels:'Ressenti',wxWind:'Vent',wxHumidity:'Humidité',wxRain:'Pluie',wxVis:'Visibilité',liveAlt:'Altitude',liveSpd:'Vitesse',detAircraft:'Avion',detDate:'Date',detGate:'Porte',detAirline:'Compagnie',noFlights:'Aucun vol trouvé.',notGo:'Ne pas aller',headArr:'Direction arrivées',leaveImm:'Partez immédiatement'},
+  de:{st_inflight:'Im Flug',st_scheduled:'Geplant',st_landed:'Gelandet',st_cancelled:'Gestrichen',st_diverted:'Umgeleitet',wxFeels:'Gefühlt',wxWind:'Wind',wxHumidity:'Feuchtigkeit',wxRain:'Regen',wxVis:'Sicht',liveAlt:'Höhe',liveSpd:'Geschwindigkeit',detAircraft:'Flugzeug',detDate:'Datum',detGate:'Gate',detAirline:'Airline',noFlights:'Keine Flüge gefunden.',notGo:'Nicht hingehen',headArr:'Zu Ankünften',leaveImm:'Sofort losfahren'},
+  es:{st_inflight:'En vuelo',st_scheduled:'Programado',st_landed:'Aterrizado',st_cancelled:'Cancelado',st_diverted:'Desviado',wxFeels:'Sensación',wxWind:'Viento',wxHumidity:'Humedad',wxRain:'Lluvia',wxVis:'Visibilidad',liveAlt:'Altitud',liveSpd:'Velocidad',detAircraft:'Avión',detDate:'Fecha',detGate:'Puerta',detAirline:'Aerolínea',noFlights:'No hay vuelos.',notGo:'No ir al aeropuerto',headArr:'A llegadas',leaveImm:'Salir inmediatamente'},
+  zh:{st_inflight:'飞行中',st_scheduled:'计划中',st_landed:'已降落',st_cancelled:'已取消',st_diverted:'已改航',wxFeels:'体感',wxWind:'风速',wxHumidity:'湿度',wxRain:'降雨',wxVis:'能见度',liveAlt:'高度',liveSpd:'速度',detAircraft:'机型',detDate:'日期',detGate:'登机口',detAirline:'航空公司',noFlights:'未找到航班.',notGo:'不要前往机场',headArr:'前往到达区',leaveImm:'立即出发'},
+  te:{st_inflight:'విమానంలో',st_scheduled:'షెడ్యూల్డ్',st_landed:'దిగింది',st_cancelled:'రద్దు',st_diverted:'మళ్ళింపు',wxFeels:'అనుభవం',wxWind:'గాలి',wxHumidity:'తేమ',wxRain:'వర్షం',wxVis:'దృశ్యత',liveAlt:'ఎత్తు',liveSpd:'వేగం',detAircraft:'విమానం',detDate:'తేదీ',detGate:'గేట్',detAirline:'ఎయిర్‌లైన్',noFlights:'విమానాలు లేవు.',notGo:'వెళ్ళకండి',headArr:'ఆగమనానికి వెళ్ళండి',leaveImm:'వెంటనే వెళ్ళండి'},
+  ja:{st_inflight:'飛行中',st_scheduled:'予定',st_landed:'着陸済',st_cancelled:'欠航',st_diverted:'迂回',wxFeels:'体感',wxWind:'風',wxHumidity:'湿度',wxRain:'雨',wxVis:'視程',liveAlt:'高度',liveSpd:'速度',detAircraft:'機材',detDate:'日付',detGate:'ゲート',detAirline:'航空会社',noFlights:'便が見つかりません.',notGo:'空港へ行かないで',headArr:'到着ロビーへ',leaveImm:'今すぐ出発'},
+};
+Object.keys(_EX).forEach(l=>{if(LANGS[l])Object.assign(LANGS[l],_EX[l]);});
 let lang='en', T=LANGS.en;
 
 function detectLang(){
@@ -1255,6 +1299,7 @@ function applyLang(l){
     d.classList.toggle('lng-active',d.dataset.lang===l);
   });
   renderTips();
+  if(curData){renderFlight(curData);updateLeaveTime(curData);}
 }
 function setText(id,txt){const el=document.getElementById(id);if(el)el.textContent=txt}
 function toggleLangMenu(){document.getElementById('lang-menu').classList.toggle('open')}
@@ -1294,7 +1339,11 @@ function qaiShare(){
   shareNative();
 }
 
-function renderTips(){}
+function renderTips(){
+  const el=document.getElementById('tips-list');
+  if(!el||!T.tips)return;
+  el.innerHTML=T.tips.map(t=>`<div class="tip-item"><span class="tip-ico">${t.i}</span><div><div class="tip-ttl">${t.t}</div><div class="tip-body">${t.b}</div></div></div>`).join('');
+}
 
 // ─── STATE ────────────────────────────────────────────────────────────────────
 let curTab='flight', curFlight=null, curData=null;
@@ -1658,7 +1707,7 @@ function renderFlight(d){
   setText('fi-airline',d.airline);
   const pill=document.getElementById('fi-spill');
   const st=(d.status||'unknown').toLowerCase().replace(/[-\s]/g,'');
-  const statusLabel={'enroute':'In Flight','active':'In Flight','scheduled':'Scheduled','landed':'Landed','cancelled':'Cancelled','diverted':'Diverted'};
+  const statusLabel={'enroute':T.st_inflight,'active':T.st_inflight,'scheduled':T.st_scheduled,'landed':T.st_landed,'cancelled':T.st_cancelled,'diverted':T.st_diverted};
   pill.textContent=statusLabel[st]||cap(d.status);
   pill.className=`spill sp-${st}`;
 
@@ -1682,16 +1731,16 @@ function renderFlight(d){
 
   // Details
   const det=[];
-  if(d.aircraft)det.push({l:'Aircraft',v:d.aircraft});
-  det.push({l:'Date',v:fmtD(d.departure.scheduled)});
-  if(d.arrival.gate)det.push({l:'Gate',v:d.arrival.gate});
-  if(d.airlineIata)det.push({l:'Airline',v:d.airlineIata});
+  if(d.aircraft)det.push({l:T.detAircraft,v:d.aircraft});
+  det.push({l:T.detDate,v:fmtD(d.departure.scheduled)});
+  if(d.arrival.gate)det.push({l:T.detGate,v:d.arrival.gate});
+  if(d.airlineIata)det.push({l:T.detAirline,v:d.airlineIata});
   document.getElementById('dstrip').innerHTML=det.map(x=>`<div class="di"><div class="di-lbl">${x.l}</div><div class="di-val">${x.v}</div></div>`).join('');
 
   // Live
   if(d.live){
     document.getElementById('live-strip').classList.add('show');
-    document.getElementById('lstats').innerHTML=`<div class="ls"><div class="ls-lbl">Altitude</div><div class="ls-val">${Math.round(d.live.altitude||0).toLocaleString()} ft</div></div><div class="ls"><div class="ls-lbl">Speed</div><div class="ls-val">${Math.round(d.live.speed||0)} km/h</div></div>`;
+    document.getElementById('lstats').innerHTML=`<div class="ls"><div class="ls-lbl">${T.liveAlt}</div><div class="ls-val">${Math.round(d.live.altitude||0).toLocaleString()} ft</div></div><div class="ls"><div class="ls-lbl">${T.liveSpd}</div><div class="ls-val">${Math.round(d.live.speed||0)} km/h</div></div>`;
   }
 
   // Weather
@@ -1704,11 +1753,11 @@ function renderFlight(d){
     setText('wx-temp',`${wx.temp}${wxTUnit}`);
     setText('wx-desc',`${wx.desc} at ${d.arrival.city||d.arrival.airport}`);
     document.getElementById('wx-stats').innerHTML=`
-      <div class="wx-stat"><div class="wx-stat-lbl">Feels</div><div class="wx-stat-val">${wx.feels}${wxTUnit}</div></div>
-      <div class="wx-stat"><div class="wx-stat-lbl">Wind</div><div class="wx-stat-val">${wx.wind} ${wxWUnit}</div></div>
-      <div class="wx-stat"><div class="wx-stat-lbl">Humidity</div><div class="wx-stat-val">${wx.humidity}%</div></div>
-      ${wx.rain?`<div class="wx-stat"><div class="wx-stat-lbl">Rain</div><div class="wx-stat-val">${wx.rain}mm</div></div>`:''}
-      <div class="wx-stat"><div class="wx-stat-lbl">Visibility</div><div class="wx-stat-val">${wx.visibility}km</div></div>
+      <div class="wx-stat"><div class="wx-stat-lbl">${T.wxFeels}</div><div class="wx-stat-val">${wx.feels}${wxTUnit}</div></div>
+      <div class="wx-stat"><div class="wx-stat-lbl">${T.wxWind}</div><div class="wx-stat-val">${wx.wind} ${wxWUnit}</div></div>
+      <div class="wx-stat"><div class="wx-stat-lbl">${T.wxHumidity}</div><div class="wx-stat-val">${wx.humidity}%</div></div>
+      ${wx.rain?`<div class="wx-stat"><div class="wx-stat-lbl">${T.wxRain}</div><div class="wx-stat-val">${wx.rain}mm</div></div>`:''}
+      <div class="wx-stat"><div class="wx-stat-lbl">${T.wxVis}</div><div class="wx-stat-val">${wx.visibility}km</div></div>
     `;
   }
 
@@ -1740,9 +1789,9 @@ function updateLeaveTime(d){
   setText('cm-arr-sub',`${fmtD(arrISO)} · +${bufMins}min exit buffer`);
   const el=document.getElementById('cm-leave-val');
   let lv,cls,sub;
-  if(d.status==='cancelled'||d.status==='diverted'){lv='—';cls='red';sub='Do not go to airport'}
-  else if(d.status==='landed'){lv=T.leavingNow;cls='green';sub='Head to arrivals now'}
-  else if(minsLeft<=0){lv=T.overdue;cls='red';sub='Leave immediately'}
+  if(d.status==='cancelled'||d.status==='diverted'){lv='—';cls='red';sub=T.notGo}
+  else if(d.status==='landed'){lv=T.leavingNow;cls='green';sub=T.headArr}
+  else if(minsLeft<=0){lv=T.overdue;cls='red';sub=T.leaveImm}
   else if(minsLeft<=15){lv=T.leavingNow;cls='amber';sub=`${driveMins} min drive`}
   else if(minsLeft<60){lv=`${T.leavingIn} ${minsLeft} min`;cls='blue';sub=`Leave at ${fmtT(leaveDate.toISOString())}`}
   else{const h=Math.floor(minsLeft/60),m=minsLeft%60;lv=fmtT(leaveDate.toISOString());cls='green';sub=`${h}h ${m}m from now · ${driveMins}min drive`;}
@@ -1788,7 +1837,7 @@ function renderRoute(data,dep,arr){
   setText('rr-hdr',`${list.length} flights found: ${dep} → ${arr}`);
   document.getElementById('rr-list').innerHTML=list.length
     ?list.map(f=>`<div class="rri" onclick="searchFlight('${f.flightNumber}')"><span class="rri-fn">${f.flightNumber}</span><span class="rri-al">${f.airline}</span><span class="rri-time">${fmtT(f.scheduledDep)} → ${fmtT(f.scheduledArr)}</span><span class="rri-bdg ${f.buffer.bufferColor}">${f.buffer.bufferLabel}</span></div>`).join('')
-    :`<div style="padding:1rem 1.3rem;color:var(--t2);font-size:.85rem">No flights found right now.</div>`;
+    :`<div style="padding:1rem 1.3rem;color:var(--t2);font-size:.85rem">${T.noFlights}</div>`;
   document.getElementById('rr-card').classList.add('show');
 }
 

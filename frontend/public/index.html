@@ -358,6 +358,14 @@ header::before{content:'';position:absolute;top:0;left:50%;transform:translateX(
 .rri-bdg.amber{background:rgba(245,166,35,.15);color:#f5a623}
 .rri-bdg.red{background:rgba(240,82,82,.15);color:#f05252}
 .rri-bdg.blue{background:rgba(96,165,250,.15);color:#60a5fa}
+@media(max-width:480px){
+  .frow{flex-direction:column}
+  .rri{display:grid;grid-template-columns:64px 1fr auto;grid-template-rows:auto auto;gap:.15rem .5rem;padding:.7rem 1rem;align-items:center}
+  .rri-fn{grid-column:1;grid-row:1/3;font-size:.88rem;min-width:0}
+  .rri-al{grid-column:2;grid-row:1;font-size:.75rem;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .rri-time{grid-column:2;grid-row:2;font-size:.7rem}
+  .rri-bdg{grid-column:3;grid-row:1/3;font-size:.65rem;white-space:nowrap}
+}
 
 /* ── Saved flights panel ── */
 .saved-panel{display:none;margin-bottom:.9rem}
@@ -1113,79 +1121,6 @@ const API = window.location.hostname === 'localhost'
   ? 'http://localhost:3001/api'
   : '/api';
 
-// ─── DEMO FLIGHT (BA283) ──────────────────────────────────────────────────────
-function getDemoFlight(){
-  const now=new Date();
-  const depTime=new Date(now); depTime.setHours(9,0,0,0);
-  const arrTime=new Date(now); arrTime.setHours(12,15,0,0);
-  return {
-    flightNumber:'BA283',
-    airline:'British Airways',
-    airlineIata:'BA',
-    aircraft:'Boeing 777-236ER',
-    status:'en-route',
-    departure:{
-      iata:'LHR', city:'London', airport:'Heathrow Airport',
-      scheduled:depTime.toISOString(), terminal:'5', gate:'B36',
-      delay:0, lat:51.4775, lng:-0.4614
-    },
-    arrival:{
-      iata:'JFK', city:'New York', airport:'John F. Kennedy International',
-      scheduled:new Date(arrTime.getTime()+5*3600000).toISOString(),
-      estimated:arrTime.toISOString(),
-      terminal:'7', gate:'B12', baggage:'5',
-      delay:15, lat:40.6413, lng:-73.7781
-    },
-    live:{latitude:52.8,longitude:-30.4,altitude:35000,speed:887,heading:262},
-    weather:{temp:14,feels:11,desc:'partly cloudy',wind:22,humidity:64,rain:null,visibility:16},
-    buffer:{bufferColor:'green',bufferLabel:'On Time',advice:'Flight is on track. Leave home about 30 min after estimated arrival to allow for taxi + baggage.'},
-    fetchedAt:now.toISOString()
-  };
-}
-// ─── DEMO FLIGHT (F94602) ─────────────────────────────────────────────────────
-function getDemoFlightF94602(){
-  const now=new Date();
-  const dep=new Date(now); dep.setHours(22,46,0,0);
-  const arr=new Date(now); arr.setDate(arr.getDate()+(now.getHours()>=22&&now.getMinutes()>=46?1:0)); arr.setHours(1,6,0,0);
-  if(arr<=dep) arr.setDate(arr.getDate()+1);
-  return {
-    flightNumber:'F94602',
-    airline:'Frontier Airlines',
-    airlineIata:'F9',
-    aircraft:'Airbus A321neo',
-    status:'en-route',
-    departure:{
-      iata:'ATL', city:'Atlanta', airport:'Hartsfield-Jackson Atlanta International',
-      scheduled:dep.toISOString(), terminal:'S', gate:'S6',
-      delay:0, lat:33.6407, lng:-84.4277
-    },
-    arrival:{
-      iata:'EWR', city:'Newark', airport:'Newark Liberty International Airport',
-      scheduled:new Date(arr.getTime()+10*60000).toISOString(),
-      estimated:arr.toISOString(),
-      terminal:'B', gate:'B34', baggage:'3',
-      delay:10, lat:40.6895, lng:-74.1745
-    },
-    live:{latitude:36.8,longitude:-79.2,altitude:34000,speed:836,heading:42},
-    weather:{temp:58,feels:54,desc:'clear sky',wind:9,humidity:55,rain:null,visibility:16,unit:'imperial'},
-    buffer:{bufferColor:'green',bufferLabel:'On Time',advice:'Flight is on track. Arrives just after midnight — plan for light late-night traffic.'},
-    fetchedAt:now.toISOString()
-  };
-}
-const DEMO_FLIGHTS={'BA283':getDemoFlight,'F94602':getDemoFlightF94602};
-
-// ─── DEMO ROUTE (LHR→JFK) ────────────────────────────────────────────────────
-function getDemoRoute(){
-  const now=new Date();
-  function t(h,m){const d=new Date(now);d.setHours(h,m,0,0);return d.toISOString()}
-  return {flights:[
-    {flightNumber:'BA283', airline:'British Airways',   scheduledDep:t(9,0),  scheduledArr:t(12,15), buffer:{bufferColor:'green', bufferLabel:'On Time'}},
-    {flightNumber:'VS3',   airline:'Virgin Atlantic',   scheduledDep:t(11,30),scheduledArr:t(14,50), buffer:{bufferColor:'amber', bufferLabel:'+20 min'}},
-    {flightNumber:'AA100', airline:'American Airlines', scheduledDep:t(13,0), scheduledArr:t(16,10), buffer:{bufferColor:'green', bufferLabel:'On Time'}},
-    {flightNumber:'DL401', airline:'Delta Air Lines',   scheduledDep:t(15,45),scheduledArr:t(19,5),  buffer:{bufferColor:'red',   bufferLabel:'+55 min'}},
-  ]};
-}
-const DEMO_ROUTES={'LHR-JFK':getDemoRoute,'JFK-LHR':getDemoRoute};
 
 function setText(id,txt){const el=document.getElementById(id);if(el)el.textContent=txt}
 
@@ -1522,20 +1457,6 @@ async function searchFlight(fn){
   const num=(fn||document.getElementById('flight-input').value.trim()).toUpperCase();
   if(!num){showErr('Please enter a flight number (e.g. BA283)');return}
   clearResults(); showLoading(true);
-  // Demo mode — return mock data without hitting the API
-  if(DEMO_FLIGHTS[num]){
-    await new Promise(r=>setTimeout(r,900));
-    const d=DEMO_FLIGHTS[num]();
-    curFlight={type:'flight',value:num};
-    curData=d;
-    renderFlight(d);
-    setBgForAirport(d.departure.iata);
-    renderMap(d);
-    saveRecent(num);
-    startAuto();
-    showLoading(false);
-    return;
-  }
   try{
     const r=await fetch(`${API}/flight/${encodeURIComponent(num)}`);
     const d=await r.json();
@@ -1558,16 +1479,6 @@ async function searchRoute(){
   const arr=(selArr||document.getElementById('arr-input').value.trim()).toUpperCase();
   if(!dep||!arr){showErr('Please select both airports.');return}
   clearResults(); showLoading(true);
-  const demoKey=`${dep}-${arr}`;
-  if(DEMO_ROUTES[demoKey]){
-    await new Promise(r=>setTimeout(r,800));
-    const d=DEMO_ROUTES[demoKey]();
-    curFlight={type:'route',dep,arr};
-    renderRoute(d,dep,arr);
-    startAuto();
-    showLoading(false);
-    return;
-  }
   try{
     const r=await fetch(`${API}/route?dep=${encodeURIComponent(dep)}&arr=${encodeURIComponent(arr)}`);
     const d=await r.json();

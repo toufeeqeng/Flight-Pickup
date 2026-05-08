@@ -1125,6 +1125,11 @@ const API = window.location.hostname === 'localhost'
 
 function setText(id,txt){const el=document.getElementById(id);if(el)el.textContent=txt}
 
+// ─── UNIT HELPERS (miles/°F for US, km/°C elsewhere) ─────────────────────────
+const isImperial = /^en-US/i.test(navigator.language);
+function fmtDist(km){return isImperial?Math.round(km*0.621371)+' mi':km+' km'}
+function fmtSpd(kmh){return isImperial?Math.round(kmh*0.621371)+' mph':kmh+' km/h'}
+
 // ─── QUICK ACTION ICONS ───────────────────────────────────────────────────────
 function qaiLocation(){reqLoc()}
 
@@ -1417,7 +1422,7 @@ function reqLoc(){
         detectTrafficChange();
         const tfLbl={heavy:'🔴 Heavy',moderate:'🟡 Moderate',clear:'🟢 Clear'};
         setText('spc-drive-val',`${driveMins} min`);
-        setText('spc-drive-sub',`${result.distanceKm}km · ${tfLbl[result.trafficLevel]||'Live'}`);
+        setText('spc-drive-sub',`${fmtDist(result.distanceKm)} · ${tfLbl[result.trafficLevel]||'Live'}`);
         recalc();
         if(isFirst)renderRouteMap();
         else{if(rPath)rmap.removeLayer(rPath);rPath=L.polyline(result.routeCoords,{color:'#4f9cf9',weight:4,opacity:.85}).addTo(rmap);rmap.fitBounds(L.latLngBounds(result.routeCoords),{padding:[28,28]});}
@@ -1545,7 +1550,7 @@ function renderFlight(d){
   // Live
   if(d.live){
     document.getElementById('live-strip').classList.add('show');
-    document.getElementById('lstats').innerHTML=`<div class="ls"><div class="ls-lbl">Altitude</div><div class="ls-val">${Math.round(d.live.altitude||0).toLocaleString()} ft</div></div><div class="ls"><div class="ls-lbl">Speed</div><div class="ls-val">${Math.round(d.live.speed||0)} km/h</div></div>`;
+    document.getElementById('lstats').innerHTML=`<div class="ls"><div class="ls-lbl">Altitude</div><div class="ls-val">${Math.round(d.live.altitude||0).toLocaleString()} ft</div></div><div class="ls"><div class="ls-lbl">Speed</div><div class="ls-val">${fmtSpd(Math.round(d.live.speed||0))}</div></div>`;
   }
 
   // Weather
@@ -1553,13 +1558,16 @@ function renderFlight(d){
     const wx=d.weather;
     document.getElementById('wx-strip').classList.add('show');
     document.getElementById('wx-icon').textContent=wxEmoji(wx.desc);
-    const wxTUnit=wx.unit==='imperial'?'°F':'°C';
     const windMph=wx.unit==='imperial'?wx.wind:Math.round(wx.wind*0.621371);
-    setText('wx-temp',`${wx.temp}${wxTUnit}`);
+    const wxTemp=isImperial?wx.temp:Math.round((wx.temp-32)*5/9);
+    const wxFeels=isImperial?wx.feels:Math.round((wx.feels-32)*5/9);
+    const wxTUnit=isImperial?'°F':'°C';
+    const windDisplay=isImperial?windMph+' mph':Math.round(windMph*1.60934)+' km/h';
+    setText('wx-temp',`${wxTemp}${wxTUnit}`);
     setText('wx-desc',`${wx.desc} at ${d.arrival.city||d.arrival.airport}`);
     document.getElementById('wx-stats').innerHTML=`
-      <div class="wx-stat"><div class="wx-stat-lbl">Feels</div><div class="wx-stat-val">${wx.feels}${wxTUnit}</div></div>
-      <div class="wx-stat"><div class="wx-stat-lbl">Wind</div><div class="wx-stat-val">${windMph} mph</div></div>
+      <div class="wx-stat"><div class="wx-stat-lbl">Feels</div><div class="wx-stat-val">${wxFeels}${wxTUnit}</div></div>
+      <div class="wx-stat"><div class="wx-stat-lbl">Wind</div><div class="wx-stat-val">${windDisplay}</div></div>
       <div class="wx-stat"><div class="wx-stat-lbl">Humidity</div><div class="wx-stat-val">${wx.humidity}%</div></div>
       ${wx.rain?`<div class="wx-stat"><div class="wx-stat-lbl">Rain</div><div class="wx-stat-val">${wx.rain}mm</div></div>`:''}
       <div class="wx-stat"><div class="wx-stat-lbl">Visibility</div><div class="wx-stat-val">${wx.visibility}km</div></div>
@@ -1713,14 +1721,14 @@ function renderMap(d){
   if(live&&live.latitude&&live.longitude){
     let hdg=0;
     if(dep.lat&&dep.lng){const dl=(live.longitude-dep.lng)*Math.PI/180,la1=dep.lat*Math.PI/180,la2=live.latitude*Math.PI/180,y=Math.sin(dl)*Math.cos(la2),x=Math.cos(la1)*Math.sin(la2)-Math.sin(la1)*Math.cos(la2)*Math.cos(dl);hdg=(Math.atan2(y,x)*180/Math.PI+360)%360}
-    pMarker=L.marker([live.latitude,live.longitude],{icon:mkPlane(hdg)}).addTo(lmap).bindPopup(`<b>${d.flightNumber}</b><br>Alt: ${Math.round(live.altitude||0).toLocaleString()} ft<br>Speed: ${Math.round(live.speed||0)} km/h`);
+    pMarker=L.marker([live.latitude,live.longitude],{icon:mkPlane(hdg)}).addTo(lmap).bindPopup(`<b>${d.flightNumber}</b><br>Alt: ${Math.round(live.altitude||0).toLocaleString()} ft<br>Speed: ${fmtSpd(Math.round(live.speed||0))}`);
     pts.push([live.latitude,live.longitude]);
     const pp=[];
     if(dep.lat&&dep.lng)pp.push([dep.lat,dep.lng]);
     pp.push([live.latitude,live.longitude]);
     if(arr.lat&&arr.lng)pp.push([arr.lat,arr.lng]);
     if(pp.length>=2)lPath=L.polyline(pp,{color:'#4f9cf9',weight:2,opacity:.65,dashArray:'6,8'}).addTo(lmap);
-    mi.innerHTML=`<span>✈ <strong>${Math.round(live.altitude||0).toLocaleString()} ft</strong></span><span>💨 <strong>${Math.round(live.speed||0)} km/h</strong></span>`;
+    mi.innerHTML=`<span>✈ <strong>${Math.round(live.altitude||0).toLocaleString()} ft</strong></span><span>💨 <strong>${fmtSpd(Math.round(live.speed||0))}</strong></span>`;
     setText('map-ttl-txt',`Live — ${d.flightNumber}`);
   }else{
     if(dep.lat&&dep.lng&&arr.lat&&arr.lng)lPath=L.polyline([[dep.lat,dep.lng],[arr.lat,arr.lng]],{color:'#4f9cf9',weight:2,opacity:.35,dashArray:'6,8'}).addTo(lmap);
@@ -2321,7 +2329,7 @@ function updateTcCard(routeResult){
   const chip=document.getElementById('tc-traffic-chip');
   chip.className=`tc-chip ${tf.cls}`;
   setText('tc-traffic-txt',tf.txt);
-  const km=res?`${res.distanceKm||res.km||''}km · `:'';
+  const km=res?`${fmtDist(res.distanceKm||res.km||0)} · `:'';
   setText('tc-live-lbl',`${km}${tf.txt}`);
   const arrName=curData&&curData.arrival?(curData.arrival.airport||curData.arrival.iata||'Airport'):'Airport';
   setText('tc-route-sub',`From your location to ${arrName}`);
@@ -2431,7 +2439,7 @@ function setBgForAirport(iata){initBgSlideshow();}
           if(r){osrmDriveTime=r;driveMins=r.driveMins;
             const tf={heavy:'🔴 Heavy',moderate:'🟡 Moderate',clear:'🟢 Clear'};
             setText('spc-drive-val',`${driveMins} min`);
-            setText('spc-drive-sub',`${r.distanceKm}km · ${tf[r.trafficLevel]||'Live'}`);
+            setText('spc-drive-sub',`${fmtDist(r.distanceKm)} · ${tf[r.trafficLevel]||'Live'}`);
             recalc();renderRouteMap();updateTcCard(r);
           }
         });

@@ -1553,7 +1553,7 @@ function renderFlight(d){
       <div class="wx-stat"><div class="wx-stat-lbl">Wind</div><div class="wx-stat-val">${windDisplay}</div></div>
       <div class="wx-stat"><div class="wx-stat-lbl">Humidity</div><div class="wx-stat-val">${wx.humidity}%</div></div>
       ${wx.rain?`<div class="wx-stat"><div class="wx-stat-lbl">Rain</div><div class="wx-stat-val">${wx.rain}mm</div></div>`:''}
-      <div class="wx-stat"><div class="wx-stat-lbl">Visibility</div><div class="wx-stat-val">${wx.visibility}km</div></div>
+      <div class="wx-stat"><div class="wx-stat-lbl">Visibility</div><div class="wx-stat-val">${isImperial?Math.round(wx.visibility*0.621371)+' mi':wx.visibility+' km'}</div></div>
     `;
   }
 
@@ -2454,6 +2454,7 @@ function setBgForAirport(iata){initBgSlideshow();}
   }
 })();
 
+maybeShowNotifBar();
 </script>
 </body>
 </html>

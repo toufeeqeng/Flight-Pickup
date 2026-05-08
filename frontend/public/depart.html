@@ -1197,7 +1197,7 @@ function renderFlight(d){
     document.getElementById('wx-stats').innerHTML=
       `<div class="wx-stat"><div class="wx-stat-lbl">Wind</div><div class="wx-stat-val">${w.wind} ${wxWUnit}</div></div>`+
       `<div class="wx-stat"><div class="wx-stat-lbl">Humidity</div><div class="wx-stat-val">${w.humidity}%</div></div>`+
-      (w.visibility?`<div class="wx-stat"><div class="wx-stat-lbl">Visibility</div><div class="wx-stat-val">${w.visibility} km</div></div>`:'');
+      (w.visibility?`<div class="wx-stat"><div class="wx-stat-lbl">Visibility</div><div class="wx-stat-val">${isImperial?Math.round(w.visibility*0.621371)+' mi':w.visibility+' km'}</div></div>`:'');
     document.getElementById('wx-strip').classList.add('show');
   }
 
@@ -1903,6 +1903,7 @@ loadSaved();
 checkUrlParams();
 initBgSlideshow();
 if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js').catch(()=>{});
+dpMaybeShowNotifBar();
 
 </script>
 </body>

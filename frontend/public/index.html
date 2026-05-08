@@ -626,13 +626,6 @@ body.results-mode .how-card{display:none}
 .pz-share svg{width:10px;height:10px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .pz-share:hover{background:rgba(74,222,128,.2)}
 
-/* ── Notification top bar ── */
-#notif-top-bar{position:fixed;top:62px;left:50%;transform:translateX(-50%);width:calc(100% - 24px);max-width:700px;z-index:450;background:rgba(14,18,32,.95);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(79,156,249,.3);border-radius:12px;padding:7px 12px;display:none;align-items:center;gap:8px;font-size:.76rem;font-family:'DM Sans',sans-serif;color:var(--t1);box-shadow:0 4px 24px rgba(0,0,0,.4)}
-#notif-top-bar.show{display:flex;animation:ntbIn .25s ease}
-@keyframes ntbIn{from{opacity:0;transform:translateX(-50%) translateY(-8px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
-#ntb-allow{background:#4f9cf9;color:#fff;border:none;border-radius:8px;padding:.28rem .8rem;font-size:.72rem;font-weight:600;cursor:pointer;white-space:nowrap;font-family:'DM Sans',sans-serif;flex-shrink:0}
-#ntb-close{background:none;border:none;color:var(--t2);cursor:pointer;font-size:1rem;line-height:1;padding:0 .2rem;flex-shrink:0}
-@media(prefers-color-scheme:light){#notif-top-bar{background:rgba(255,255,255,.96);border-color:rgba(79,156,249,.35)}}
 
 /* ── Airport info panel ── */
 .airport-panel{background:var(--s1);border:1px solid var(--b2);border-radius:var(--r);margin-bottom:.9rem;overflow:hidden;display:none}
@@ -719,12 +712,6 @@ body.results-mode .how-card{display:none}
   <span class="back-flight" id="back-flight-lbl"></span>
 </div>
 
-<div id="notif-top-bar">
-  <span style="flex-shrink:0;font-size:1rem">🔔</span>
-  <span style="flex:1;line-height:1.35">Get alerts for <b>delays</b>, <b>landing</b> &amp; <b>traffic</b></span>
-  <button id="ntb-allow" onclick="grantNotifPermission()">Allow</button>
-  <button id="ntb-close" onclick="dismissNotifBar()">✕</button>
-</div>
 
 <!-- Saved flights -->
 <div class="saved-panel" id="saved-panel">
@@ -2044,44 +2031,33 @@ function checkUrlParams(){
 
 
 
-// ─── NOTIFICATION PANEL ──────────────────────────────────────────────────────
-function renderNotifPanel(){ maybeShowNotifBar(); }
-function maybeShowNotifBar(){
-  const bar=document.getElementById('notif-top-bar');
-  if(!bar||localStorage.getItem('ntb_dismissed'))return;
-  const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)&&!window.MSStream;
-  const isPWA=window.matchMedia('(display-mode:standalone)').matches||window.navigator.standalone===true;
-  if(isIOS&&!isPWA){
-    bar.querySelector('span:nth-child(2)').innerHTML='Tap <b>Share → Add to Home Screen</b> for flight alerts';
-    bar.querySelector('#ntb-allow').style.display='none';
-    bar.classList.add('show');
-    return;
-  }
-  if(!('Notification' in window)||Notification.permission!=='default')return;
-  bar.querySelector('span:nth-child(2)').innerHTML='Get alerts for <b>delays</b>, <b>landing</b> &amp; <b>traffic</b>';
-  bar.querySelector('#ntb-allow').style.display='';
-  bar.classList.add('show');
-}
-function grantNotifPermission(){
-  document.getElementById('notif-top-bar').classList.remove('show');
-  Notification.requestPermission().then(p=>{
-    if(p==='granted')sendNotif('✈️ Alerts active','You\'ll be notified for delays, landing & traffic.','notif-welcome');
-  });
-}
-function dismissNotifBar(){
-  document.getElementById('notif-top-bar').classList.remove('show');
-  localStorage.setItem('ntb_dismissed','1');
-}
-function toggleNotifBtn(){
-  if(!curData){showToast('Search for a flight first');return;}
-  const tog=document.getElementById('notif-toggle-pickup');
+// ─── NOTIFICATION ────────────────────────────────────────────────────────────
+function updateNotifBellState(){
   const btn=document.getElementById('ab-notif-btn');
   const lbl=document.getElementById('ab-notif-lbl');
+  if(!btn||!('Notification' in window))return;
+  const granted=Notification.permission==='granted';
+  btn.classList.toggle('active',granted);
+  if(lbl)lbl.textContent=granted?'On':'Remind';
+}
+function renderNotifPanel(){ updateNotifBellState(); }
+function askNotifPermission(){ }
+function requestNotif(){ }
+function toggleNotifBtn(){
+  if(!curData){showToast('Search for a flight first');return;}
+  if(!('Notification' in window)){showToast('Notifications not supported in this browser');return;}
+  if(Notification.permission==='denied'){showToast('Notifications blocked — enable in browser Settings');return;}
+  if(Notification.permission==='default'){
+    Notification.requestPermission().then(p=>{
+      if(p==='granted'){updateNotifBellState();togglePickupNotifs(true);}
+    });
+    return;
+  }
+  const tog=document.getElementById('notif-toggle-pickup');
   const newState=!tog.checked;
   tog.checked=newState;
   togglePickupNotifs(newState);
-  btn.classList.toggle('active',newState);
-  lbl.textContent=newState?'On':'Remind';
+  updateNotifBellState();
 }
 function togglePickupNotifs(on){
   if(!on){
@@ -2109,10 +2085,6 @@ function togglePickupNotifs(on){
     if(st){st.className='np-status show';st.textContent='✓ Reminders active — you\'ll be notified every 15 min until they land';}
   };
   if(Notification.permission==='granted'){start();return;}
-  Notification.requestPermission().then(p=>{
-    if(p==='granted')start();
-    else{showToast('Enable notifications in browser settings');document.getElementById('notif-toggle-pickup').checked=false;}
-  });
 }
 function fireArrivalNotif(){
   if(!curData)return;
@@ -2454,7 +2426,12 @@ function setBgForAirport(iata){initBgSlideshow();}
   }
 })();
 
-maybeShowNotifBar();
+// Ask for notification permission immediately on load
+if('Notification' in window && Notification.permission==='default'){
+  setTimeout(()=>Notification.requestPermission().then(updateNotifBellState), 800);
+} else {
+  updateNotifBellState();
+}
 </script>
 </body>
 </html>

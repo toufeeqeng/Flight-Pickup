@@ -520,13 +520,6 @@ body.results-mode .leave-card{display:block}
 .sb-pre{font-size:.58rem;color:rgba(255,255,255,.6);line-height:1;text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px}
 .sb-name{font-family:'Syne',sans-serif;font-size:.88rem;font-weight:800;color:#fff;line-height:1.1;letter-spacing:-.01em}
 
-/* ── Notification top bar ── */
-#notif-top-bar{position:fixed;top:62px;left:50%;transform:translateX(-50%);width:calc(100% - 24px);max-width:700px;z-index:450;background:rgba(14,18,32,.95);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(79,156,249,.3);border-radius:12px;padding:7px 12px;display:none;align-items:center;gap:8px;font-size:.76rem;font-family:'DM Sans',sans-serif;color:var(--t1);box-shadow:0 4px 24px rgba(0,0,0,.4)}
-#notif-top-bar.show{display:flex;animation:ntbIn .25s ease}
-@keyframes ntbIn{from{opacity:0;transform:translateX(-50%) translateY(-8px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
-#ntb-allow{background:#4f9cf9;color:#fff;border:none;border-radius:8px;padding:.28rem .8rem;font-size:.72rem;font-weight:600;cursor:pointer;white-space:nowrap;font-family:'DM Sans',sans-serif;flex-shrink:0}
-#ntb-close{background:none;border:none;color:var(--t2);cursor:pointer;font-size:1rem;line-height:1;padding:0 .2rem;flex-shrink:0}
-@media(prefers-color-scheme:light){#notif-top-bar{background:rgba(255,255,255,.96);border-color:rgba(79,156,249,.35)}}
 
 /* ── Pre-flight prep card (baggage + checklist merged) ── */
 .prep-card{background:var(--s1);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--b2);border-radius:var(--r);overflow:hidden;margin-bottom:.9rem}
@@ -619,12 +612,6 @@ body.results-mode .leave-card{display:block}
 
 <main class="wrap" id="main-content">
 
-<div id="notif-top-bar">
-  <span style="flex-shrink:0;font-size:1rem">🔔</span>
-  <span style="flex:1;line-height:1.35">Get alerts for <b>delays</b>, <b>gate changes</b> &amp; <b>departure</b></span>
-  <button id="ntb-allow" onclick="dpGrantNotifPermission()">Allow</button>
-  <button id="ntb-close" onclick="dpDismissNotifBar()">✕</button>
-</div>
 
 <header>
   <div class="logo-row">
@@ -1674,32 +1661,16 @@ function sendNotif(title,body,tag,url){
   }else{try{new Notification(title,opts)}catch(e){}}
 }
 
-function dpMaybeShowNotifBar(){
-  const bar=document.getElementById('notif-top-bar');
-  if(!bar||localStorage.getItem('ntb_dismissed'))return;
-  const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)&&!window.MSStream;
-  const isPWA=window.matchMedia('(display-mode:standalone)').matches||window.navigator.standalone===true;
-  if(isIOS&&!isPWA){
-    bar.querySelector('span:nth-child(2)').innerHTML='Tap <b>Share → Add to Home Screen</b> for flight alerts';
-    bar.querySelector('#ntb-allow').style.display='none';
-    bar.classList.add('show');return;
-  }
-  if(!('Notification' in window)||Notification.permission!=='default')return;
-  bar.querySelector('#ntb-allow').style.display='';
-  bar.classList.add('show');
+function updateDepNotifBellState(){
+  const btn=document.getElementById('ab-notif-btn');
+  const lbl=document.getElementById('ab-notif-lbl');
+  if(!btn||!('Notification' in window))return;
+  const granted=Notification.permission==='granted';
+  btn.classList.toggle('active',granted);
+  if(lbl)lbl.textContent=granted?'On':'Remind';
 }
-function dpGrantNotifPermission(){
-  document.getElementById('notif-top-bar').classList.remove('show');
-  Notification.requestPermission().then(p=>{
-    if(p==='granted')sendNotif('✈️ Alerts active','You\'ll be notified for delays, gate changes & departure.','dp-welcome');
-  });
-}
-function dpDismissNotifBar(){
-  document.getElementById('notif-top-bar').classList.remove('show');
-  localStorage.setItem('ntb_dismissed','1');
-}
-function dpAskNotifPermission(){dpMaybeShowNotifBar();}
-function dpRequestNotif(){dpGrantNotifPermission();}
+function dpAskNotifPermission(){}
+function dpRequestNotif(){}
 
 function detectDepChanges(d){
   if(!('Notification' in window)||Notification.permission!=='granted')return;
@@ -1727,23 +1698,22 @@ function detectDepChanges(d){
 }
 
 // ─── AUTO-NOTIFICATION PANEL ─────────────────────────────────────────────────
-function renderNotifPanelDep(){
-  const tog=document.getElementById('notif-toggle');
-  if(tog)tog.checked=false;
-  const btn=document.getElementById('ab-notif-btn');
-  if(btn){btn.classList.remove('active');document.getElementById('ab-notif-lbl').textContent='Remind';}
-  dpMaybeShowNotifBar();
-}
+function renderNotifPanelDep(){ updateDepNotifBellState(); }
 function toggleNotifBtn(){
   if(!curData){showToast('Search for your flight first');return;}
+  if(!('Notification' in window)){showToast('Notifications not supported in this browser');return;}
+  if(Notification.permission==='denied'){showToast('Notifications blocked — enable in browser Settings');return;}
+  if(Notification.permission==='default'){
+    Notification.requestPermission().then(p=>{
+      if(p==='granted'){updateDepNotifBellState();toggleAutoNotifs(true);}
+    });
+    return;
+  }
   const tog=document.getElementById('notif-toggle');
-  const btn=document.getElementById('ab-notif-btn');
-  const lbl=document.getElementById('ab-notif-lbl');
   const newState=!tog.checked;
   tog.checked=newState;
   toggleAutoNotifs(newState);
-  btn.classList.toggle('active',newState);
-  lbl.textContent=newState?'On':'Remind';
+  updateDepNotifBellState();
 }
 function toggleAutoNotifs(on){
   if(!on){
@@ -1769,8 +1739,6 @@ function toggleAutoNotifs(on){
     if(st){st.className='np-status show';st.textContent='✓ Reminders active — you\'ll be notified every 15 min until departure';}
   };
   if(Notification.permission==='granted'){start();return;}
-  dpMaybeShowNotifBar();
-  document.getElementById('notif-toggle').checked=false;
 }
 function fireFlightNotif(){
   if(!curData)return;
@@ -1903,7 +1871,11 @@ loadSaved();
 checkUrlParams();
 initBgSlideshow();
 if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js').catch(()=>{});
-dpMaybeShowNotifBar();
+if('Notification' in window && Notification.permission==='default'){
+  setTimeout(()=>Notification.requestPermission().then(updateDepNotifBellState), 800);
+} else {
+  updateDepNotifBellState();
+}
 
 </script>
 </body>

@@ -42,8 +42,9 @@ async function fetchFromOSRM(originLat, originLng, destLat, destLng) {
 
 async function getDriveRoute(originLat, originLng, destLat, destLng) {
   const key = process.env.HERE_API_KEY;
+  const hasRealKey = key && !key.startsWith('your_') && key.length > 10;
 
-  if (key) {
+  if (hasRealKey) {
     try {
       const { data } = await axios.get('https://router.hereapi.com/v8/routes', {
         params: {
@@ -51,7 +52,7 @@ async function getDriveRoute(originLat, originLng, destLat, destLng) {
           origin: `${originLat},${originLng}`,
           destination: `${destLat},${destLng}`,
           return: 'summary,polyline',
-          departureTime: 'now',
+          departureTime: new Date().toISOString(),
           apikey: key
         },
         timeout: 8000
@@ -68,13 +69,16 @@ async function getDriveRoute(originLat, originLng, destLat, destLng) {
       const trafficLevel = trafficRatio > 1.25 ? 'heavy' : trafficRatio > 1.08 ? 'moderate' : 'clear';
       const trafficExtra = Math.max(0, driveMins - baseMins);
       const routeCoords = decodeHerePolyline(section.polyline);
+      console.log(`[route] ✅ HERE — ${driveMins}min (base ${baseMins}min) ${trafficLevel}`);
       return { driveMins, baseMins, distanceKm, trafficLevel, trafficExtra, routeCoords };
     } catch (e) {
-      console.log('[route] HERE failed, falling back to OSRM:', e.message);
+      const status = e.response?.status;
+      const detail = e.response?.data ? JSON.stringify(e.response.data) : e.message;
+      console.error(`[route] ❌ HERE failed (HTTP ${status || 'N/A'}): ${detail} — falling back to OSRM`);
     }
   }
 
-  // Free fallback — no API key required
+  // Free fallback — no API key or HERE failed
   return await fetchFromOSRM(originLat, originLng, destLat, destLng);
 }
 

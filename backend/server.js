@@ -129,6 +129,29 @@ app.get('/api/drive-route', async (req, res) => {
   }
 });
 
+// ─── HERE key diagnostic ───────────────────────────────────────────────────────
+app.get('/api/here-test', async (req, res) => {
+  const key = process.env.HERE_API_KEY;
+  if (!key || key.startsWith('your_')) return res.json({ configured: false, message: 'HERE_API_KEY not set in .env' });
+  try {
+    const { data } = await axios.get('https://router.hereapi.com/v8/routes', {
+      params: {
+        transportMode: 'car',
+        origin: '51.5074,-0.1278',
+        destination: '51.4775,-0.4614',
+        return: 'summary',
+        departureTime: new Date().toISOString(),
+        apikey: key
+      },
+      timeout: 8000
+    });
+    const s = data.routes?.[0]?.sections?.[0]?.summary;
+    res.json({ configured: true, ok: true, duration: s?.duration, baseDuration: s?.baseDuration, message: 'HERE API working ✅' });
+  } catch (e) {
+    res.json({ configured: true, ok: false, status: e.response?.status, error: e.response?.data || e.message });
+  }
+});
+
 // ─── Health ────────────────────────────────────────────────────────────────────
 app.get('/health', (req, res) => res.json({ status: 'ok', time: new Date().toISOString(), version: '4.0.0' }));
 

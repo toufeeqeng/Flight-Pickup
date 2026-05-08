@@ -1421,9 +1421,10 @@ function reqLoc(){
         driveMins=result.driveMins;
         document.getElementById('drive-mins').value=driveMins;
         detectTrafficChange();
-        const tfLbl={heavy:'🔴 Heavy',moderate:'🟡 Moderate',clear:'🟢 Clear'};
+        const tfLbl={heavy:'🔴 Heavy traffic',moderate:'🟡 Moderate traffic',clear:'🟢 Clear roads'};
         setText('spc-drive-val',`${driveMins} min`);
-        setText('spc-drive-sub',`${fmtDist(result.distanceKm)} · ${tfLbl[result.trafficLevel]||'Live'}`);
+        const trafficSrc=result.source==='here'?'Live traffic':'Est. time';
+        setText('spc-drive-sub',`${fmtDist(result.distanceKm)} · ${tfLbl[result.trafficLevel]||trafficSrc}`);
         recalc();
         if(isFirst)renderRouteMap();
         else{if(rPath)rmap.removeLayer(rPath);rPath=L.polyline(result.routeCoords,{color:'#4f9cf9',weight:4,opacity:.85}).addTo(rmap);rmap.fitBounds(L.latLngBounds(result.routeCoords),{padding:[28,28]});}
@@ -2454,9 +2455,10 @@ function setBgForAirport(iata){initBgSlideshow();}
       if(curData&&curData.arrival&&curData.arrival.lat){
         fetchRoute(userLat,userLng,curData.arrival.lat,curData.arrival.lng).then(r=>{
           if(r){osrmDriveTime=r;driveMins=r.driveMins;
-            const tf={heavy:'🔴 Heavy',moderate:'🟡 Moderate',clear:'🟢 Clear'};
+            const tf={heavy:'🔴 Heavy traffic',moderate:'🟡 Moderate traffic',clear:'🟢 Clear roads'};
             setText('spc-drive-val',`${driveMins} min`);
-            setText('spc-drive-sub',`${fmtDist(r.distanceKm)} · ${tf[r.trafficLevel]||'Live'}`);
+            const src=r.source==='here'?'Live traffic':'Est. time';
+            setText('spc-drive-sub',`${fmtDist(r.distanceKm)} · ${tf[r.trafficLevel]||src}`);
             recalc();renderRouteMap();updateTcCard(r);
           }
         });

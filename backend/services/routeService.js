@@ -46,13 +46,15 @@ async function getDriveRoute(originLat, originLng, destLat, destLng) {
 
   if (hasRealKey) {
     try {
+      // HERE requires ISO 8601 without milliseconds for departureTime
+      const depTime = new Date().toISOString().replace(/\.\d+Z$/, 'Z');
       const { data } = await axios.get('https://router.hereapi.com/v8/routes', {
         params: {
           transportMode: 'car',
           origin: `${originLat},${originLng}`,
           destination: `${destLat},${destLng}`,
           return: 'summary,polyline',
-          departureTime: new Date().toISOString(),
+          departureTime: depTime,
           apikey: key
         },
         timeout: 8000
@@ -62,15 +64,20 @@ async function getDriveRoute(originLat, originLng, destLat, destLng) {
 
       const section = data.routes[0].sections[0];
       const summary = section.summary;
-      const driveMins  = Math.round(summary.duration / 60);
-      const baseMins   = Math.round((summary.baseDuration ?? summary.duration) / 60);
+      console.log('[route] HERE summary:', JSON.stringify(summary));
+
+      const driveSecs = summary.duration;
+      // baseDuration = time without traffic; typicalDuration is an older alias
+      const baseSecs  = summary.baseDuration ?? summary.typicalDuration ?? driveSecs;
+      const driveMins  = Math.round(driveSecs / 60);
+      const baseMins   = Math.round(baseSecs / 60);
       const distanceKm = Math.round(summary.length / 1000);
       const trafficRatio = baseMins > 0 ? driveMins / baseMins : 1;
       const trafficLevel = trafficRatio > 1.25 ? 'heavy' : trafficRatio > 1.08 ? 'moderate' : 'clear';
       const trafficExtra = Math.max(0, driveMins - baseMins);
       const routeCoords = decodeHerePolyline(section.polyline);
-      console.log(`[route] ✅ HERE — ${driveMins}min (base ${baseMins}min) ${trafficLevel}`);
-      return { driveMins, baseMins, distanceKm, trafficLevel, trafficExtra, routeCoords };
+      console.log(`[route] ✅ HERE — ${driveMins}min (base ${baseMins}min) ratio=${trafficRatio.toFixed(2)} → ${trafficLevel}`);
+      return { driveMins, baseMins, distanceKm, trafficLevel, trafficExtra, routeCoords, source: 'here' };
     } catch (e) {
       const status = e.response?.status;
       const detail = e.response?.data ? JSON.stringify(e.response.data) : e.message;
@@ -79,7 +86,8 @@ async function getDriveRoute(originLat, originLng, destLat, destLng) {
   }
 
   // Free fallback — no API key or HERE failed
-  return await fetchFromOSRM(originLat, originLng, destLat, destLng);
+  const osrm = await fetchFromOSRM(originLat, originLng, destLat, destLng);
+  return { ...osrm, source: 'osrm' };
 }
 
 module.exports = { getDriveRoute };

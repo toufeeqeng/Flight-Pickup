@@ -862,6 +862,34 @@ body.results-mode .how-card{display:none}
       </button>
     </div>
   </div>
+  <!-- Route to Airport Map (inside SPC) -->
+  <div class="route-map-card" id="route-map-card">
+    <div class="route-map-hdr">
+      <div class="route-map-ttl"><div class="tc-dot"></div> Route to Airport</div>
+      <span class="tc-live" id="tc-live-lbl"></span>
+    </div>
+    <div class="tc-body">
+      <div class="tc-stats-row">
+        <div class="tc-drive-big" id="tc-drive-time">— <span>min drive</span></div>
+        <div class="tc-chip clear" id="tc-traffic-chip">
+          <svg viewBox="0 0 24 24" width="10" height="10" stroke="currentColor" fill="none" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+          <span id="tc-traffic-txt">Clear roads</span>
+        </div>
+      </div>
+    </div>
+    <div class="tc-route-sub" id="tc-route-sub">From your location to the airport</div>
+    <div class="tc-map"><div id="route-map"></div></div>
+    <div class="tc-apps">
+      <a class="tc-app gmaps" id="nav-google" href="#" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" width="11" height="11" stroke="currentColor" fill="none" stroke-width="2"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+        Google Maps
+      </a>
+      <a class="tc-app" id="nav-apple" href="#" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" width="11" height="11" stroke="currentColor" fill="none" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+        Apple Maps
+      </a>
+    </div>
+  </div>
 </div>
 
 
@@ -1046,34 +1074,6 @@ body.results-mode .how-card{display:none}
   <div id="rr-list"></div>
 </div>
 
-<!-- Route to Airport Map -->
-<div class="route-map-card" id="route-map-card">
-  <div class="route-map-hdr">
-    <div class="route-map-ttl"><div class="tc-dot"></div> Route to Airport</div>
-    <span class="tc-live" id="tc-live-lbl"></span>
-  </div>
-  <div class="tc-body">
-    <div class="tc-stats-row">
-      <div class="tc-drive-big" id="tc-drive-time">— <span>min drive</span></div>
-      <div class="tc-chip clear" id="tc-traffic-chip">
-        <svg viewBox="0 0 24 24" width="10" height="10" stroke="currentColor" fill="none" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-        <span id="tc-traffic-txt">Clear roads</span>
-      </div>
-    </div>
-  </div>
-  <div class="tc-route-sub" id="tc-route-sub">From your location to the airport</div>
-  <div class="tc-map"><div id="route-map"></div></div>
-  <div class="tc-apps">
-    <a class="tc-app gmaps" id="nav-google" href="#" target="_blank" rel="noopener">
-      <svg viewBox="0 0 24 24" width="11" height="11" stroke="currentColor" fill="none" stroke-width="2"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
-      Google Maps
-    </a>
-    <a class="tc-app" id="nav-apple" href="#" target="_blank" rel="noopener">
-      <svg viewBox="0 0 24 24" width="11" height="11" stroke="currentColor" fill="none" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
-      Apple Maps
-    </a>
-  </div>
-</div>
 
 <!-- App store download -->
 <div class="app-dl">
@@ -1550,12 +1550,12 @@ function renderFlight(d){
     document.getElementById('wx-strip').classList.add('show');
     document.getElementById('wx-icon').textContent=wxEmoji(wx.desc);
     const wxTUnit=wx.unit==='imperial'?'°F':'°C';
-    const wxWUnit=wx.unit==='imperial'?'mph':'km/h';
+    const windMph=wx.unit==='imperial'?wx.wind:Math.round(wx.wind*0.621371);
     setText('wx-temp',`${wx.temp}${wxTUnit}`);
     setText('wx-desc',`${wx.desc} at ${d.arrival.city||d.arrival.airport}`);
     document.getElementById('wx-stats').innerHTML=`
       <div class="wx-stat"><div class="wx-stat-lbl">Feels</div><div class="wx-stat-val">${wx.feels}${wxTUnit}</div></div>
-      <div class="wx-stat"><div class="wx-stat-lbl">Wind</div><div class="wx-stat-val">${wx.wind} ${wxWUnit}</div></div>
+      <div class="wx-stat"><div class="wx-stat-lbl">Wind</div><div class="wx-stat-val">${windMph} mph</div></div>
       <div class="wx-stat"><div class="wx-stat-lbl">Humidity</div><div class="wx-stat-val">${wx.humidity}%</div></div>
       ${wx.rain?`<div class="wx-stat"><div class="wx-stat-lbl">Rain</div><div class="wx-stat-val">${wx.rain}mm</div></div>`:''}
       <div class="wx-stat"><div class="wx-stat-lbl">Visibility</div><div class="wx-stat-val">${wx.visibility}km</div></div>
@@ -2310,6 +2310,12 @@ function updateTcCard(routeResult){
   setText('tc-live-lbl',`${km}${tf.txt}`);
   const arrName=curData&&curData.arrival?(curData.arrival.airport||curData.arrival.iata||'Airport'):'Airport';
   setText('tc-route-sub',`From your location to ${arrName}`);
+  if(userLat&&userLng&&curData?.arrival?.lat){
+    const orig=`${userLat},${userLng}`;
+    const arr=curData.arrival;
+    document.getElementById('nav-google').href=`https://www.google.com/maps/dir/?api=1&origin=${orig}&destination=${arr.lat},${arr.lng}&travelmode=driving`;
+    document.getElementById('nav-apple').href=`https://maps.apple.com/?saddr=${orig}&daddr=${arr.lat},${arr.lng}&dirflg=d`;
+  }
 }
 
 function renderPzCard(d){

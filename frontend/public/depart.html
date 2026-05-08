@@ -201,7 +201,8 @@ header::before{content:'';position:absolute;top:0;left:50%;transform:translateX(
 .leave-badge.red{background:rgba(240,82,82,.2);color:#f05252}
 
 /* ── Leave calculator ── */
-.leave-calc{background:var(--s2);padding:1.1rem 1.4rem;border:1px solid var(--b2);border-top:none;border-radius:0 0 var(--r) var(--r)}
+.leave-calc{background:var(--s2);padding:1.1rem 1.4rem;border:1px solid var(--b2);border-top:none}
+#dep-tc-card{background:none;backdrop-filter:none;-webkit-backdrop-filter:none;border:none;border-top:1px solid var(--b1);border-radius:0;margin:0}
 .calc-ttl{font-size:.78rem;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.85rem;display:flex;align-items:center;gap:7px}
 
 /* ── Departure timeline ── */
@@ -788,6 +789,35 @@ body.results-mode .leave-card{display:block}
       <a id="loc-waze" title="Waze" target="_blank" rel="noopener">🚦</a>
     </div>
   </div>
+  <!-- Route to Airport — merged inside leave-card -->
+  <div class="tc-card" id="dep-tc-card">
+    <div class="tc-hdr">
+      <div class="tc-dot"></div>
+      <span class="tc-hdr-ttl">Live Route to Airport</span>
+      <span class="tc-live" id="dep-tc-live">enable location to calculate</span>
+    </div>
+    <div class="tc-body">
+      <div class="tc-stats-row">
+        <div class="tc-drive-big" id="dep-tc-drive">— <span>min drive</span></div>
+        <div class="tc-chip clear" id="dep-tc-chip">
+          <svg viewBox="0 0 24 24"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z"/></svg>
+          <span id="dep-tc-traffic">Clear roads</span>
+        </div>
+      </div>
+      <div class="tc-route-sub" id="dep-tc-sub">Enable location to calculate your route with live traffic</div>
+    </div>
+    <div class="tc-map"><div id="dep-route-map"></div></div>
+    <div class="tc-apps">
+      <button class="tc-app gmaps" onclick="openDepNav('google')">
+        <svg viewBox="0 0 24 24"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+        Google Maps
+      </button>
+      <button class="tc-app" onclick="openDepNav('apple')">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+        Apple Maps
+      </button>
+    </div>
+  </div>
 </div>
 
 <!-- Live Flight Status Monitor -->
@@ -979,36 +1009,6 @@ body.results-mode .leave-card{display:block}
 
 
 </div><!-- end result-card -->
-
-<!-- ── Traffic + Route to Airport Card ── -->
-<div class="tc-card" id="dep-tc-card">
-  <div class="tc-hdr">
-    <div class="tc-dot"></div>
-    <span class="tc-hdr-ttl">Live Route to Airport</span>
-    <span class="tc-live" id="dep-tc-live">enable location to calculate</span>
-  </div>
-  <div class="tc-body">
-    <div class="tc-stats-row">
-      <div class="tc-drive-big" id="dep-tc-drive">— <span>min drive</span></div>
-      <div class="tc-chip clear" id="dep-tc-chip">
-        <svg viewBox="0 0 24 24"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z"/></svg>
-        <span id="dep-tc-traffic">Clear roads</span>
-      </div>
-    </div>
-    <div class="tc-route-sub" id="dep-tc-sub">Enable location to calculate your route with live traffic</div>
-  </div>
-  <div class="tc-map"><div id="dep-route-map"></div></div>
-  <div class="tc-apps">
-    <button class="tc-app gmaps" onclick="openDepNav('google')">
-      <svg viewBox="0 0 24 24"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
-      Google Maps
-    </button>
-    <button class="tc-app" onclick="openDepNav('apple')">
-      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
-      Apple Maps
-    </button>
-  </div>
-</div>
 
 <!-- Live flight map -->
 <div class="map-card" id="map-card">
@@ -1882,8 +1882,8 @@ function renderDepartureLounges(iata){
             <a href="${mapsUrl}" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="font-size:.65rem;color:var(--acc);white-space:nowrap;text-decoration:none;font-weight:700;flex-shrink:0;margin-top:2px">📍 Map ↗</a>
           </div>
           <div class="dlp-l-term">Terminal ${l.terminal||'—'} · ${l.hours||'Hours vary'}</div>
-          <div class="dlp-l-access">${(l.access||[]).map(a=>`<span class="dlp-l-acc-tag">${a}</span>`).join('')}</div>
-          ${Array.isArray(l.amenities)&&l.amenities.length?`<div class="dlp-l-amenities">✦ ${l.amenities.join(' · ')}</div>`:''}
+          <div class="dlp-l-access">${l.access||'—'}</div>
+          ${l.amenities?`<div class="dlp-l-amenities">✦ ${Array.isArray(l.amenities)?l.amenities.join(' · '):l.amenities}</div>`:''}
         </div>`;
       }).join('');
     })

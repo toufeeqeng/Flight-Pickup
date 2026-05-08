@@ -628,6 +628,7 @@ body.results-mode .how-card{display:none}
 
 /* ── Notification panel ── */
 .notif-panel{background:var(--s1);border:1px solid var(--b2);border-radius:var(--r);overflow:hidden;margin-bottom:.9rem;display:none}
+.notif-panel.show{display:block}
 .np-inner{display:flex;align-items:center;gap:.9rem;padding:.9rem 1.1rem}
 .np-ic{font-size:1.3rem;flex-shrink:0;line-height:1}
 .np-info{flex:1;min-width:0}
@@ -1009,7 +1010,7 @@ body.results-mode .how-card{display:none}
     <div class="np-ic">🔔</div>
     <div class="np-info">
       <div class="np-ttl">Arrival Reminders</div>
-      <div class="np-sub">Get notified when the flight is about to land</div>
+      <div class="np-sub" id="np-sub-txt">Get notified when the flight is about to land</div>
     </div>
     <label class="np-switch">
       <input type="checkbox" id="notif-toggle-pickup" onchange="togglePickupNotifs(this.checked)">
@@ -2082,10 +2083,24 @@ function checkUrlParams(){
 
 // ─── NOTIFICATION PANEL ──────────────────────────────────────────────────────
 function renderNotifPanel(){
+  const panel=document.getElementById('notif-panel');
   const tog=document.getElementById('notif-toggle-pickup');
+  const sub=document.getElementById('np-sub-txt');
   if(tog)tog.checked=false;
   const btn=document.getElementById('ab-notif-btn');
   if(btn){btn.classList.remove('active');document.getElementById('ab-notif-lbl').textContent='Remind';}
+  if(!panel)return;
+  // Show panel — update subtitle based on platform capability
+  const notifOk='Notification' in window;
+  const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)&&!window.MSStream;
+  const isPWA=window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone===true;
+  if(sub){
+    if(isIOS&&!isPWA) sub.textContent='Add to Home Screen to enable push alerts';
+    else if(!notifOk) sub.textContent='Notifications not supported in this browser';
+    else if(Notification.permission==='granted') sub.textContent='Alerts active — delays, landing & traffic';
+    else sub.textContent='Get notified when the flight is about to land';
+  }
+  panel.classList.add('show');
 }
 function toggleNotifBtn(){
   if(!curData){showToast('Search for a flight first');return;}
@@ -2106,7 +2121,9 @@ function togglePickupNotifs(on){
     return;
   }
   if(!('Notification' in window)){
-    showToast('Notifications not supported in this browser');
+    const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)&&!window.MSStream;
+    const isPWA=window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone===true;
+    showToast(isIOS&&!isPWA?'Tap Share → "Add to Home Screen" to enable alerts':'Notifications not supported in this browser');
     document.getElementById('notif-toggle-pickup').checked=false;
     return;
   }

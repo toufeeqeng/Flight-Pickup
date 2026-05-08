@@ -520,22 +520,13 @@ body.results-mode .leave-card{display:block}
 .sb-pre{font-size:.58rem;color:rgba(255,255,255,.6);line-height:1;text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px}
 .sb-name{font-family:'Syne',sans-serif;font-size:.88rem;font-weight:800;color:#fff;line-height:1.1;letter-spacing:-.01em}
 
-/* ── Notification toggle panel ── */
-.notif-panel-dep{background:var(--s1);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--b2);border-radius:var(--r);overflow:hidden;margin-bottom:.9rem}
-.np-dep-inner{display:flex;align-items:center;gap:.9rem;padding:.9rem 1.2rem}
-.np-dep-ic{font-size:1.3rem;flex-shrink:0;line-height:1}
-.np-dep-info{flex:1;min-width:0}
-.np-dep-title{font-family:'Syne',sans-serif;font-size:.88rem;font-weight:700;color:var(--t1);margin-bottom:2px}
-.np-dep-sub{font-size:.73rem;color:var(--t2);line-height:1.4}
-.np-switch{position:relative;width:48px;height:27px;flex-shrink:0;display:inline-block}
-.np-switch input{position:absolute;top:0;left:0;width:100%;height:100%;opacity:0;margin:0;cursor:pointer;z-index:1}
-.np-slider{position:absolute;top:0;right:0;bottom:0;left:0;background:var(--b2);border-radius:999px;transition:background .25s;pointer-events:none}
-.np-slider:before{content:'';position:absolute;width:21px;height:21px;left:3px;top:3px;background:#fff;border-radius:50%;transition:transform .25s;box-shadow:0 1px 4px rgba(0,0,0,.3)}
-.np-switch input:checked+.np-slider{background:var(--acc)}
-.np-switch input:checked+.np-slider:before{transform:translateX(21px)}
-.np-status{font-size:.74rem;padding:.3rem 1.2rem .7rem;color:#10d98a;display:none}
-.np-status.show{display:block}
-@media(max-width:480px){.np-dep-inner{gap:.65rem;padding:.8rem .9rem}.np-dep-sub{font-size:.7rem}}
+/* ── Notification top bar ── */
+#notif-top-bar{position:fixed;top:62px;left:50%;transform:translateX(-50%);width:calc(100% - 24px);max-width:700px;z-index:450;background:rgba(14,18,32,.95);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(79,156,249,.3);border-radius:12px;padding:7px 12px;display:none;align-items:center;gap:8px;font-size:.76rem;font-family:'DM Sans',sans-serif;color:var(--t1);box-shadow:0 4px 24px rgba(0,0,0,.4)}
+#notif-top-bar.show{display:flex;animation:ntbIn .25s ease}
+@keyframes ntbIn{from{opacity:0;transform:translateX(-50%) translateY(-8px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+#ntb-allow{background:#4f9cf9;color:#fff;border:none;border-radius:8px;padding:.28rem .8rem;font-size:.72rem;font-weight:600;cursor:pointer;white-space:nowrap;font-family:'DM Sans',sans-serif;flex-shrink:0}
+#ntb-close{background:none;border:none;color:var(--t2);cursor:pointer;font-size:1rem;line-height:1;padding:0 .2rem;flex-shrink:0}
+@media(prefers-color-scheme:light){#notif-top-bar{background:rgba(255,255,255,.96);border-color:rgba(79,156,249,.35)}}
 
 /* ── Pre-flight prep card (baggage + checklist merged) ── */
 .prep-card{background:var(--s1);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--b2);border-radius:var(--r);overflow:hidden;margin-bottom:.9rem}
@@ -628,7 +619,12 @@ body.results-mode .leave-card{display:block}
 
 <main class="wrap" id="main-content">
 
-<div id="dp-notif-bar" style="display:none"></div>
+<div id="notif-top-bar">
+  <span style="flex-shrink:0;font-size:1rem">🔔</span>
+  <span style="flex:1;line-height:1.35">Get alerts for <b>delays</b>, <b>gate changes</b> &amp; <b>departure</b></span>
+  <button id="ntb-allow" onclick="dpGrantNotifPermission()">Allow</button>
+  <button id="ntb-close" onclick="dpDismissNotifBar()">✕</button>
+</div>
 
 <header>
   <div class="logo-row">
@@ -966,20 +962,10 @@ body.results-mode .leave-card{display:block}
   </button>
 </div>
 
-<!-- Notification Toggle Panel -->
-<div class="notif-panel-dep" id="notif-panel-dep" style="display:none">
-  <div class="np-dep-inner">
-    <span class="np-dep-ic">🔔</span>
-    <div class="np-dep-info">
-      <div class="np-dep-title">Flight Reminders</div>
-      <div class="np-dep-sub">Notify me every 15 min until departure</div>
-    </div>
-    <label class="np-switch">
-      <input type="checkbox" id="notif-toggle" onchange="toggleAutoNotifs(this.checked)">
-      <span class="np-slider"></span>
-    </label>
-  </div>
-  <div class="np-status" id="notif-status"></div>
+<!-- Notification compat stubs (used by toggleAutoNotifs) -->
+<div id="notif-panel-dep" style="display:none">
+  <input type="checkbox" id="notif-toggle" style="display:none">
+  <div id="notif-status" style="display:none"></div>
 </div>
 
 <!-- Security Wait Times Panel -->
@@ -1688,24 +1674,32 @@ function sendNotif(title,body,tag,url){
   }else{try{new Notification(title,opts)}catch(e){}}
 }
 
-function dpAskNotifPermission(){
+function dpMaybeShowNotifBar(){
+  const bar=document.getElementById('notif-top-bar');
+  if(!bar||localStorage.getItem('ntb_dismissed'))return;
+  const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)&&!window.MSStream;
+  const isPWA=window.matchMedia('(display-mode:standalone)').matches||window.navigator.standalone===true;
+  if(isIOS&&!isPWA){
+    bar.querySelector('span:nth-child(2)').innerHTML='Tap <b>Share → Add to Home Screen</b> for flight alerts';
+    bar.querySelector('#ntb-allow').style.display='none';
+    bar.classList.add('show');return;
+  }
   if(!('Notification' in window)||Notification.permission!=='default')return;
-  const bar=document.getElementById('dp-notif-bar');
-  bar.innerHTML=`<div style="display:flex;align-items:center;gap:.75rem;padding:.8rem 1rem;background:rgba(79,156,249,.1);border-bottom:1px solid rgba(79,156,249,.18)"><span style="font-size:1.2rem;flex-shrink:0">🔔</span><span style="flex:1;font-size:.82rem;color:var(--t1);line-height:1.35">Get instant alerts for <b>delays</b>, <b>gate changes</b> &amp; <b>departure reminders</b></span><button onclick="dpRequestNotif()" style="background:#4f9cf9;color:#fff;border:none;border-radius:8px;padding:.42rem 1rem;font-size:.78rem;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0">Allow</button><button onclick="this.closest('#dp-notif-bar').style.display='none'" style="background:none;border:none;color:var(--t2);cursor:pointer;font-size:1.1rem;line-height:1;padding:0 .2rem;flex-shrink:0">✕</button></div>`;
-  bar.style.display='block';
+  bar.querySelector('#ntb-allow').style.display='';
+  bar.classList.add('show');
 }
-
-function dpRequestNotif(){
+function dpGrantNotifPermission(){
+  document.getElementById('notif-top-bar').classList.remove('show');
   Notification.requestPermission().then(p=>{
-    document.getElementById('dp-notif-bar').style.display='none';
-    if(p==='granted'){
-      showToast('Notifications on — alerts for delays, gate changes & departure');
-      sendNotif('✈️ Flight alerts active','You\'ll be notified for delays, gate changes, and departure time.','dp-welcome');
-    }else{
-      showToast('Notifications blocked — enable in browser settings');
-    }
+    if(p==='granted')sendNotif('✈️ Alerts active','You\'ll be notified for delays, gate changes & departure.','dp-welcome');
   });
 }
+function dpDismissNotifBar(){
+  document.getElementById('notif-top-bar').classList.remove('show');
+  localStorage.setItem('ntb_dismissed','1');
+}
+function dpAskNotifPermission(){dpMaybeShowNotifBar();}
+function dpRequestNotif(){dpGrantNotifPermission();}
 
 function detectDepChanges(d){
   if(!('Notification' in window)||Notification.permission!=='granted')return;
@@ -1738,6 +1732,7 @@ function renderNotifPanelDep(){
   if(tog)tog.checked=false;
   const btn=document.getElementById('ab-notif-btn');
   if(btn){btn.classList.remove('active');document.getElementById('ab-notif-lbl').textContent='Remind';}
+  dpMaybeShowNotifBar();
 }
 function toggleNotifBtn(){
   if(!curData){showToast('Search for your flight first');return;}
@@ -1774,10 +1769,8 @@ function toggleAutoNotifs(on){
     if(st){st.className='np-status show';st.textContent='✓ Reminders active — you\'ll be notified every 15 min until departure';}
   };
   if(Notification.permission==='granted'){start();return;}
-  Notification.requestPermission().then(p=>{
-    if(p==='granted')start();
-    else{showToast('Enable notifications in browser settings');document.getElementById('notif-toggle').checked=false;}
-  });
+  dpMaybeShowNotifBar();
+  document.getElementById('notif-toggle').checked=false;
 }
 function fireFlightNotif(){
   if(!curData)return;

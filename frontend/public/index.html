@@ -626,23 +626,13 @@ body.results-mode .how-card{display:none}
 .pz-share svg{width:10px;height:10px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .pz-share:hover{background:rgba(74,222,128,.2)}
 
-/* ── Notification panel ── */
-.notif-panel{background:var(--s1);border:1px solid var(--b2);border-radius:var(--r);overflow:hidden;margin-bottom:.9rem;display:none}
-.notif-panel.show{display:block}
-.np-inner{display:flex;align-items:center;gap:.9rem;padding:.9rem 1.1rem}
-.np-ic{font-size:1.3rem;flex-shrink:0;line-height:1}
-.np-info{flex:1;min-width:0}
-.np-ttl{font-family:'Syne',sans-serif;font-size:.88rem;font-weight:700;color:var(--t1);margin-bottom:2px}
-.np-sub{font-size:.73rem;color:var(--t2);line-height:1.4}
-.np-switch{position:relative;width:48px;height:27px;flex-shrink:0;display:inline-block}
-.np-switch input{position:absolute;top:0;left:0;width:100%;height:100%;opacity:0;margin:0;cursor:pointer;z-index:1}
-.np-slider{position:absolute;top:0;right:0;bottom:0;left:0;background:var(--b2);border-radius:999px;transition:background .25s;pointer-events:none}
-.np-slider:before{content:'';position:absolute;width:21px;height:21px;left:3px;top:3px;background:#fff;border-radius:50%;transition:transform .25s;box-shadow:0 1px 4px rgba(0,0,0,.3)}
-.np-switch input:checked+.np-slider{background:var(--acc)}
-.np-switch input:checked+.np-slider:before{transform:translateX(21px)}
-.np-status{font-size:.74rem;padding:.3rem 1.1rem .7rem;color:#10d98a;display:none}
-.np-status.show{display:block}
-@media(max-width:480px){.np-inner{gap:.65rem;padding:.8rem .9rem}.np-sub{font-size:.7rem}}
+/* ── Notification top bar ── */
+#notif-top-bar{position:fixed;top:62px;left:50%;transform:translateX(-50%);width:calc(100% - 24px);max-width:700px;z-index:450;background:rgba(14,18,32,.95);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(79,156,249,.3);border-radius:12px;padding:7px 12px;display:none;align-items:center;gap:8px;font-size:.76rem;font-family:'DM Sans',sans-serif;color:var(--t1);box-shadow:0 4px 24px rgba(0,0,0,.4)}
+#notif-top-bar.show{display:flex;animation:ntbIn .25s ease}
+@keyframes ntbIn{from{opacity:0;transform:translateX(-50%) translateY(-8px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+#ntb-allow{background:#4f9cf9;color:#fff;border:none;border-radius:8px;padding:.28rem .8rem;font-size:.72rem;font-weight:600;cursor:pointer;white-space:nowrap;font-family:'DM Sans',sans-serif;flex-shrink:0}
+#ntb-close{background:none;border:none;color:var(--t2);cursor:pointer;font-size:1rem;line-height:1;padding:0 .2rem;flex-shrink:0}
+@media(prefers-color-scheme:light){#notif-top-bar{background:rgba(255,255,255,.96);border-color:rgba(79,156,249,.35)}}
 
 /* ── Airport info panel ── */
 .airport-panel{background:var(--s1);border:1px solid var(--b2);border-radius:var(--r);margin-bottom:.9rem;overflow:hidden;display:none}
@@ -729,7 +719,11 @@ body.results-mode .how-card{display:none}
   <span class="back-flight" id="back-flight-lbl"></span>
 </div>
 
-<div style="display:none" id="notif-bar">
+<div id="notif-top-bar">
+  <span style="flex-shrink:0;font-size:1rem">🔔</span>
+  <span style="flex:1;line-height:1.35">Get alerts for <b>delays</b>, <b>landing</b> &amp; <b>traffic</b></span>
+  <button id="ntb-allow" onclick="grantNotifPermission()">Allow</button>
+  <button id="ntb-close" onclick="dismissNotifBar()">✕</button>
 </div>
 
 <!-- Saved flights -->
@@ -1004,21 +998,8 @@ body.results-mode .how-card{display:none}
   </div>
 </div>
 
-<!-- Arrival Reminders -->
-<div class="notif-panel" id="notif-panel">
-  <div class="np-inner">
-    <div class="np-ic">🔔</div>
-    <div class="np-info">
-      <div class="np-ttl">Arrival Reminders</div>
-      <div class="np-sub" id="np-sub-txt">Get notified when the flight is about to land</div>
-    </div>
-    <label class="np-switch">
-      <input type="checkbox" id="notif-toggle-pickup" onchange="togglePickupNotifs(this.checked)">
-      <div class="np-slider"></div>
-    </label>
-  </div>
-  <div class="np-status" id="np-status"></div>
-</div>
+<!-- kept for JS compat -->
+<div id="notif-panel" style="display:none"><input type="checkbox" id="notif-toggle-pickup" style="display:none"><div id="np-status" style="display:none"></div></div>
 
 <!-- Ground Transport + Lounges -->
 <div class="airport-panel" id="airport-panel">
@@ -1866,24 +1847,8 @@ function sendNotif(title,body,tag,url){
 
 function checkNotifBar(){askNotifPermission();}
 
-function askNotifPermission(){
-  if(!('Notification' in window)||Notification.permission!=='default')return;
-  const bar=document.getElementById('notif-bar');
-  bar.innerHTML=`<div style="display:flex;align-items:center;gap:.75rem;padding:.8rem 1rem;background:rgba(79,156,249,.1);border-bottom:1px solid rgba(79,156,249,.18)"><span style="font-size:1.2rem;flex-shrink:0">🔔</span><span style="flex:1;font-size:.82rem;color:var(--t1);line-height:1.35">Get instant alerts for <b>delays</b>, <b>landing</b> &amp; <b>traffic changes</b></span><button onclick="requestNotif()" style="background:#4f9cf9;color:#fff;border:none;border-radius:8px;padding:.42rem 1rem;font-size:.78rem;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0">Allow</button><button onclick="this.closest('#notif-bar').style.display='none'" style="background:none;border:none;color:var(--t2);cursor:pointer;font-size:1.1rem;line-height:1;padding:0 .2rem;flex-shrink:0">✕</button></div>`;
-  bar.style.display='block';
-}
-
-function requestNotif(){
-  Notification.requestPermission().then(p=>{
-    document.getElementById('notif-bar').style.display='none';
-    if(p==='granted'){
-      showToast('Notifications on — alerts for delays, landing & traffic');
-      sendNotif('✈️ Flight Pickup alerts active','You\'ll be notified for delays, landing, and traffic changes.','fp-welcome');
-    }else{
-      showToast('Notifications blocked — you can enable them in browser settings');
-    }
-  });
-}
+function askNotifPermission(){ maybeShowNotifBar(); }
+function requestNotif(){ grantNotifPermission(); }
 
 function detectFlightChanges(d){
   if(!('Notification' in window)||Notification.permission!=='granted')return;
@@ -2080,25 +2045,32 @@ function checkUrlParams(){
 
 
 // ─── NOTIFICATION PANEL ──────────────────────────────────────────────────────
-function renderNotifPanel(){
-  const panel=document.getElementById('notif-panel');
-  const tog=document.getElementById('notif-toggle-pickup');
-  const sub=document.getElementById('np-sub-txt');
-  if(tog)tog.checked=false;
-  const btn=document.getElementById('ab-notif-btn');
-  if(btn){btn.classList.remove('active');document.getElementById('ab-notif-lbl').textContent='Remind';}
-  if(!panel)return;
-  // Show panel — update subtitle based on platform capability
-  const notifOk='Notification' in window;
+function renderNotifPanel(){ maybeShowNotifBar(); }
+function maybeShowNotifBar(){
+  const bar=document.getElementById('notif-top-bar');
+  if(!bar||localStorage.getItem('ntb_dismissed'))return;
   const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)&&!window.MSStream;
-  const isPWA=window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone===true;
-  if(sub){
-    if(isIOS&&!isPWA) sub.textContent='Add to Home Screen to enable push alerts';
-    else if(!notifOk) sub.textContent='Notifications not supported in this browser';
-    else if(Notification.permission==='granted') sub.textContent='Alerts active — delays, landing & traffic';
-    else sub.textContent='Get notified when the flight is about to land';
+  const isPWA=window.matchMedia('(display-mode:standalone)').matches||window.navigator.standalone===true;
+  if(isIOS&&!isPWA){
+    bar.querySelector('span:nth-child(2)').innerHTML='Tap <b>Share → Add to Home Screen</b> for flight alerts';
+    bar.querySelector('#ntb-allow').style.display='none';
+    bar.classList.add('show');
+    return;
   }
-  panel.classList.add('show');
+  if(!('Notification' in window)||Notification.permission!=='default')return;
+  bar.querySelector('span:nth-child(2)').innerHTML='Get alerts for <b>delays</b>, <b>landing</b> &amp; <b>traffic</b>';
+  bar.querySelector('#ntb-allow').style.display='';
+  bar.classList.add('show');
+}
+function grantNotifPermission(){
+  document.getElementById('notif-top-bar').classList.remove('show');
+  Notification.requestPermission().then(p=>{
+    if(p==='granted')sendNotif('✈️ Alerts active','You\'ll be notified for delays, landing & traffic.','notif-welcome');
+  });
+}
+function dismissNotifBar(){
+  document.getElementById('notif-top-bar').classList.remove('show');
+  localStorage.setItem('ntb_dismissed','1');
 }
 function toggleNotifBtn(){
   if(!curData){showToast('Search for a flight first');return;}

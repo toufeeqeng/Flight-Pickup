@@ -33,11 +33,18 @@ async function fetchFromOSRM(originLat, originLng, destLat, destLng) {
   const { data } = await axios.get(url, { timeout: 8000 });
   if (!data.routes?.[0]) throw new Error('No OSRM route found');
   const route = data.routes[0];
-  const driveMins  = Math.round(route.duration / 60);
+  const baseMins   = Math.round(route.duration / 60);
   const distanceKm = Math.round(route.distance / 1000);
   // GeoJSON coords are [lng, lat] — flip to [lat, lng] for Leaflet
   const routeCoords = route.geometry.coordinates.map(([lng, lat]) => [lat, lng]);
-  return { driveMins, baseMins: driveMins, distanceKm, trafficLevel: 'clear', trafficExtra: 0, routeCoords };
+  // Time-of-day traffic estimate (OSRM has no real-time traffic)
+  const h = new Date().getUTCHours();
+  const isRush     = (h >= 11 && h <= 14) || (h >= 20 && h <= 23); // ~7-10am & 4-7pm ET/PT
+  const isModerate = (h >= 14 && h <= 17) || (h >= 9 && h <= 11);
+  const factor      = isRush ? 1.5 : isModerate ? 1.2 : 1.0;
+  const driveMins   = Math.round(baseMins * factor);
+  const trafficLevel = isRush ? 'heavy' : isModerate ? 'moderate' : 'clear';
+  return { driveMins, baseMins, distanceKm, trafficLevel, trafficExtra: driveMins - baseMins, routeCoords };
 }
 
 async function getDriveRoute(originLat, originLng, destLat, destLng) {

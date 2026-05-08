@@ -387,7 +387,7 @@ header::before{content:'';position:absolute;top:0;left:50%;transform:translateX(
 .map-tog{background:var(--g1);border:1px solid var(--b1);border-radius:8px;padding:5px 9px;cursor:pointer;color:var(--t2);display:flex;align-items:center;gap:5px;font-size:.73rem;transition:all .2s;font-family:'DM Sans',sans-serif}
 .map-tog:hover,.map-tog.active{background:rgba(79,156,249,.15);border-color:rgba(79,156,249,.4);color:#4f9cf9}
 /* route-to-airport map card */
-.route-map-card{background:var(--s1);backdrop-filter:blur(20px);border:1px solid var(--b2);border-radius:var(--r);overflow:hidden;margin-top:.9rem;margin-bottom:.9rem;display:none}
+.route-map-card{border-top:1px solid var(--b1);overflow:hidden;display:none}
 .route-map-card.show{display:block}
 .route-map-hdr{display:flex;align-items:center;justify-content:space-between;padding:.75rem 1.1rem;border-bottom:1px solid var(--b1);flex-wrap:wrap;gap:.5rem}
 .route-map-ttl{font-family:'Syne',sans-serif;font-size:.82rem;font-weight:700;display:flex;align-items:center;gap:6px}
@@ -597,7 +597,7 @@ body.results-mode .how-card{display:none}
 .tc-map{height:195px;overflow:hidden;border-top:1px solid var(--b1)}
 #route-map{width:100%;height:100%}
 .tc-apps{display:flex;gap:.35rem;flex-wrap:wrap;padding:.75rem 1.2rem;border-top:1px solid var(--b1)}
-.tc-app{display:flex;align-items:center;gap:5px;padding:.38rem .78rem;border-radius:9px;font-size:.71rem;font-weight:600;text-decoration:none;border:1px solid var(--b2);background:var(--g1);color:var(--t2);transition:all .18s;white-space:nowrap;font-family:'DM Sans',sans-serif}
+.tc-app{display:flex;align-items:center;gap:5px;padding:.38rem .78rem;border-radius:9px;font-size:.71rem;font-weight:600;text-decoration:none;border:1px solid var(--b2);background:var(--g1);color:var(--t2);transition:all .18s;white-space:nowrap;font-family:'DM Sans',sans-serif;cursor:pointer}
 .tc-app:hover{background:var(--g2);color:var(--t1);transform:translateY(-1px)}
 .tc-app svg{width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
 .tc-app.gmaps{border-color:rgba(66,133,244,.3);color:#4285f4;background:rgba(66,133,244,.08)}
@@ -617,7 +617,7 @@ body.results-mode .how-card{display:none}
 .pz-tag{padding:.15rem .52rem;border-radius:999px;font-size:.63rem;font-weight:600;background:var(--g2);border:1px solid var(--b2);color:var(--t2)}
 .pz-foot{padding:.65rem 1.2rem;border-top:1px solid var(--b1);display:flex;align-items:center;gap:.38rem}
 .pz-foot-lbl{font-size:.65rem;color:var(--t3);flex-shrink:0;white-space:nowrap}
-.pz-nav{display:flex;align-items:center;gap:4px;padding:.28rem .65rem;border-radius:8px;font-size:.68rem;font-weight:600;text-decoration:none;border:1px solid var(--b2);color:var(--t2);background:var(--g1);transition:all .18s;white-space:nowrap}
+.pz-nav{display:flex;align-items:center;gap:4px;padding:.28rem .65rem;border-radius:8px;font-size:.68rem;font-weight:600;text-decoration:none;border:1px solid var(--b2);color:var(--t2);background:var(--g1);transition:all .18s;white-space:nowrap;cursor:pointer;font-family:'DM Sans',sans-serif}
 .pz-nav:hover{background:var(--g2);transform:translateY(-1px)}
 .pz-nav.gmaps{background:rgba(66,133,244,.08);border-color:rgba(66,133,244,.28);color:#4285f4}
 .pz-nav.apple{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.18);color:var(--t1)}
@@ -856,8 +856,8 @@ body.results-mode .how-card{display:none}
     </div>
     <div class="pz-foot">
       <span class="pz-foot-lbl">Navigate to:</span>
-      <a class="pz-nav gmaps" id="pz-gmaps" href="#" target="_blank" rel="noopener">Google Maps</a>
-      <a class="pz-nav apple" id="pz-apple" href="#" target="_blank" rel="noopener">Apple Maps</a>
+      <button class="pz-nav gmaps" onclick="openTerminalNav('google')">Google Maps</button>
+      <button class="pz-nav apple" onclick="openTerminalNav('apple')">Apple Maps</button>
       <button class="pz-share" onclick="sharePickupZone()">
         <svg viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
         Share meeting point
@@ -882,14 +882,14 @@ body.results-mode .how-card{display:none}
     <div class="tc-route-sub" id="tc-route-sub">From your location to the airport</div>
     <div class="tc-map"><div id="route-map"></div></div>
     <div class="tc-apps">
-      <a class="tc-app gmaps" id="nav-google" href="#" target="_blank" rel="noopener">
+      <button class="tc-app gmaps" onclick="openRouteNav('google')">
         <svg viewBox="0 0 24 24" width="11" height="11" stroke="currentColor" fill="none" stroke-width="2"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
         Google Maps
-      </a>
-      <a class="tc-app" id="nav-apple" href="#" target="_blank" rel="noopener">
+      </button>
+      <button class="tc-app" onclick="openRouteNav('apple')">
         <svg viewBox="0 0 24 24" width="11" height="11" stroke="currentColor" fill="none" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
         Apple Maps
-      </a>
+      </button>
     </div>
   </div>
 </div>
@@ -1776,9 +1776,6 @@ function renderRouteMap(){
   rPath=L.polyline(coords,{color:'#4f9cf9',weight:4,opacity:.85,dashArray:isDashedFallback?'8,10':null}).addTo(rmap);
   rmap.fitBounds(L.latLngBounds(coords),{padding:[32,32]});
   setTimeout(()=>{if(rmap)rmap.invalidateSize()},200);
-  const orig=`${userLat},${userLng}`;
-  document.getElementById('nav-google').href=`https://www.google.com/maps/dir/?api=1&origin=${orig}&destination=${arr.lat},${arr.lng}&travelmode=driving`;
-  document.getElementById('nav-apple').href=`https://maps.apple.com/?saddr=${orig}&daddr=${arr.lat},${arr.lng}&dirflg=d`;
   updateTcCard();
 }
 
@@ -2336,6 +2333,35 @@ async function fetchRoute(fLat,fLng,tLat,tLng){
 }
 
 
+function openRouteNav(app){
+  const arr=curData?.arrival;
+  if(!arr?.lat){showToast('Airport location not available');return;}
+  const dest=`${arr.lat},${arr.lng}`;
+  if(app==='google'){
+    const url=userLat&&userLng
+      ?`https://www.google.com/maps/dir/?api=1&origin=${userLat},${userLng}&destination=${dest}&travelmode=driving`
+      :`https://www.google.com/maps/search/?api=1&query=${dest}`;
+    window.open(url,'_blank');
+  }else{
+    const url=userLat&&userLng
+      ?`https://maps.apple.com/?saddr=${userLat},${userLng}&daddr=${dest}&dirflg=d`
+      :`https://maps.apple.com/?ll=${dest}`;
+    window.open(url,'_blank');
+  }
+}
+
+function openTerminalNav(app){
+  const arr=curData?.arrival;
+  if(!arr?.lat){showToast('Airport location not available');return;}
+  const term=arr.terminal||'';
+  const label=encodeURIComponent(`${term?'Terminal '+term+' Arrivals ':arr.airport||arr.iata}`);
+  if(app==='google'){
+    window.open(`https://www.google.com/maps/search/?api=1&query=${label}&center=${arr.lat},${arr.lng}`,'_blank');
+  }else{
+    window.open(`https://maps.apple.com/?ll=${arr.lat},${arr.lng}&q=${encodeURIComponent(term?'T'+term+' Arrivals':'Arrivals')}`,'_blank');
+  }
+}
+
 function updateTcCard(routeResult){
   const card=document.getElementById('route-map-card');
   if(!userLat||!userLng){return;}
@@ -2351,12 +2377,6 @@ function updateTcCard(routeResult){
   setText('tc-live-lbl',`${km}${tf.txt}`);
   const arrName=curData&&curData.arrival?(curData.arrival.airport||curData.arrival.iata||'Airport'):'Airport';
   setText('tc-route-sub',`From your location to ${arrName}`);
-  if(userLat&&userLng&&curData?.arrival?.lat){
-    const orig=`${userLat},${userLng}`;
-    const arr=curData.arrival;
-    document.getElementById('nav-google').href=`https://www.google.com/maps/dir/?api=1&origin=${orig}&destination=${arr.lat},${arr.lng}&travelmode=driving`;
-    document.getElementById('nav-apple').href=`https://maps.apple.com/?saddr=${orig}&daddr=${arr.lat},${arr.lng}&dirflg=d`;
-  }
 }
 
 function renderPzCard(d){
@@ -2373,11 +2393,6 @@ function renderPzCard(d){
   tags.push('Ground Floor');tags.push('Arrivals Exit');
   if(bufHasBags)tags.push('Baggage Claim');
   document.getElementById('pz-tags').innerHTML=tags.map(t=>`<span class="pz-tag">${t}</span>`).join('');
-  if(arr.lat&&arr.lng){
-    const q=encodeURIComponent(`Terminal ${term} Arrivals ${arr.airport||arr.iata}`);
-    document.getElementById('pz-gmaps').href=`https://www.google.com/maps/search/?api=1&query=${q}&center=${arr.lat},${arr.lng}`;
-    document.getElementById('pz-apple').href=`https://maps.apple.com/?ll=${arr.lat},${arr.lng}&q=${encodeURIComponent('Terminal '+term+' Arrivals')}`;
-  }
 }
 
 function sharePickupZone(){

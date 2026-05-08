@@ -999,14 +999,14 @@ body.results-mode .leave-card{display:block}
   </div>
   <div class="tc-map"><div id="dep-route-map"></div></div>
   <div class="tc-apps">
-    <a class="tc-app gmaps" id="dep-nav-google" href="#" target="_blank" rel="noopener">
+    <button class="tc-app gmaps" onclick="openDepNav('google')">
       <svg viewBox="0 0 24 24"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
       Google Maps
-    </a>
-    <a class="tc-app" id="dep-nav-apple" href="#" target="_blank" rel="noopener">
+    </button>
+    <button class="tc-app" onclick="openDepNav('apple')">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
       Apple Maps
-    </a>
+    </button>
   </div>
 </div>
 
@@ -1062,6 +1062,8 @@ body.results-mode .leave-card{display:block}
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
 <script>
 const API = window.location.hostname==='localhost' ? 'http://localhost:3001/api' : '/api';
+const isImperial=/^en-US/i.test(navigator.language);
+function fmtDist(km){return isImperial?Math.round(km*0.621371)+' mi':km+' km'}
 
 // ─── DEMO FLIGHT ─────────────────────────────────────────────────────────────
 function getDemoFlight(){
@@ -1382,9 +1384,10 @@ function reqLoc(){
         depOsrmDrive=result;
         driveMins=result.driveMins;
         document.getElementById('drive-mins').value=driveMins;
-        const tfLbl={heavy:'🔴 Heavy',moderate:'🟡 Moderate',clear:'🟢 Clear'};
+        const tfLbl={heavy:'🔴 Heavy traffic',moderate:'🟡 Moderate traffic',clear:'🟢 Clear roads'};
         if(driveVal)driveVal.textContent=`${result.driveMins} min`;
-        if(driveSub)driveSub.textContent=`${result.distanceKm}km · ${tfLbl[result.trafficLevel]||'Live'}`;
+        const depSrc=result.source==='here'?'Live traffic':'Est. time';
+        if(driveSub)driveSub.textContent=`${fmtDist(result.distanceKm)} · ${tfLbl[result.trafficLevel]||depSrc}`;
         recalc();
       }
       if(isFirst)renderDepTcCard();
@@ -1446,11 +1449,10 @@ function renderDepTcCard(){
   const chip=document.getElementById('dep-tc-chip');
   chip.className=`tc-chip ${tf.cls}`;
   document.getElementById('dep-tc-traffic').textContent=tf.txt;
-  const km=depOsrmDrive?`${depOsrmDrive.distanceKm||depOsrmDrive.km||''}km · `:'';
-  document.getElementById('dep-tc-live').textContent=`${km}${tf.txt}`;
+  const km=depOsrmDrive?`${fmtDist(depOsrmDrive.distanceKm||depOsrmDrive.km||0)} · `:'';
+  const depSrcLbl=depOsrmDrive?.source==='here'?tf.txt:`${tf.txt} (est.)`;
+  document.getElementById('dep-tc-live').textContent=`${km}${depSrcLbl}`;
   document.getElementById('dep-tc-sub').textContent=`From your location to ${dep.airport||dep.iata||'airport'}`;
-  document.getElementById('dep-nav-google').href=`https://www.google.com/maps/dir/?api=1&origin=${orig}&destination=${dep.lat},${dep.lng}&travelmode=driving`;
-  document.getElementById('dep-nav-apple').href=`https://maps.apple.com/?saddr=${orig}&daddr=${dep.lat},${dep.lng}&dirflg=d`;
   const isDark=window.matchMedia('(prefers-color-scheme:dark)').matches;
   const tile=isDark?'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png':'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
   if(!depTcMap){
@@ -1475,6 +1477,23 @@ function updateLocNav(){
   document.getElementById('loc-gmaps').href=`https://www.google.com/maps/dir/?api=1&origin=${orig}&destination=${lat},${lng}&travelmode=driving`;
   document.getElementById('loc-apple').href=`https://maps.apple.com/?saddr=${orig}&daddr=${lat},${lng}&dirflg=d`;
   document.getElementById('loc-nav').classList.add('show');
+}
+
+function openDepNav(app){
+  const dep=curData?.departure;
+  if(!dep?.lat){showToast('Airport location not available');return;}
+  const dest=`${dep.lat},${dep.lng}`;
+  if(app==='google'){
+    const url=userLat&&userLng
+      ?`https://www.google.com/maps/dir/?api=1&origin=${userLat},${userLng}&destination=${dest}&travelmode=driving`
+      :`https://www.google.com/maps/search/?api=1&query=${dest}`;
+    window.open(url,'_blank');
+  }else{
+    const url=userLat&&userLng
+      ?`https://maps.apple.com/?saddr=${userLat},${userLng}&daddr=${dest}&dirflg=d`
+      :`https://maps.apple.com/?ll=${dest}`;
+    window.open(url,'_blank');
+  }
 }
 
 function qaiNavigate(){

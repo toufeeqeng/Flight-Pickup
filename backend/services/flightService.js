@@ -45,6 +45,7 @@ function normalizeAeroDataBox(f, flightNumber, arrAirport, depAirport, weather) 
     enroute: 'active', scheduled: 'scheduled', landed: 'landed',
     cancelled: 'cancelled', diverted: 'diverted',
     gateclosed: 'scheduled', boarding: 'scheduled', unknown: 'scheduled',
+    expected: 'scheduled',
   };
   const rawStatus = (f.status || 'unknown').toLowerCase().replace(/\s/g, '');
   const status = statusMap[rawStatus] || rawStatus;
@@ -62,9 +63,9 @@ function normalizeAeroDataBox(f, flightNumber, arrAirport, depAirport, weather) 
       iata: depInfo.iata || '',
       city: depAirport?.city || depInfo.municipalityName || '',
       country: depAirport?.country || '',
-      scheduled: fixTime(dep.scheduledTimeUtc || dep.scheduledTimeLocal || null),
-      estimated: fixTime(dep.estimatedTimeUtc || dep.estimatedTimeLocal || null),
-      actual: fixTime(dep.actualTimeUtc || dep.actualTimeLocal || null),
+      scheduled: fixTime(dep.scheduledTimeUtc || dep.scheduledTime?.utc || dep.scheduledTimeLocal || dep.scheduledTime?.local || null),
+      estimated: fixTime(dep.estimatedTimeUtc || dep.estimatedTime?.utc || dep.estimatedTimeLocal || dep.estimatedTime?.local || null),
+      actual: fixTime(dep.actualTimeUtc || dep.actualTime?.utc || dep.actualTimeLocal || dep.actualTime?.local || null),
       delay: depDelay,
       terminal: dep.terminal || null,
       gate: dep.gate || null,
@@ -76,9 +77,9 @@ function normalizeAeroDataBox(f, flightNumber, arrAirport, depAirport, weather) 
       iata: arrInfo.iata || '',
       city: arrAirport?.city || arrInfo.municipalityName || '',
       country: arrAirport?.country || '',
-      scheduled: fixTime(arr.scheduledTimeUtc || arr.scheduledTimeLocal || null),
-      estimated: fixTime(arr.estimatedTimeUtc || arr.estimatedTimeLocal || null),
-      actual: fixTime(arr.actualTimeUtc || arr.actualTimeLocal || null),
+      scheduled: fixTime(arr.scheduledTimeUtc || arr.scheduledTime?.utc || arr.scheduledTimeLocal || arr.scheduledTime?.local || null),
+      estimated: fixTime(arr.estimatedTimeUtc || arr.estimatedTime?.utc || arr.estimatedTimeLocal || arr.estimatedTime?.local || null),
+      actual: fixTime(arr.actualTimeUtc || arr.actualTime?.utc || arr.actualTimeLocal || arr.actualTime?.local || null),
       delay: arrDelay,
       terminal: arr.terminal || null,
       gate: arr.gate || null,

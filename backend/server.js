@@ -59,7 +59,7 @@ app.get('/api/route', async (req, res) => {
       delay: f.arrival?.delay || f.departure?.delay || 0,
       terminal: f.arrival?.terminal || null,
       gate: f.arrival?.gate || null,
-      buffer: calcBuffer(f),
+      buffer: calcBuffer(f.flight_status, f.departure?.delay || 0, f.arrival?.delay || 0),
     }));
     const result = { flights, fetchedAt: new Date().toISOString() };
     cache.set(cacheKey, result);

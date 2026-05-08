@@ -1485,6 +1485,9 @@ function reqLoc(){
         if(isFirst)renderRouteMap();
         else{if(rPath)rmap.removeLayer(rPath);rPath=L.polyline(result.routeCoords,{color:'#4f9cf9',weight:4,opacity:.85}).addTo(rmap);rmap.fitBounds(L.latLngBounds(result.routeCoords),{padding:[28,28]});}
         updateTcCard(result);
+      }else{
+        setText('spc-drive-val',`${driveMins} min`);
+        setText('spc-drive-sub','Enter drive time manually ↓');
       }
     }else{
       setText('spc-drive-val','📍 Ready');

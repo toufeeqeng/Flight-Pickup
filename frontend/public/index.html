@@ -153,10 +153,11 @@ header::before{content:'';position:absolute;top:0;left:50%;transform:translateX(
 .aci{display:flex;align-items:center;gap:9px;padding:.6rem .9rem;cursor:pointer;transition:background .15s;border-bottom:1px solid var(--b1)}
 .aci:last-child{border-bottom:none}
 .aci:hover{background:var(--g2)}
-.aci-iata{font-family:'Syne',sans-serif;font-weight:800;font-size:.95rem;color:var(--acc);min-width:36px}
-.aci-city{font-size:.85rem;font-weight:500}
-.aci-name{font-size:.72rem;color:var(--t2);margin-top:1px}
-.aci-country{font-size:.72rem;color:var(--t3);margin-left:auto}
+.aci-iata{font-family:'Syne',sans-serif;font-weight:800;font-size:.95rem;color:var(--acc);min-width:36px;flex-shrink:0}
+.aci>div{flex:1;min-width:0}
+.aci-city{font-size:.85rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.aci-name{font-size:.72rem;color:var(--t2);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.aci-country{font-size:.72rem;color:var(--t3);margin-left:auto;flex-shrink:0}
 
 /* ── Selected tag ── */
 .sel-tag{display:none;align-items:center;gap:5px;margin-top:5px;padding:3px 9px;background:rgba(79,156,249,.1);border:1px solid rgba(79,156,249,.25);border-radius:8px;font-size:.78rem;color:var(--blue)}
@@ -1402,6 +1403,7 @@ function reqLoc(){
   locationWatchId=navigator.geolocation.watchPosition(async pos=>{
     const isFirst=!userLat&&!userLng;
     userLat=pos.coords.latitude; userLng=pos.coords.longitude;
+    try{localStorage.setItem('fp_loc',JSON.stringify({lat:userLat,lng:userLng,ts:Date.now()}))}catch(e){}
     if(lmap){if(userMarker)lmap.removeLayer(userMarker);userMarker=L.marker([userLat,userLng],{icon:mkUser()}).addTo(lmap).bindPopup('<b>📍 You</b>');}
     if(rmap){if(rUserM)rmap.removeLayer(rUserM);rUserM=L.marker([userLat,userLng],{icon:mkUser()}).addTo(rmap);}
     updateLocNav();
@@ -1461,6 +1463,7 @@ async function searchFlight(fn){
     const r=await fetch(`${API}/flight/${encodeURIComponent(num)}`);
     const d=await r.json();
     if(!r.ok){showErr(d.error||'Flight not found.');return}
+    try{localStorage.setItem(`fp_flt_${num}`,JSON.stringify({d,ts:Date.now()}))}catch(e){}
     curFlight={type:'flight',value:num};
     curData=d;
     renderFlight(d);
@@ -1483,6 +1486,7 @@ async function searchRoute(){
     const r=await fetch(`${API}/route?dep=${encodeURIComponent(dep)}&arr=${encodeURIComponent(arr)}`);
     const d=await r.json();
     if(!r.ok){showErr(d.error||'Route not found.');return}
+    if(!d.flights||d.flights.length===0){showErr('No flights found for this route. Try searching a specific flight number instead.');return}
     curFlight={type:'route',dep,arr};
     renderRoute(d,dep,arr);
     startAuto();
@@ -2052,7 +2056,18 @@ function goBackToSearch(){window.location.href=window.location.pathname;}
 function checkUrlParams(){
   const p=new URLSearchParams(window.location.search);
   const fn=p.get('flight');
-  if(fn){document.getElementById('flight-input').value=fn;enterResultsMode(fn);setTimeout(()=>searchFlight(fn),500)}
+  if(!fn)return;
+  document.getElementById('flight-input').value=fn;
+  enterResultsMode(fn);
+  try{
+    const c=JSON.parse(localStorage.getItem(`fp_flt_${fn}`)||'null');
+    if(c&&Date.now()-c.ts<5*60*1000){
+      curFlight={type:'flight',value:fn};curData=c.d;
+      renderFlight(c.d);loadBg(c.d.arrival);setBgForAirport(c.d.departure.iata);renderMap(c.d);saveRecent(fn);startAuto();
+      return;
+    }
+  }catch(e){}
+  setTimeout(()=>searchFlight(fn),500);
 }
 
 
@@ -2398,6 +2413,31 @@ function setBgForAirport(iata){initBgSlideshow();}
   checkUrlParams();
   initBgSlideshow();
   if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js').catch(()=>{});
+
+  // Silently restore location if browser permission already granted
+  if(navigator.geolocation){
+    navigator.geolocation.getCurrentPosition(pos=>{
+      userLat=pos.coords.latitude;userLng=pos.coords.longitude;
+      try{localStorage.setItem('fp_loc',JSON.stringify({lat:userLat,lng:userLng,ts:Date.now()}))}catch(e){}
+      const locBtn=document.getElementById('spc-loc-btn');
+      const driveVal=document.getElementById('spc-drive-val');
+      if(locBtn)locBtn.classList.add('hidden');
+      if(driveVal)driveVal.style.display='';
+      setText('spc-drive-val',`${driveMins} min`);
+      setText('spc-drive-sub','live traffic');
+      updateLocNav();
+      if(curData&&curData.arrival&&curData.arrival.lat){
+        fetchRoute(userLat,userLng,curData.arrival.lat,curData.arrival.lng).then(r=>{
+          if(r){osrmDriveTime=r;driveMins=r.driveMins;
+            const tf={heavy:'🔴 Heavy',moderate:'🟡 Moderate',clear:'🟢 Clear'};
+            setText('spc-drive-val',`${driveMins} min`);
+            setText('spc-drive-sub',`${r.distanceKm}km · ${tf[r.trafficLevel]||'Live'}`);
+            recalc();renderRouteMap();updateTcCard(r);
+          }
+        });
+      }
+    },()=>{},{maximumAge:300000,timeout:5000,enableHighAccuracy:false});
+  }
 })();
 
 </script>

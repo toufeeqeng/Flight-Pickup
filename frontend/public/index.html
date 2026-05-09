@@ -248,6 +248,7 @@ header::before{content:'';position:absolute;top:0;left:50%;transform:translateX(
 .ab-share{color:#fda4af}
 .ab-notif{color:#fbbf24}
 .ab-notif.active{color:#f59e0b;background:rgba(251,191,36,.14)}
+.ab-cal{color:#a78bfa}
 .ab-save.saved-state{color:#6ee7b7}
 
 /* ── Weather strip ── */
@@ -368,6 +369,20 @@ header::before{content:'';position:absolute;top:0;left:50%;transform:translateX(
   .rri-bdg{grid-column:3;grid-row:1/3;font-size:.62rem;padding:.15rem .5rem}
 }
 
+/* ── Saved passenger profiles ── */
+.pax-panel{margin-bottom:.75rem;display:none}
+.pax-panel.show{display:block}
+.pax-panel-lbl{font-size:.67rem;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.42rem}
+.pax-row{display:flex;gap:.45rem;flex-wrap:wrap;align-items:center}
+.pax-chip{display:inline-flex;align-items:center;gap:.3rem;background:var(--s1);border:1px solid var(--b2);border-radius:999px;padding:.28rem .5rem .28rem .8rem;cursor:pointer;transition:border-color .15s;max-width:160px}
+.pax-chip:hover{border-color:var(--acc)}
+.pax-name{font-size:.75rem;font-weight:600;color:var(--t1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:80px}
+.pax-fn{font-size:.65rem;color:var(--acc);white-space:nowrap;margin-left:2px}
+.pax-del{background:none;border:none;color:var(--t3);cursor:pointer;font-size:.85rem;line-height:1;padding:0 .15rem;margin-left:.1rem;flex-shrink:0;transition:color .15s}
+.pax-del:hover{color:var(--red)}
+.pax-save-btn{background:none;border:1px dashed var(--b2);border-radius:999px;padding:.28rem .75rem;font-size:.7rem;color:var(--t3);cursor:pointer;white-space:nowrap;transition:all .15s;font-family:'DM Sans',sans-serif}
+.pax-save-btn:hover{border-color:var(--acc);color:var(--acc)}
+
 /* ── Saved flights panel ── */
 .saved-panel{display:none;margin-bottom:.9rem}
 .saved-panel.show{display:block}
@@ -446,6 +461,13 @@ header::before{content:'';position:absolute;top:0;left:50%;transform:translateX(
   .sm-rt-iata{font-size:.9rem}
 }
 
+/* ── Diverted alert ── */
+.diverted-alert{background:linear-gradient(135deg,rgba(239,68,68,.18),rgba(249,115,22,.1));border:1.5px solid rgba(239,68,68,.45);border-radius:10px;padding:.85rem 1.1rem;margin-bottom:.9rem;display:none}
+.diverted-alert.show{display:block}
+.div-title{font-family:'Syne',sans-serif;font-size:.92rem;font-weight:800;color:#ef4444;margin-bottom:.3rem}
+.div-body{font-size:.8rem;color:var(--t2);line-height:1.55}
+.div-nav{display:inline-flex;align-items:center;gap:.35rem;margin-top:.5rem;background:#ef4444;color:#fff;border:none;border-radius:8px;padding:.32rem .85rem;font-size:.75rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif}
+
 /* ── Back bar (results mode) ── */
 .back-bar{display:none;align-items:center;gap:.75rem;padding:.55rem .9rem;background:var(--s1);border:1px solid var(--b2);border-radius:var(--r);margin-bottom:.9rem;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
 .back-bar.show{display:flex}
@@ -512,6 +534,21 @@ body.results-mode .card{display:none}
   .pz-nav{padding:.26rem .45rem;font-size:.62rem}
   .pz-share{padding:.26rem .45rem;font-size:.62rem}
 }
+
+/* ── Cell phone lot mode ── */
+.lot-banner{background:linear-gradient(135deg,rgba(16,217,138,.12),rgba(79,156,249,.08));border:1px solid rgba(16,217,138,.25);border-radius:10px;padding:.65rem 1rem;margin:.4rem 1rem 0;display:none;align-items:center;gap:.7rem}
+.lot-banner.show{display:flex}
+.lot-icon{font-size:1.3rem;flex-shrink:0}
+.lot-txt{flex:1;min-width:0}
+.lot-label{font-size:.68rem;font-weight:700;color:#10d98a;text-transform:uppercase;letter-spacing:.05em;font-family:'Syne',sans-serif}
+.lot-countdown{font-size:1.05rem;font-weight:800;color:var(--t1);font-family:'Syne',sans-serif;margin-top:1px}
+.lot-sub{font-size:.68rem;color:var(--t2);margin-top:1px}
+.lot-exit-btn{background:none;border:1px solid rgba(16,217,138,.35);border-radius:8px;padding:.28rem .65rem;font-size:.7rem;font-weight:600;color:#10d98a;cursor:pointer;white-space:nowrap;font-family:'DM Sans',sans-serif;flex-shrink:0}
+.lot-exit-btn:hover{background:rgba(16,217,138,.12)}
+.spc-lot-toggle{display:none;align-items:center;justify-content:space-between;padding:.45rem 1rem;border-top:1px solid var(--b1);font-size:.73rem;color:var(--t2)}
+.spc-lot-toggle.show{display:flex}
+.lot-toggle-btn{background:var(--g2);border:1px solid var(--b2);border-radius:999px;padding:.2rem .65rem;font-size:.68rem;font-weight:600;cursor:pointer;color:var(--t2);font-family:'DM Sans',sans-serif;transition:all .2s}
+.lot-toggle-btn.on{background:rgba(16,217,138,.15);border-color:rgba(16,217,138,.35);color:#10d98a}
 
 /* ── Smart Pickup Commander ── */
 .spc{background:var(--s1);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--b2);border-radius:var(--r);overflow:hidden;margin-bottom:.9rem}
@@ -656,6 +693,30 @@ body.results-mode .how-card{display:none}
 .no-lounge{font-size:.82rem;color:var(--t2);text-align:center;padding:1.5rem 0}
 
 
+/* ── Group pickup – 2nd flight ── */
+.add-flight2-wrap{margin-bottom:.9rem;display:none}
+.add-flight2-wrap.show{display:block}
+.add-flight2-btn{display:flex;align-items:center;gap:.5rem;background:none;border:1px dashed var(--b2);border-radius:10px;padding:.55rem 1rem;font-size:.76rem;color:var(--t3);cursor:pointer;width:100%;justify-content:center;transition:all .18s;font-family:'DM Sans',sans-serif}
+.add-flight2-btn:hover{border-color:var(--acc);color:var(--acc)}
+.flight2-card{background:var(--s1);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--b2);border-radius:var(--r);overflow:hidden;margin-bottom:.9rem;display:none}
+.flight2-card.show{display:block}
+.flight2-hdr{display:flex;align-items:center;gap:.65rem;padding:.7rem 1.1rem;border-bottom:1px solid var(--b1);background:linear-gradient(135deg,rgba(139,92,246,.1),rgba(79,156,249,.05))}
+.flight2-title{font-family:'Syne',sans-serif;font-size:.82rem;font-weight:700;flex:1}
+.flight2-close{background:none;border:none;color:var(--t3);cursor:pointer;font-size:1.1rem;line-height:1;padding:0 .2rem}
+.flight2-body{padding:.8rem 1.1rem}
+.flight2-search{display:flex;gap:.45rem;margin-bottom:.6rem}
+.flight2-input{flex:1;background:var(--g2);border:1px solid var(--b2);border-radius:8px;padding:.42rem .75rem;font-size:.82rem;color:var(--t1);font-family:'DM Sans',sans-serif;outline:none;min-width:0}
+.flight2-input:focus{border-color:var(--acc)}
+.flight2-go{background:var(--acc);color:#fff;border:none;border-radius:8px;padding:.42rem .9rem;font-size:.8rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap}
+.flight2-info{display:none}
+.flight2-info.show{display:block}
+.f2-fn{font-family:'Syne',sans-serif;font-size:.92rem;font-weight:800;color:var(--t1)}
+.f2-route{font-size:.72rem;color:var(--t2);margin-top:1px}
+.f2-eta{font-size:.8rem;font-weight:600;color:var(--acc);margin-top:.35rem}
+.f2-leave{font-size:.72rem;color:var(--t2);margin-top:.2rem}
+.f2-combined{background:rgba(79,156,249,.08);border:1px solid rgba(79,156,249,.2);border-radius:8px;padding:.5rem .75rem;margin-top:.55rem;font-size:.76rem;color:var(--t1)}
+.f2-combined strong{color:var(--acc);font-family:'Syne',sans-serif;font-weight:800}
+
 /* ── App Store download section ── */
 .app-dl{text-align:center;padding:2rem 1rem 1.2rem;position:relative;z-index:2}
 .app-dl-eyebrow{font-size:.68rem;text-transform:uppercase;letter-spacing:.14em;color:var(--t3);font-weight:700;margin-bottom:.5rem}
@@ -717,6 +778,12 @@ body.results-mode .how-card{display:none}
 <div class="saved-panel" id="saved-panel">
   <div class="saved-lbl" id="saved-lbl">Recent Flights</div>
   <div class="saved-row" id="saved-row"></div>
+</div>
+
+<!-- Saved passengers quick-access -->
+<div class="pax-panel" id="pax-panel">
+  <div class="pax-panel-lbl">Quick Pick — Passengers</div>
+  <div class="pax-row" id="pax-row"></div>
 </div>
 
 <!-- Search card -->
@@ -786,6 +853,13 @@ body.results-mode .how-card{display:none}
 <div id="result-card" style="display:none;animation:fadeUp .4s ease">
 <style>@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}</style>
 
+<!-- Diverted alert banner -->
+<div class="diverted-alert" id="diverted-alert">
+  <div class="div-title">⚠️ Flight Diverted</div>
+  <div class="div-body" id="div-body">This flight has been diverted to a different airport. Do not go to the original arrival airport.</div>
+  <button class="div-nav" onclick="openDivertedNav()">Open in Maps</button>
+</div>
+
 <!-- ── Smart Pickup Commander ── -->
 <div class="spc" id="spc-card">
   <div class="spc-hdr">
@@ -825,6 +899,20 @@ body.results-mode .how-card{display:none}
       <div class="spc-res-time green" id="spc-leave-val">—</div>
       <div class="spc-res-cd" id="spc-cd">Enter flight + enable location</div>
     </div>
+  </div>
+  <!-- Cell phone lot mode -->
+  <div class="spc-lot-toggle" id="spc-lot-toggle">
+    <span>🅿️ I'm already at the airport / cell lot</span>
+    <button class="lot-toggle-btn" id="lot-toggle-btn" onclick="toggleLotMode()">Enable</button>
+  </div>
+  <div class="lot-banner" id="lot-banner">
+    <span class="lot-icon">🅿️</span>
+    <div class="lot-txt">
+      <div class="lot-label">Cell Phone Lot Mode</div>
+      <div class="lot-countdown" id="lot-countdown">—</div>
+      <div class="lot-sub" id="lot-sub">Waiting for flight data…</div>
+    </div>
+    <button class="lot-exit-btn" onclick="toggleLotMode()">Exit Lot</button>
   </div>
   <div class="spc-pz" id="spc-pz" style="display:none">
     <div class="pz-body">
@@ -1012,6 +1100,10 @@ body.results-mode .how-card{display:none}
     <span class="ab-ic"><svg viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></span>
     <span class="ab-lbl" id="save-btn-txt">Save</span>
   </button>
+  <button class="ab-btn" onclick="promptSavePassenger()" title="Save as passenger profile">
+    <span class="ab-ic"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg></span>
+    <span class="ab-lbl">Save Person</span>
+  </button>
   <button class="ab-btn ab-nav" onclick="navigateSPC()">
     <span class="ab-ic"><svg viewBox="0 0 24 24"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg></span>
     <span class="ab-lbl">Navigate</span>
@@ -1023,6 +1115,10 @@ body.results-mode .how-card{display:none}
   <button class="ab-btn ab-notif" id="ab-notif-btn" onclick="toggleNotifBtn()">
     <span class="ab-ic"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></span>
     <span class="ab-lbl" id="ab-notif-lbl">Remind</span>
+  </button>
+  <button class="ab-btn ab-cal" onclick="addToCalendar()">
+    <span class="ab-ic"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>
+    <span class="ab-lbl">Calendar</span>
   </button>
   <button class="ab-btn ab-copy" onclick="shareLink()">
     <span class="ab-ic"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></span>
@@ -1037,6 +1133,33 @@ body.results-mode .how-card{display:none}
 </div><!-- end flight-layout -->
 </div><!-- end result-card -->
 
+<!-- Add 2nd flight for group pickup -->
+<div class="add-flight2-wrap" id="add-flight2-wrap">
+  <button class="add-flight2-btn" onclick="showFlight2Card()">
+    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" fill="none" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    Track another flight arriving on this trip
+  </button>
+</div>
+<div class="flight2-card" id="flight2-card">
+  <div class="flight2-hdr">
+    <span style="font-size:1rem">✈️</span>
+    <span class="flight2-title">Group Pickup — 2nd Flight</span>
+    <button class="flight2-close" onclick="closeFlight2()">✕</button>
+  </div>
+  <div class="flight2-body">
+    <div class="flight2-search">
+      <input class="flight2-input" id="flight2-input" type="text" maxlength="8" placeholder="e.g. EK202" autocomplete="off" autocorrect="off"/>
+      <button class="flight2-go" onclick="searchFlight2()">Track</button>
+    </div>
+    <div class="flight2-info" id="flight2-info">
+      <div class="f2-fn" id="f2-fn"></div>
+      <div class="f2-route" id="f2-route"></div>
+      <div class="f2-eta" id="f2-eta"></div>
+      <div class="f2-leave" id="f2-leave"></div>
+      <div class="f2-combined" id="f2-combined"></div>
+    </div>
+  </div>
+</div>
 
 <!-- Route Results -->
 <div class="rr-card" id="rr-card">
@@ -1146,7 +1269,7 @@ let selDep=null, selArr=null;
 let userLat=null, userLng=null, driveMins=30;
 let autoTimer=null, acTimers={};
 let notifIntervalId=null;
-let prevStatus=null, prevDelay=0, prevDriveTime=null, notifFirstRender=true;
+let prevStatus=null, prevDelay=0, prevDriveTime=null, prevTerminal=null, notifFirstRender=true, isFirstRender=true;
 
 // ─── TABS ─────────────────────────────────────────────────────────────────────
 function switchTab(t){
@@ -1518,9 +1641,13 @@ function renderFlight(d){
   document.getElementById('dstrip').innerHTML=det.map(x=>`<div class="di"><div class="di-lbl">${x.l}</div><div class="di-val">${x.v}</div></div>`).join('');
 
   // Live
-  if(d.live){
+  if(d.live&&d.live.altitude){
     document.getElementById('live-strip').classList.add('show');
-    document.getElementById('lstats').innerHTML=`<div class="ls"><div class="ls-lbl">Altitude</div><div class="ls-val">${Math.round(d.live.altitude||0).toLocaleString()} ft</div></div><div class="ls"><div class="ls-lbl">Speed</div><div class="ls-val">${fmtSpd(Math.round(d.live.speed||0))}</div></div>`;
+    const altFt=Math.round(d.live.altitude).toLocaleString();
+    const spd=fmtSpd(Math.round(d.live.speed||0));
+    document.getElementById('lstats').innerHTML=`<div class="ls"><div class="ls-lbl">Altitude</div><div class="ls-val">${altFt} ft</div></div><div class="ls"><div class="ls-lbl">Speed</div><div class="ls-val">${spd}</div></div>`;
+  }else{
+    document.getElementById('live-strip').classList.remove('show');
   }
 
   // Weather
@@ -1546,20 +1673,27 @@ function renderFlight(d){
 
   setText('fetched-at',`Updated ${fmtAgo(d.fetchedAt)}`);
   renderStatusMonitor(d);
+  renderDivertedAlert(d);
   renderNotifPanel();
   renderBufSteps();
   renderAirportPanel(d.arrival?.iata);
   document.getElementById('result-card').style.display='block';
+  document.getElementById('add-flight2-wrap')?.classList.add('show');
   loadSaved();
   updateLocNav();
+  document.getElementById('spc-lot-toggle')?.classList.add('show');
   renderPzCard(d);
-  setTimeout(()=>document.getElementById('result-card').scrollIntoView({behavior:'smooth',block:'start'}),100);
-  autoDetectFlightType(d);
+  if(isFirstRender){
+    isFirstRender=false;
+    setTimeout(()=>document.getElementById('result-card').scrollIntoView({behavior:'smooth',block:'start'}),100);
+    autoDetectFlightType(d);
+  }
   if(notifFirstRender){
     notifFirstRender=false;
     prevStatus=(d.status||'').toLowerCase().replace(/[-\s]/g,'');
     prevDelay=Math.max(d.arrival?.delay||0,d.departure?.delay||0);
     prevDriveTime=null;
+    prevTerminal=d.arrival?.terminal||null;
     askNotifPermission();
   }else{
     detectFlightChanges(d);
@@ -1567,11 +1701,15 @@ function renderFlight(d){
 }
 
 function autoDetectFlightType(d){
-  const lookup=iata=>LOCAL_AIRPORTS.find(a=>a.iata===iata);
-  const dep=lookup(d.departure?.iata);
-  const arr=lookup(d.arrival?.iata);
-  if(!dep||!arr)return;
-  const type=dep.country===arr.country?'domestic':'international';
+  const depC=d.departure?.country||'';
+  const arrC=d.arrival?.country||'';
+  let type='international';
+  if(depC&&arrC) type=depC===arrC?'domestic':'international';
+  else{
+    const lookup=iata=>LOCAL_AIRPORTS.find(a=>a.iata===iata);
+    const dep=lookup(d.departure?.iata);const arr=lookup(d.arrival?.iata);
+    if(dep&&arr)type=dep.country===arr.country?'domestic':'international';
+  }
   const btn=document.getElementById(type==='domestic'?'bft-dom':'bft-int');
   if(btn)setFlightType(type,btn);
 }
@@ -1634,6 +1772,41 @@ function updateLeaveTime(d){
   if(bdg){bdg.className=`leave-badge ${d.buffer?.bufferColor||leaveCls}`;bdg.textContent=d.buffer?.bufferLabel||'';}
 }
 
+// ─── CELL PHONE LOT MODE ─────────────────────────────────────────────────────
+let lotMode=false,lotTimer=null;
+function toggleLotMode(){
+  lotMode=!lotMode;
+  const btn=document.getElementById('lot-toggle-btn');
+  const banner=document.getElementById('lot-banner');
+  if(btn){btn.textContent=lotMode?'Exit Lot':'Enable';btn.classList.toggle('on',lotMode);}
+  banner?.classList.toggle('show',lotMode);
+  if(lotMode){updateLotCountdown();lotTimer=setInterval(updateLotCountdown,30000);}
+  else{if(lotTimer)clearInterval(lotTimer);lotTimer=null;}
+  if(curData)updateLeaveTime(curData);
+}
+function updateLotCountdown(){
+  if(!curData||!lotMode)return;
+  const arrISO=curData.arrival.estimated||curData.arrival.scheduled;
+  if(!arrISO)return;
+  const exitDate=new Date(new Date(arrISO).getTime()+bufMins*60000);
+  const moveTime=new Date(exitDate.getTime()-10*60000); // leave lot 10min before exit
+  const now=Date.now();
+  const minsLeft=Math.round((moveTime-now)/60000);
+  const cd=document.getElementById('lot-countdown');
+  const sub=document.getElementById('lot-sub');
+  if(minsLeft<=0){
+    if(cd)cd.textContent='Move to Arrivals NOW';
+    if(sub)sub.textContent=`${curData.flightNumber} exits in ~10 min — drive to terminal`;
+  } else if(minsLeft<60){
+    if(cd)cd.textContent=`Move to terminal in ${minsLeft} min`;
+    if(sub)sub.textContent=`Stay in lot until ${fmtT(moveTime.toISOString())}`;
+  } else {
+    const h=Math.floor(minsLeft/60),m=minsLeft%60;
+    if(cd)cd.textContent=`Move in ${h}h ${m}m`;
+    if(sub)sub.textContent=`Plenty of time — relax in the cell lot`;
+  }
+}
+
 // ─── RENDER ROUTE ─────────────────────────────────────────────────────────────
 function renderRoute(data,dep,arr){
   const list=data.flights||[];
@@ -1671,8 +1844,8 @@ function initMap(){
   window.matchMedia('(prefers-color-scheme:dark)').addEventListener('change',()=>{lmap.eachLayer(l=>{if(l instanceof L.TileLayer)lmap.removeLayer(l)});L.tileLayer(tileUrl(),{maxZoom:18,subdomains:'abcd'}).addTo(lmap)});
 }
 function mkPlane(h){
-  const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><g transform="rotate(${h||0},16,16)"><path d="M16 2 L20 14 L30 16 L20 18 L18 28 L16 24 L14 28 L12 18 L2 16 L12 14 Z" fill="white" stroke="rgba(0,0,0,0.35)" stroke-width="1" stroke-linejoin="round"/></g></svg>`;
-  return L.divIcon({className:'',html:`<div style="filter:drop-shadow(0 2px 8px rgba(0,0,0,.7))">${svg}</div>`,iconSize:[32,32],iconAnchor:[16,16]});
+  const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36"><g transform="rotate(${h||0},18,18)"><path d="M18 3 L20.5 13 L30 19 L20.5 21.5 L20 29 L18 27 L16 29 L15.5 21.5 L6 19 L15.5 13 Z" fill="#4f9cf9" stroke="white" stroke-width="1.8" stroke-linejoin="round"/></g></svg>`;
+  return L.divIcon({className:'',html:`<div style="filter:drop-shadow(0 2px 10px rgba(0,0,0,.8))">${svg}</div>`,iconSize:[36,36],iconAnchor:[18,18]});
 }
 function mkDot(c){return L.divIcon({className:'',html:`<div style="width:12px;height:12px;background:${c};border:2.5px solid #fff;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,.5)"></div>`,iconSize:[12,12],iconAnchor:[6,6]})}
 function mkUser(){return L.divIcon({className:'',html:`<div style="width:18px;height:18px;background:#4f9cf9;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 5px rgba(79,156,249,.28),0 2px 10px rgba(0,0,0,.5)"></div>`,iconSize:[18,18],iconAnchor:[9,9]})}
@@ -1799,11 +1972,43 @@ function loadSaved(){
     const btn=document.querySelector('.act-btn');
     if(btn)btn.classList.toggle('saved',!!exists);
   }
+  renderPassengers();
 }
 
 function deleteSaved(fn){
   setSaved(getSaved().filter(s=>s.fn!==fn));
   loadSaved();
+}
+
+// ─── PASSENGER PROFILES ───────────────────────────────────────────────────────
+function getPassengers(){try{return JSON.parse(localStorage.getItem('fp_pax')||'[]');}catch{return[];}}
+function renderPassengers(){
+  const list=getPassengers();
+  const panel=document.getElementById('pax-panel');
+  const row=document.getElementById('pax-row');
+  if(!panel||!row)return;
+  if(!list.length){panel.classList.remove('show');return;}
+  panel.classList.add('show');
+  row.innerHTML=list.map(p=>`<div class="pax-chip" onclick="quickPickPax('${p.fn}')"><span class="pax-name">${p.name}</span><span class="pax-fn">${p.fn}</span><button class="pax-del" onclick="event.stopPropagation();deletePax('${p.name.replace(/'/g,"\\'")}')" title="Remove">×</button></div>`).join('')+'<button class="pax-save-btn" onclick="promptSavePassenger()">+ Save current</button>';
+}
+function quickPickPax(fn){
+  document.getElementById('flight-input').value=fn;
+  switchTab('flight');
+  searchFlight(fn);
+}
+function deletePax(name){
+  localStorage.setItem('fp_pax',JSON.stringify(getPassengers().filter(p=>p.name!==name)));
+  renderPassengers();
+}
+function promptSavePassenger(){
+  if(!curData){showToast('Search a flight first');return;}
+  const name=prompt('Enter a name for this passenger (e.g. "Mom", "John"):','');
+  if(!name||!name.trim())return;
+  const list=getPassengers().filter(p=>p.name!==name.trim());
+  list.unshift({name:name.trim(),fn:curData.flightNumber,ts:Date.now()});
+  localStorage.setItem('fp_pax',JSON.stringify(list.slice(0,6)));
+  renderPassengers();
+  showToast(`Saved "${name.trim()}" — tap their chip to track again`);
 }
 
 // ─── RECENT SEARCHES ─────────────────────────────────────────────────────────
@@ -1861,8 +2066,13 @@ function detectFlightChanges(d){
       sendNotif(`⏱ ${fn} delayed +${extra} min`,`New arrival: ${newArr} at ${arrIata}`,'fp-delay',url);
     }
   }
+  const newTerminal=d.arrival?.terminal||null;
+  if(prevTerminal!==null&&newTerminal&&newTerminal!==prevTerminal){
+    sendNotif(`🔄 ${fn} Terminal Changed!`,`Now arriving Terminal ${newTerminal} (was Terminal ${prevTerminal}). Update your meeting point.`,'fp-terminal',url);
+  }
   prevStatus=newStatus;
   prevDelay=newDelay;
+  prevTerminal=newTerminal;
 }
 
 function detectTrafficChange(){
@@ -1889,6 +2099,43 @@ function scheduleNotif(d){
 }
 
 // ─── SHARE ────────────────────────────────────────────────────────────────────
+function addToCalendar(){
+  if(!curData){showToast('Search a flight first');return;}
+  const arr=curData.arrival;
+  const arrISO=arr.estimated||arr.scheduled;
+  if(!arrISO){showToast('No arrival time available');return;}
+  const arrDate=new Date(arrISO);
+  const exitDate=new Date(arrDate.getTime()+bufMins*60000);
+  const leaveDate=new Date(exitDate.getTime()-driveMins*60000);
+  const fmt=d=>d.toISOString().replace(/[-:]/g,'').replace(/\.\d+Z$/,'Z');
+  const ics=[
+    'BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Meet My Flight//EN','CALSCALE:GREGORIAN',
+    'BEGIN:VEVENT',
+    `DTSTART:${fmt(arrDate)}`,`DTEND:${fmt(exitDate)}`,
+    `SUMMARY:${curData.flightNumber} Lands – ${arr.iata||arr.airport}`,
+    `DESCRIPTION:${curData.airline} ${curData.flightNumber} arrives at ${arr.airport||arr.iata}.${arr.terminal?' Terminal '+arr.terminal+'.':''} Passenger exits approx ${fmtT(exitDate.toISOString())}.`,
+    `LOCATION:${arr.airport||arr.iata}`,
+    'BEGIN:VALARM','TRIGGER:-PT10M','ACTION:DISPLAY',
+    `DESCRIPTION:${curData.flightNumber} exits in ~10 min — head to arrivals!`,
+    'END:VALARM','END:VEVENT',
+    'BEGIN:VEVENT',
+    `DTSTART:${fmt(leaveDate)}`,`DTEND:${fmt(arrDate)}`,
+    `SUMMARY:🚗 Leave Home – Pick up ${curData.flightNumber}`,
+    `DESCRIPTION:Leave now to reach ${arr.airport||arr.iata} in time. ${curData.flightNumber} arrives at ${fmtT(arrISO)}.`,
+    'BEGIN:VALARM','TRIGGER:PT0S','ACTION:DISPLAY',
+    `DESCRIPTION:Time to leave! ${curData.flightNumber} lands at ${fmtT(arrISO)}`,
+    'END:VALARM','END:VEVENT',
+    'END:VCALENDAR'
+  ].join('\r\n');
+  const blob=new Blob([ics],{type:'text/calendar;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=`${curData.flightNumber}-pickup.ics`;
+  document.body.appendChild(a);a.click();
+  document.body.removeChild(a);URL.revokeObjectURL(url);
+  showToast('Calendar event downloaded — open to add to your calendar');
+}
+
 function shareWhatsApp(){
   if(!curData)return;
   const d=curData;
@@ -1926,8 +2173,19 @@ function clearAuto(){
 }
 function refreshCurrent(){
   if(!curFlight)return;
-  if(curFlight.type==='flight')searchFlight(curFlight.value);
+  if(curFlight.type==='flight')silentRefreshFlight(curFlight.value);
   else searchRoute();
+}
+async function silentRefreshFlight(fn){
+  // Refresh data without clearing location or resetting UI
+  try{
+    const r=await fetch(`${API}/flight/${encodeURIComponent(fn)}`);
+    const d=await r.json();
+    if(!r.ok)return;
+    curData=d;
+    renderFlight(d);
+    setText('fetched-at',`Updated ${fmtAgo(d.fetchedAt)}`);
+  }catch(e){}
 }
 
 // ─── HELPERS ──────────────────────────────────────────────────────────────────
@@ -1949,7 +2207,17 @@ function clearResults(){
   document.getElementById('route-map-card').classList.remove('show');
   osrmDriveTime=null;
   clearAuto();
-  notifFirstRender=true; prevStatus=null; prevDelay=0; prevDriveTime=null;
+  notifFirstRender=true; isFirstRender=true; prevStatus=null; prevDelay=0; prevDriveTime=null; prevTerminal=null;
+  document.getElementById('diverted-alert')?.classList.remove('show');
+  document.getElementById('add-flight2-wrap')?.classList.remove('show');
+  document.getElementById('flight2-card')?.classList.remove('show');
+  document.getElementById('flight2-info')?.classList.remove('show');
+  curData2=null;
+  document.getElementById('spc-lot-toggle')?.classList.remove('show');
+  document.getElementById('lot-banner')?.classList.remove('show');
+  if(lotTimer){clearInterval(lotTimer);lotTimer=null;}
+  lotMode=false;
+  const ltb=document.getElementById('lot-toggle-btn');if(ltb){ltb.textContent='Enable';ltb.classList.remove('on');}
 }
 // ─── STATUS MONITOR (inline inside fi-card) ──────────────────────────────────
 function renderStatusMonitor(d){
@@ -2373,6 +2641,81 @@ function shareSPC(){
   if(navigator.share)navigator.share({title:'Meet My Flight',text:msg});
   else window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`,'_blank');
 }
+
+// ─── DIVERTED FLIGHT BANNER ───────────────────────────────────────────────────
+function renderDivertedAlert(d){
+  const alert=document.getElementById('diverted-alert');
+  const body=document.getElementById('div-body');
+  if(!alert)return;
+  const st=(d.status||'').toLowerCase().replace(/[-\s]/g,'');
+  if(st==='diverted'){
+    const newAirport=d.arrival?.airport||d.arrival?.iata||'unknown airport';
+    if(body)body.textContent=`${d.flightNumber} has been diverted to ${newAirport}. Do NOT go to the original arrival airport. Check the airline app for updated gate information.`;
+    alert.classList.add('show');
+  } else {
+    alert.classList.remove('show');
+  }
+}
+function openDivertedNav(){
+  if(!curData?.arrival?.lat)return;
+  window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(curData.arrival.airport||curData.arrival.iata)}+airport`,'_blank');
+}
+
+// ─── GROUP PICKUP (2nd flight) ────────────────────────────────────────────────
+let curData2=null;
+function showFlight2Card(){
+  document.getElementById('add-flight2-wrap').classList.remove('show');
+  document.getElementById('flight2-card').classList.add('show');
+  document.getElementById('flight2-input').focus();
+}
+function closeFlight2(){
+  curData2=null;
+  document.getElementById('flight2-card').classList.remove('show');
+  document.getElementById('flight2-info').classList.remove('show');
+  document.getElementById('flight2-input').value='';
+  document.getElementById('add-flight2-wrap').classList.add('show');
+  if(curData)updateLeaveTime(curData);
+}
+async function searchFlight2(){
+  const fn=(document.getElementById('flight2-input').value||'').trim().toUpperCase();
+  if(!fn){showToast('Enter a flight number');return;}
+  const btn=document.getElementById('flight2-input').nextElementSibling;
+  btn.textContent='…';btn.disabled=true;
+  try{
+    const r=await fetch(`${API}/flight/${encodeURIComponent(fn)}`);
+    const d=await r.json();
+    if(!r.ok){showToast(d.error||'Flight not found');return;}
+    curData2=d;
+    renderFlight2(d);
+  }catch{showToast('Could not reach server');}
+  finally{btn.textContent='Track';btn.disabled=false;}
+}
+function renderFlight2(d){
+  const arrISO=d.arrival.estimated||d.arrival.scheduled;
+  const exitDate=new Date(new Date(arrISO).getTime()+bufMins*60000);
+  const leaveDate=new Date(exitDate.getTime()-driveMins*60000);
+  const now=new Date();
+  setText('f2-fn',`${d.flightNumber} · ${d.airline}`);
+  setText('f2-route',`${d.departure.iata} → ${d.arrival.iata} · ${d.status||'Scheduled'}`);
+  setText('f2-eta',`Lands ~${fmtT(arrISO)} · Exits ~${fmtT(exitDate.toISOString())}`);
+  const minsLeft=Math.round((leaveDate-now)/60000);
+  setText('f2-leave',minsLeft>0?`Leave home by ${fmtT(leaveDate.toISOString())} (in ${minsLeft} min)`:'Leave immediately for this flight');
+  document.getElementById('flight2-info').classList.add('show');
+  // Combined leave time
+  if(curData){
+    const arrISO1=curData.arrival.estimated||curData.arrival.scheduled;
+    const exit1=new Date(new Date(arrISO1).getTime()+bufMins*60000);
+    const leave1=new Date(exit1.getTime()-driveMins*60000);
+    const earlierLeave=leaveDate<leave1?leaveDate:leave1;
+    const laterExit=exitDate>exit1?exitDate:exit1;
+    document.getElementById('f2-combined').innerHTML=`<strong>Combined:</strong> Leave home by ${fmtT(earlierLeave.toISOString())} · Last passenger exits ~${fmtT(laterExit.toISOString())}`;
+  }
+}
+// Key: allow Enter to search 2nd flight
+document.addEventListener('DOMContentLoaded',()=>{
+  const inp=document.getElementById('flight2-input');
+  if(inp)inp.addEventListener('keydown',e=>{if(e.key==='Enter')searchFlight2();});
+});
 
 // ─── BACKGROUND ──────────────────────────────────────────────────────────────
 const BG_COUNT=74;

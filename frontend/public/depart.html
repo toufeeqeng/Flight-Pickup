@@ -595,6 +595,21 @@ body.results-mode .leave-card{display:block}
 .dlp-l-amenities{font-size:.75rem;color:var(--t2);line-height:1.5}
 .dlp-empty{text-align:center;padding:1.5rem;font-size:.82rem;color:var(--t2)}
 
+/* ── Dep traveler profile panel ── */
+.dep-pax-panel{margin-bottom:.75rem;display:none}
+.dep-pax-panel.show{display:block}
+.dep-pax-panel-lbl{font-size:.67rem;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.42rem}
+.dep-pax-row{display:flex;flex-wrap:wrap;gap:.45rem;align-items:center}
+.dep-pax-chip{display:inline-flex;align-items:center;gap:.4rem;padding:.32rem .7rem .32rem .6rem;background:rgba(249,115,22,.12);border:1px solid rgba(249,115,22,.3);border-radius:999px;cursor:pointer;font-size:.76rem;transition:all .18s}
+.dep-pax-chip:hover{background:rgba(249,115,22,.22);border-color:rgba(249,115,22,.5)}
+.dep-pax-name{font-weight:600;color:var(--t1)}
+.dep-pax-fn{color:var(--t3);font-size:.72rem}
+.dep-pax-del{background:none;border:none;color:var(--t3);cursor:pointer;padding:0 0 0 .2rem;font-size:.88rem;line-height:1}
+.dep-pax-del:hover{color:var(--red)}
+.dep-pax-save-btn{background:none;border:1px dashed var(--b2);border-radius:999px;padding:.28rem .75rem;font-size:.72rem;color:var(--t3);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .18s}
+.dep-pax-save-btn:hover{border-color:var(--acc);color:var(--acc)}
+.ab-dep-cal{color:#fb923c}
+
 </style>
 </head>
 <body>
@@ -646,6 +661,12 @@ body.results-mode .leave-card{display:block}
 <div class="saved-panel" id="saved-panel">
   <div class="saved-lbl">Recent Flights</div>
   <div class="saved-row" id="saved-row"></div>
+</div>
+
+<!-- Saved traveler profiles quick-access -->
+<div class="dep-pax-panel" id="dep-pax-panel">
+  <div class="dep-pax-panel-lbl">My Saved Trips</div>
+  <div class="dep-pax-row" id="dep-pax-row"></div>
 </div>
 
 <!-- Search card -->
@@ -947,6 +968,14 @@ body.results-mode .leave-card{display:block}
     <span class="ab-ic"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></span>
     <span class="ab-lbl" id="ab-notif-lbl">Remind</span>
   </button>
+  <button class="ab-btn ab-dep-cal" onclick="addDepToCalendar()" title="Add to Calendar">
+    <span class="ab-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>
+    <span class="ab-lbl">Calendar</span>
+  </button>
+  <button class="ab-btn" onclick="promptSaveDepPassenger()" title="Save this trip">
+    <span class="ab-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+    <span class="ab-lbl">Save Trip</span>
+  </button>
 </div>
 
 <!-- Notification compat stubs (used by toggleAutoNotifs) -->
@@ -1194,6 +1223,7 @@ function renderFlight(d){
   recalc();
   renderMap(d);
   loadSaved();
+  renderDepPassengers();
   renderNotifPanelDep();
   renderBaggagePanel(d);
   renderSecurityWait(d.departure?.iata||'');
@@ -1201,6 +1231,7 @@ function renderFlight(d){
   document.getElementById('result-card').style.display='block';
   document.getElementById('result-card').scrollIntoView({behavior:'smooth',block:'start'});
   if(userLat&&userLng)renderDepTcCard();
+  if(depFirstRender){depFirstRender=false;autoDetectDepFlightType(d);}
   if(dpNotifFirst){
     dpNotifFirst=false;
     dpPrevStatus=(d.status||'').toLowerCase().replace(/[-\s]/g,'');
@@ -1629,7 +1660,7 @@ function clearResults(){
   if(sdcDep)sdcDep.textContent='—';
   const sdcDepSub=document.getElementById('sdc-dep-sub');
   if(sdcDepSub)sdcDepSub.textContent='enter flight';
-  dpNotifFirst=true; dpPrevStatus=null; dpPrevDelay=0;
+  dpNotifFirst=true; dpPrevStatus=null; dpPrevDelay=0; depFirstRender=true;
 }
 let _toastTimer=null;
 function showToast(m){
@@ -1876,6 +1907,90 @@ if('Notification' in window && Notification.permission==='default'){
 } else {
   updateDepNotifBellState();
 }
+
+// ─── AUTO-DETECT DEP FLIGHT TYPE ─────────────────────────────────────────────
+let depFirstRender=true;
+function autoDetectDepFlightType(d){
+  const depC=d.departure?.country||'';
+  const arrC=d.arrival?.country||'';
+  if(!depC||!arrC)return;
+  if(depC===arrC){
+    setBuf(90);
+    showToast('Domestic flight detected — 1.5 hr buffer set');
+  }else{
+    setBuf(180);
+    showToast('International flight — 3 hr buffer set');
+  }
+}
+
+// ─── DEP ADD TO CALENDAR ─────────────────────────────────────────────────────
+function addDepToCalendar(){
+  if(!curData){showToast('Search a flight first');return;}
+  const dep=curData.departure;
+  const arr=curData.arrival;
+  const depISO=dep.estimated||dep.scheduled;
+  if(!depISO){showToast('No departure time available');return;}
+  const depDate=new Date(depISO);
+  const arrDate=new Date(arr.estimated||arr.scheduled||depDate.getTime()+90*60000);
+  const leaveDate=new Date(depDate.getTime()-(bufMins+driveMins)*60000);
+  const fmt=d=>d.toISOString().replace(/[-:]/g,'').replace(/\.\d+Z$/,'Z');
+  const depTimeStr=depDate.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  const ics=[
+    'BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Meet My Flight//EN','CALSCALE:GREGORIAN',
+    'BEGIN:VEVENT',
+    `DTSTART:${fmt(depDate)}`,`DTEND:${fmt(arrDate)}`,
+    `SUMMARY:✈ ${curData.flightNumber} – ${dep.iata||dep.airport} → ${arr.iata||arr.airport}`,
+    `DESCRIPTION:${curData.airline} ${curData.flightNumber}. Departs ${dep.airport||dep.iata}${dep.terminal?' Terminal '+dep.terminal:''}${dep.gate?' Gate '+dep.gate:''}.`,
+    `LOCATION:${dep.airport||dep.iata}`,
+    'BEGIN:VALARM','TRIGGER:-PT10M','ACTION:DISPLAY',
+    `DESCRIPTION:${curData.flightNumber} departs in 10 min — are you at the gate?`,
+    'END:VALARM','END:VEVENT',
+    'BEGIN:VEVENT',
+    `DTSTART:${fmt(leaveDate)}`,`DTEND:${fmt(depDate)}`,
+    `SUMMARY:🚗 Leave Home — Catch ${curData.flightNumber}`,
+    `DESCRIPTION:Leave now to reach ${dep.airport||dep.iata} in time. ${curData.flightNumber} departs at ${depTimeStr}.`,
+    'BEGIN:VALARM','TRIGGER:PT0S','ACTION:DISPLAY',
+    `DESCRIPTION:Time to leave! ${curData.flightNumber} departs at ${depTimeStr}`,
+    'END:VALARM','END:VEVENT',
+    'END:VCALENDAR'
+  ].join('\r\n');
+  const blob=new Blob([ics],{type:'text/calendar;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=`${curData.flightNumber}-departure.ics`;
+  document.body.appendChild(a);a.click();
+  document.body.removeChild(a);URL.revokeObjectURL(url);
+  showToast('Calendar event downloaded — open to add to your calendar');
+}
+
+// ─── DEP TRAVELER PROFILES ────────────────────────────────────────────────────
+function getDepPassengers(){try{return JSON.parse(localStorage.getItem('fp_dep_pax')||'[]');}catch{return[];}}
+function renderDepPassengers(){
+  const list=getDepPassengers();
+  const panel=document.getElementById('dep-pax-panel');
+  const row=document.getElementById('dep-pax-row');
+  if(!panel||!row)return;
+  if(!list.length){panel.classList.remove('show');return;}
+  panel.classList.add('show');
+  row.innerHTML=list.map(p=>`<div class="dep-pax-chip" onclick="quickSearch('${p.fn}')"><span class="dep-pax-name">${p.name}</span><span class="dep-pax-fn">${p.fn}</span><button class="dep-pax-del" onclick="event.stopPropagation();deleteDepPax('${p.name.replace(/'/g,"\\'")}')">×</button></div>`).join('')+'<button class="dep-pax-save-btn" onclick="promptSaveDepPassenger()">+ Save current</button>';
+}
+function deleteDepPax(name){
+  localStorage.setItem('fp_dep_pax',JSON.stringify(getDepPassengers().filter(p=>p.name!==name)));
+  renderDepPassengers();
+}
+function promptSaveDepPassenger(){
+  if(!curData){showToast('Search a flight first');return;}
+  const name=prompt('Save this trip as (e.g. "Work to Dubai", "Family Holiday"):','');
+  if(!name||!name.trim())return;
+  const list=getDepPassengers().filter(p=>p.name!==name.trim());
+  list.unshift({name:name.trim(),fn:curData.flightNumber,ts:Date.now()});
+  localStorage.setItem('fp_dep_pax',JSON.stringify(list.slice(0,6)));
+  renderDepPassengers();
+  showToast(`Saved "${name.trim()}" — tap to track again`);
+}
+
+// ─── INIT: load saved trips on page load ─────────────────────────────────────
+renderDepPassengers();
 
 </script>
 </body>

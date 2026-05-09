@@ -549,12 +549,13 @@ function updateMapMarkers() {
 
     if (planeLat != null) {
       const col = s === 'active' ? '#3b82f6' : s === 'landed' ? '#10d98a' : s === 'delayed' ? '#f5a623' : '#7b88aa';
+      const planeSvg=`<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36"><g transform="rotate(${hdg},18,18)"><path d="M18 3 L20.5 13 L30 19 L20.5 21.5 L20 29 L18 27 L16 29 L15.5 21.5 L6 19 L15.5 13 Z" fill="${col}" stroke="white" stroke-width="1.8" stroke-linejoin="round"/></g></svg>`;
       const planeIcon = L.divIcon({
-        html: `<div style="width:34px;height:34px;background:${col};border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 10px rgba(0,0,0,.3);border:2px solid #fff;transform:rotate(${hdg}deg);font-size:16px;line-height:1">✈</div>`,
-        className: '', iconSize: [34, 34], iconAnchor: [17, 17]
+        html: `<div style="filter:drop-shadow(0 2px 10px rgba(0,0,0,.8))">${planeSvg}</div>`,
+        className: '', iconSize: [36, 36], iconAnchor: [18, 18]
       });
       const pm = L.marker([planeLat, planeLng], { icon: planeIcon, zIndexOffset: 1000 }).addTo(tmap);
-      pm.bindPopup(`<b>${num}</b><br>${fd.airline || ''}${live ? `<br>Alt: ${Math.round(live.altitude || 0).toLocaleString()} ft · ${Math.round(live.speed || 0)} km/h` : ''}`);
+      pm.bindPopup(`<b>${num}</b><br>${fd.airline || ''}${live&&live.altitude ? `<br>Alt: ${Math.round(live.altitude).toLocaleString()} ft · ${Math.round(live.speed||0)} km/h` : ''}`);
       mapMarkers[num] = pm;
       bounds.push([planeLat, planeLng]);
     }

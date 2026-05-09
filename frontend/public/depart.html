@@ -1116,6 +1116,7 @@ let userLat=null, userLng=null;
 let driveMins=30, bufMins=120;
 let autoTimer=null;
 let lmap=null, planeMarker=null, userMarker=null;
+let depFirstRender=true;
 
 // ─── LANGUAGE ─────────────────────────────────────────────────────────────────
 function setText(id,txt){const el=document.getElementById(id);if(el&&txt)el.textContent=txt}
@@ -1911,7 +1912,6 @@ if('Notification' in window && Notification.permission==='default'){
 }
 
 // ─── AUTO-DETECT DEP FLIGHT TYPE ─────────────────────────────────────────────
-let depFirstRender=true;
 function autoDetectDepFlightType(d){
   const depC=d.departure?.country||'';
   const arrC=d.arrival?.country||'';

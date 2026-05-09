@@ -2544,34 +2544,193 @@ function setHasBags(v,btn){
   renderBufSteps();
 }
 
-// ─── SMART BUFFER (airport pressure + peak hours) ─────────────────────────────
-const SMART_BUF_MEGA={JFK:1,LHR:1,DXB:1,LAX:1,ATL:1,CDG:1,AMS:1,FRA:1,SIN:1,HKG:1,PEK:1,PVG:1,IST:1,DEL:1,BOM:1,DFW:1,ORD:1,EWR:1,MIA:1,SYD:1,NRT:1,ICN:1,GRU:1,MEX:1,DOH:1,KUL:1};
-const SMART_BUF_BUSY={DEN:1,SFO:1,SEA:1,BOS:1,IAD:1,IAH:1,PHX:1,CLT:1,MCO:1,DTW:1,MAN:1,BCN:1,MAD:1,FCO:1,LGW:1,ZRH:1,BRU:1,VIE:1,MUC:1,CPH:1,ARN:1,OSL:1,HEL:1,WAW:1,PRG:1,BUD:1,DUB:1,LIS:1,ATH:1};
+// ─── SMART BUFFER — Terminal Knowledge DB + airport tier fallbacks ─────────────
+// Each entry: { add: minutes_to_add, note: reason_shown_to_user }
+// Terminal key matches d.arrival.terminal (normalised: uppercase, strip "Terminal ")
+const TERMINAL_DB={
+  JFK:{
+    '1':{add:15,note:'JFK T1 (Lufthansa/Air France/Korean) — large intl immigration hall, queues 20–40 min'},
+    '4':{add:22,note:'JFK T4 is the busiest terminal — Delta hub + 30 airlines, immigration often 30–45 min'},
+    '5':{add:-15,note:'JFK T5 (JetBlue) — mostly domestic, fast exit through smaller immigration'},
+    '7':{add:8,note:'JFK T7 (British Airways only) — dedicated terminal, immigration typically 15–25 min'},
+    '8':{add:2,note:'JFK T8 (American Airlines) — mixed domestic/international, moderate queues'},
+  },
+  LHR:{
+    '2':{add:15,note:'LHR T2 (Star Alliance hub) — large international volume, immigration 15–35 min'},
+    '3':{add:12,note:'LHR T3 (oneworld + Virgin) — high volume international arrivals'},
+    '4':{add:6,note:'LHR T4 — moderate volume, several international carriers'},
+    '5':{add:10,note:'LHR T5 (BA dedicated) — own immigration halls but consistently high volume'},
+  },
+  LAX:{
+    'B':{add:22,note:'LAX TBIT (Tom Bradley International) — only intl terminal at LAX, very high volume'},
+    '1':{add:-8,note:'LAX T1 (Southwest) — domestic only, exits quickly'},
+    '2':{add:-8,note:'LAX T2 — domestic only'},
+    '3':{add:-8,note:'LAX T3 (Alaska domestic)'},
+    '4':{add:-5,note:'LAX T4 (American domestic)'},
+    '5':{add:-5,note:'LAX T5 (Delta domestic)'},
+    '6':{add:-5,note:'LAX T6 (United domestic)'},
+    '7':{add:-5,note:'LAX T7 (United domestic)'},
+    '8':{add:15,note:'LAX T8 (American international) — TBIT overflow, dedicated immigration'},
+  },
+  ORD:{
+    '1':{add:5,note:'ORD T1 (United hub) — large domestic terminal, baggage belts can be slow'},
+    '2':{add:-5,note:'ORD T2 — domestic regional, faster exit'},
+    '3':{add:5,note:'ORD T3 (American) — domestic hub, moderate baggage wait'},
+    '5':{add:22,note:'ORD T5 (International) — the only intl terminal at O\'Hare, all non-US carriers, often crowded'},
+  },
+  DFW:{
+    'A':{add:2,note:'DFW Terminal A (American domestic)'},
+    'B':{add:2,note:'DFW Terminal B (American domestic)'},
+    'C':{add:5,note:'DFW Terminal C (American + some international routes)'},
+    'D':{add:18,note:'DFW Terminal D (International) — all non-US carriers, dedicated immigration hall, queues 20–35 min'},
+    'E':{add:5,note:'DFW Terminal E (American international routes)'},
+  },
+  ATL:{
+    'F':{add:20,note:'ATL International Terminal F — all international arrivals funnel here, busy in peak hours'},
+    'I':{add:20,note:'ATL International Terminal — all international arrivals, immigration queues 20–40 min'},
+  },
+  MIA:{
+    'J':{add:15,note:'MIA Concourse J (International South) — high Latin America & Caribbean volume'},
+    'K':{add:15,note:'MIA Concourse K — international South America routes, busy immigration'},
+    'D':{add:8,note:'MIA Concourse D (American Americas) — mixed domestic/Latin America'},
+    'E':{add:8,note:'MIA Concourse E — American hub routes'},
+  },
+  SFO:{
+    'I':{add:20,note:'SFO International Terminal — only intl terminal, heavy Asia-Pacific traffic, immigration 25–40 min'},
+    'A':{add:-8,note:'SFO T2/3 (domestic) — no immigration, exits fast'},
+    '1':{add:-8,note:'SFO T1 (domestic)'},
+    '2':{add:-8,note:'SFO T2 (domestic)'},
+    '3':{add:-8,note:'SFO T3 (domestic)'},
+  },
+  DXB:{
+    '1':{add:8,note:'DXB T1 — several carriers including FlyDubai, moderate volume'},
+    '2':{add:-5,note:'DXB T2 — budget/charter carriers, usually quicker exit'},
+    '3':{add:18,note:'DXB T3 (Emirates mega-hub) — world\'s busiest intl terminal, immigration 20–40 min at peak'},
+  },
+  CDG:{
+    '1':{add:12,note:'CDG T1 (Star Alliance + Air France intl) — large international volume, queues 15–30 min'},
+    '2':{add:14,note:'CDG T2 (Air France hub) — busiest terminal at CDG, immigration 20–35 min'},
+    '3':{add:-5,note:'CDG T3 — mostly charter and low-cost, simpler immigration process'},
+  },
+  FRA:{
+    '1':{add:12,note:'FRA T1 (Lufthansa hub) — major international hub, immigration 15–30 min'},
+    '2':{add:6,note:'FRA T2 — various carriers, generally less congested than T1'},
+  },
+  AMS:{
+    '1':{add:10,note:'AMS Schiphol — efficient airport but immigration 15–25 min at peak for non-Schengen arrivals'},
+    'D':{add:10,note:'AMS Pier D (non-Schengen international) — passport control mandatory, 15–25 min'},
+    'E':{add:10,note:'AMS Pier E (international) — similar to Pier D'},
+    'F':{add:5,note:'AMS Pier F (Schengen) — EU passport holders move faster'},
+  },
+  SIN:{
+    '1':{add:-12,note:'SIN T1 (Changi) — world\'s most efficient airport, immigration typically under 15 min'},
+    '2':{add:-12,note:'SIN T2 (Changi) — excellent FAST lane system, typically under 15 min'},
+    '3':{add:-14,note:'SIN T3 (Singapore Airlines) — dedicated immigration halls, fastest at Changi'},
+    '4':{add:-10,note:'SIN T4 (Changi) — automated immigration available, very efficient'},
+  },
+  HKG:{
+    '1':{add:5,note:'HKG — single terminal, immigration efficient but high volume in peak windows'},
+  },
+  DEL:{
+    '1':{add:-5,note:'DEL T1 — domestic only, exits faster without immigration'},
+    '2':{add:-5,note:'DEL T2 — domestic'},
+    '3':{add:18,note:'DEL T3 (international + premium domestic) — immigration can be 30–45 min at peak'},
+  },
+  BOM:{
+    '1':{add:-5,note:'BOM T1 — domestic budget carriers, no immigration queue'},
+    '2':{add:14,note:'BOM T2 (Chhatrapati Shivaji international) — immigration typically 20–35 min'},
+  },
+  NRT:{
+    '1':{add:2,note:'NRT T1 — international; Japan immigration is thorough but orderly, ~15–25 min'},
+    '2':{add:2,note:'NRT T2 (JAL hub) — similar to T1, efficient queuing'},
+    '3':{add:-5,note:'NRT T3 — LCC terminal, smaller immigration hall but fewer flights'},
+  },
+  ICN:{
+    '1':{add:-10,note:'ICN T1 (Incheon) — world-class airport, automated immigration typically 10–20 min'},
+    '2':{add:-10,note:'ICN T2 (Incheon, Korean Air/Delta hub) — very efficient, fast-track lanes'},
+  },
+  SYD:{
+    '1':{add:12,note:'SYD T1 (International) — immigration + biosecurity adds time, typically 20–35 min'},
+    '2':{add:-8,note:'SYD T2 (domestic) — no immigration, fast exit'},
+    '3':{add:-8,note:'SYD T3 (Qantas domestic) — no immigration, fast exit'},
+  },
+  IST:{
+    '1':{add:16,note:'IST (Istanbul New Airport) — vast terminal, long walks + immigration 20–35 min at peak'},
+  },
+  DOH:{
+    '1':{add:8,note:'DOH (Hamad International) — Qatar Airways hub; efficient but high volume, ~15–25 min immigration'},
+  },
+  GRU:{
+    '1':{add:12,note:'GRU T1 (international) — Brazil immigration can be 25–40 min'},
+    '2':{add:12,note:'GRU T2 (international) — similar to T1'},
+    '3':{add:-5,note:'GRU T3 — domestic, no immigration'},
+  },
+  MEX:{
+    '1':{add:10,note:'MEX T1 — international arrivals, immigration 15–30 min'},
+    '2':{add:8,note:'MEX T2 (NAICM) — newer terminal, faster processing'},
+  },
+  KUL:{
+    '1':{add:8,note:'KUL KLIA (main terminal) — international, immigration 15–25 min'},
+    '2':{add:-5,note:'KUL KLIA2 — budget carriers, separate terminal, faster for domestic/regional'},
+  },
+  // Tier-only airports (no terminal breakdown — use airport-level bonus below)
+};
+// Fallback tier lists for airports not in TERMINAL_DB or unrecognised terminal
+const SMART_BUF_MEGA={JFK:1,LHR:1,DXB:1,LAX:1,ATL:1,CDG:1,AMS:1,FRA:1,SIN:1,HKG:1,PEK:1,PVG:1,IST:1,DEL:1,BOM:1,DFW:1,ORD:1,EWR:1,MIA:1,SYD:1,NRT:1,ICN:1,GRU:1,MEX:1,DOH:1,KUL:1,CGK:1,BKK:1,MNL:1,KHI:1,LOS:1,JNB:1,CAI:1};
+const SMART_BUF_BUSY={DEN:1,SFO:1,SEA:1,BOS:1,IAD:1,IAH:1,PHX:1,CLT:1,MCO:1,DTW:1,MAN:1,BCN:1,MAD:1,FCO:1,LGW:1,ZRH:1,BRU:1,VIE:1,MUC:1,CPH:1,ARN:1,OSL:1,HEL:1,WAW:1,PRG:1,BUD:1,DUB:1,LIS:1,ATH:1,BEY:1,CMB:1,DAC:1,KTM:1};
+
+function getTerminalFactor(iata,terminal){
+  if(!terminal)return null;
+  const db=TERMINAL_DB[iata];
+  if(!db)return null;
+  // Normalise: strip "Terminal ", uppercase, take first meaningful char
+  const raw=String(terminal).trim().toUpperCase().replace(/^TERMINAL\s*/,'');
+  if(db[raw])return db[raw];
+  if(db[raw[0]])return db[raw[0]];
+  return null;
+}
+
 function applySmartBuf(d){
   const iata=(d.arrival?.iata||'').toUpperCase();
+  const terminal=d.arrival?.terminal||null;
   const arrDate=new Date(d.arrival?.estimated||d.arrival?.scheduled||Date.now());
   const hour=arrDate.getHours();
   const dow=arrDate.getDay();
   const isWeekend=dow===0||dow===6;
   const isPeak=(hour>=7&&hour<=10)||(hour>=17&&hour<=21);
   const isOffPeak=hour>=23||hour<5;
-  const isMega=SMART_BUF_MEGA[iata]===1;
-  const isBusy=SMART_BUF_BUSY[iata]===1;
   let bonus=0;
   const reasons=[];
-  if(bufType==='international'){
-    if(isMega){bonus+=20;reasons.push(`${iata} is a major international hub — immigration queues run 20–40 min`);}
-    else if(isBusy){bonus+=10;reasons.push(`${iata} is a busy airport — extra 10 min immigration buffer added`);}
-    if(isPeak){bonus+=15;reasons.push('Peak arrival hour — immigration desks are busiest 7–10 AM and 5–9 PM');}
-    else if(isOffPeak){bonus-=10;reasons.push('Off-peak arrival — immigration queues typically short after midnight');}
-    if(isWeekend){bonus+=10;reasons.push('Weekend — higher leisure travel volume at immigration');}
-  }else if(bufType==='domestic'){
-    if(isMega){bonus+=8;reasons.push(`${iata} is a large airport — longer baggage belts and terminal walks`);}
-    if(isPeak){bonus+=7;reasons.push('Peak hour — baggage claim and exits are busier');}
-    if(isWeekend){bonus+=5;reasons.push('Weekend — higher traffic through baggage claim');}
-    if(isOffPeak){bonus-=5;reasons.push('Off-peak arrival — baggage claim is quieter');}
+
+  // Step 1 — terminal-specific (most precise) or airport-tier fallback
+  const tf=getTerminalFactor(iata,terminal);
+  if(tf){
+    bonus+=tf.add;
+    if(tf.add!==0)reasons.push(tf.note);
+  }else{
+    // No terminal data — use airport-tier heuristic
+    const isMega=SMART_BUF_MEGA[iata]===1;
+    const isBusy=SMART_BUF_BUSY[iata]===1;
+    if(bufType==='international'||bufType==='connecting'){
+      if(isMega){bonus+=18;reasons.push(`${iata} is a major international hub — immigration queues run 20–40 min`);}
+      else if(isBusy){bonus+=10;reasons.push(`${iata} is a busy airport — extra 10 min immigration buffer added`);}
+    }else{
+      if(isMega){bonus+=8;reasons.push(`${iata} is a large airport — longer baggage belts and terminal walks`);}
+    }
   }
-  bufAirportBonus=Math.max(-15,Math.min(45,bonus));
+
+  // Step 2 — time-of-day pressure (applies on top regardless of terminal)
+  if(bufType==='international'||bufType==='connecting'){
+    if(isPeak){bonus+=15;reasons.push('Peak arrival hour (7–10 AM or 5–9 PM) — immigration desks at maximum load');}
+    else if(isOffPeak){bonus-=10;reasons.push('Off-peak arrival (late night/early morning) — immigration queues short');}
+    if(isWeekend){bonus+=8;reasons.push('Weekend — higher leisure travel, immigration slower than weekday');}
+  }else{
+    if(isPeak){bonus+=7;reasons.push('Peak hour — baggage claim and arrivals hall are busier');}
+    else if(isOffPeak){bonus-=5;}
+    if(isWeekend)bonus+=4;
+  }
+
+  bufAirportBonus=Math.max(-15,Math.min(50,bonus));
   const chip=document.getElementById('buf-smart-chip');
   const txt=document.getElementById('buf-smart-txt');
   if(chip&&txt){

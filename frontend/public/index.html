@@ -1391,7 +1391,7 @@ function reqLoc(){
         detectTrafficChange();
         const tfLbl={heavy:'🔴 Heavy traffic',moderate:'🟡 Moderate traffic',clear:'🟢 Clear roads'};
         setText('spc-drive-val',`${driveMins} min`);
-        const trafficSrc=result.source==='here'?'Live traffic':'Est. time';
+        const trafficSrc=result.source==='here'?'Live traffic':'No traffic data';
         setText('spc-drive-sub',`${fmtDist(result.distanceKm)} · ${tfLbl[result.trafficLevel]||trafficSrc}`);
         recalc();
         if(isFirst)renderRouteMap();
@@ -2416,7 +2416,7 @@ function setBgForAirport(iata){initBgSlideshow();}
           if(r){osrmDriveTime=r;driveMins=r.driveMins;
             const tf={heavy:'🔴 Heavy traffic',moderate:'🟡 Moderate traffic',clear:'🟢 Clear roads'};
             setText('spc-drive-val',`${driveMins} min`);
-            const src=r.source==='here'?'Live traffic':'Est. time';
+            const src=r.source==='here'?'Live traffic':'No traffic data';
             setText('spc-drive-sub',`${fmtDist(r.distanceKm)} · ${tf[r.trafficLevel]||src}`);
             recalc();renderRouteMap();updateTcCard(r);
           }

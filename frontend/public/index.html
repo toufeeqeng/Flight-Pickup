@@ -249,6 +249,7 @@ header::before{content:'';position:absolute;top:0;left:50%;transform:translateX(
 .ab-notif{color:#fbbf24}
 .ab-notif.active{color:#f59e0b;background:rgba(251,191,36,.14)}
 .ab-cal{color:#a78bfa}
+.ab-pax-save{color:var(--acc)}
 .ab-save.saved-state{color:#6ee7b7}
 
 /* ── Weather strip ── */
@@ -1105,8 +1106,8 @@ body.results-mode .how-card{display:none}
     <span class="ab-ic"><svg viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></span>
     <span class="ab-lbl" id="save-btn-txt">Save</span>
   </button>
-  <button class="ab-btn" onclick="promptSavePassenger()" title="Save as passenger profile">
-    <span class="ab-ic"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg></span>
+  <button class="ab-btn ab-pax-save" onclick="promptSavePassenger()" title="Save as passenger profile">
+    <span class="ab-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg></span>
     <span class="ab-lbl">Save Person</span>
   </button>
   <button class="ab-btn ab-nav" onclick="navigateSPC()">

@@ -611,6 +611,7 @@ body.results-mode .leave-card{display:block}
 .dep-pax-save-btn{background:none;border:1px dashed var(--b2);border-radius:999px;padding:.28rem .75rem;font-size:.72rem;color:var(--t3);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .18s}
 .dep-pax-save-btn:hover{border-color:var(--acc);color:var(--acc)}
 .ab-dep-cal{color:#fb923c}
+.ab-pax-save{color:var(--acc)}
 
 </style>
 </head>
@@ -974,8 +975,8 @@ body.results-mode .leave-card{display:block}
     <span class="ab-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>
     <span class="ab-lbl">Calendar</span>
   </button>
-  <button class="ab-btn" onclick="promptSaveDepPassenger()" title="Save this trip">
-    <span class="ab-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+  <button class="ab-btn ab-pax-save" onclick="promptSaveDepPassenger()" title="Save this trip">
+    <span class="ab-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
     <span class="ab-lbl">Save Trip</span>
   </button>
 </div>

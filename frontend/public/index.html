@@ -1063,16 +1063,10 @@ body.results-mode .how-card{display:none}
 <div class="airport-panel" id="airport-panel">
   <div class="ap-tabs">
     <div class="ap-tab active" onclick="switchAirportTab('transport',this)">🚕 Ground Transport</div>
-    <div class="ap-tab" onclick="switchAirportTab('lounges',this)">🛋 Lounges</div>
   </div>
   <div class="ap-section active" id="ap-transport">
     <div class="ap-body">
       <div class="tr-grid" id="transport-grid"></div>
-    </div>
-  </div>
-  <div class="ap-section" id="ap-lounges">
-    <div class="ap-body">
-      <div id="lounges-list"></div>
     </div>
   </div>
 </div>
@@ -1098,10 +1092,6 @@ body.results-mode .how-card{display:none}
   <button class="ab-btn ab-notif" id="ab-notif-btn" onclick="toggleNotifBtn()">
     <span class="ab-ic"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></span>
     <span class="ab-lbl" id="ab-notif-lbl">Remind</span>
-  </button>
-  <button class="ab-btn ab-cal" onclick="addToCalendar()">
-    <span class="ab-ic"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>
-    <span class="ab-lbl">Calendar</span>
   </button>
   <button class="ab-btn ab-copy" onclick="shareLink()">
     <span class="ab-ic"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></span>
@@ -1269,6 +1259,7 @@ let userLat=null, userLng=null, driveMins=30;
 let autoTimer=null, acTimers={};
 let notifIntervalId=null;
 let prevStatus=null, prevDelay=0, prevDriveTime=null, prevTerminal=null, notifFirstRender=true, isFirstRender=true;
+let routePollTimer=null, prevLeaveByTime=null;
 
 // ─── TABS ─────────────────────────────────────────────────────────────────────
 function switchTab(t){
@@ -1516,7 +1507,7 @@ function reqLoc(){
         const trafficSrc=result.source==='google'?'Live traffic':'No traffic data';
         setText('spc-drive-sub',`${fmtDist(result.distanceKm)} · ${tfLbl[result.trafficLevel]||trafficSrc}`);
         recalc();
-        if(isFirst)renderRouteMap();
+        if(isFirst){renderRouteMap();startRoutePoll();}
         else if(rmap&&window.google){
           if(rPath)rPath.setMap(null);
           const path=result.routeCoords.map(([lt,ln])=>({lat:lt,lng:ln}));
@@ -1725,6 +1716,7 @@ function updateLeaveTime(d){
   // Landing + exit buffer = when they walk out; subtract drive = when to leave
   const exitDate=new Date(arrDate.getTime()+bufMins*60000);
   const leaveDate=new Date(exitDate.getTime()-driveMins*60000);
+  prevLeaveByTime=leaveDate.getTime();
   const now=new Date();
   const minsLeft=Math.round((leaveDate-now)/60000);
 
@@ -2093,14 +2085,32 @@ function detectFlightChanges(d){
   prevTerminal=newTerminal;
 }
 
-function detectTrafficChange(){
-  if(!('Notification' in window)||Notification.permission!=='granted')return;
-  if(prevDriveTime!==null&&driveMins>=(prevDriveTime+10)&&curData){
-    const fn=curData.flightNumber||'';
-    sendNotif(`🚗 Traffic increasing for ${fn}`,`Drive time is now ${driveMins} min — consider leaving earlier.`,'fp-traffic',window.location.href);
+async function pollTrafficRoute(){
+  if(!userLat||!userLng||!curData?.arrival?.lat)return;
+  const result=await fetchRoute(userLat,userLng,curData.arrival.lat,curData.arrival.lng);
+  if(!result)return;
+  const oldLeaveBy=prevLeaveByTime;
+  driveMins=result.driveMins;
+  document.getElementById('drive-mins').value=driveMins;
+  const tf={heavy:'🔴 Heavy traffic',moderate:'🟡 Moderate traffic',clear:'🟢 Clear roads'};
+  setText('spc-drive-val',`${driveMins} min`);
+  setText('spc-drive-sub',`${fmtDist(result.distanceKm)} · ${tf[result.trafficLevel]||'Live traffic'}`);
+  recalc();updateTcCard(result);
+  if(oldLeaveBy!==null&&prevLeaveByTime!==null){
+    const shiftMins=Math.round((prevLeaveByTime-oldLeaveBy)/60000);
+    if(Math.abs(shiftMins)>=5&&'Notification' in window&&Notification.permission==='granted'){
+      const fn=curData.flightNumber||'';
+      const leaveStr=fmtT(new Date(prevLeaveByTime).toISOString());
+      sendNotif(
+        shiftMins<0?`🚗 Leave earlier — ${fn}`:`🟢 More time — ${fn}`,
+        `Traffic update: leave by ${leaveStr} (${Math.abs(shiftMins)} min ${shiftMins<0?'earlier':'later'})`,
+        'fp-traffic',window.location.href
+      );
+    }
   }
-  prevDriveTime=driveMins;
 }
+function startRoutePoll(){clearInterval(routePollTimer);routePollTimer=setInterval(pollTrafficRoute,5*60*1000);}
+function detectTrafficChange(){prevDriveTime=driveMins;}
 
 function scheduleNotif(d){
   if(!('Notification' in window)||Notification.permission!=='granted')return;
@@ -2226,6 +2236,7 @@ function clearResults(){
   osrmDriveTime=null;
   clearAuto();
   notifFirstRender=true; isFirstRender=true; prevStatus=null; prevDelay=0; prevDriveTime=null; prevTerminal=null;
+  clearInterval(routePollTimer);routePollTimer=null;prevLeaveByTime=null;
   bufAirportBonus=0;document.getElementById('buf-smart-chip')?.classList.remove('show');
   document.getElementById('diverted-alert')?.classList.remove('show');
   document.getElementById('add-flight2-wrap')?.classList.remove('show');
@@ -2965,9 +2976,9 @@ document.addEventListener('DOMContentLoaded',()=>{
           if(r){osrmDriveTime=r;driveMins=r.driveMins;
             const tf={heavy:'🔴 Heavy traffic',moderate:'🟡 Moderate traffic',clear:'🟢 Clear roads'};
             setText('spc-drive-val',`${driveMins} min`);
-            const src=r.source==='here'?'Live traffic':'No traffic data';
+            const src=r.source==='google'?'Live traffic':'No traffic data';
             setText('spc-drive-sub',`${fmtDist(r.distanceKm)} · ${tf[r.trafficLevel]||src}`);
-            recalc();renderRouteMap();updateTcCard(r);
+            recalc();renderRouteMap();startRoutePoll();updateTcCard(r);
           }
         });
       }

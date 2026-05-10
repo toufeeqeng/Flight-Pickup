@@ -275,7 +275,11 @@ async function fetchFlight(flightNumber) {
     result = await enrichWithOpenSky(result, icao24);
   }
 
-  cache.set(cacheKey, result, 60);
+  // Cache duration based on status — active flights refresh every 60s, settled flights cached longer
+  const ttl = ['landed', 'cancelled', 'diverted'].includes(result.status) ? 86400
+             : result.status === 'active' ? 60
+             : 600;
+  cache.set(cacheKey, result, ttl);
   return result;
 }
 

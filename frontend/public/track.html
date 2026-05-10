@@ -35,6 +35,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <style>
 /* ── CSS VARIABLES ── */
 :root{
@@ -336,24 +337,9 @@ footer a{color:var(--t3);text-decoration:underline}
   </footer>
 </div>
 
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 const API = window.location.hostname === 'localhost' ? 'http://localhost:3001/api' : '/api';
-let _gmapsReady=false,_gmapsLoading=false,_gmapsCbs=[];
-function loadGoogleMaps(){
-  if(_gmapsReady)return Promise.resolve();
-  if(_gmapsLoading)return new Promise(r=>_gmapsCbs.push(r));
-  _gmapsLoading=true;
-  return fetch(`${API}/config`).then(r=>r.json()).catch(()=>({})).then(cfg=>{
-    const key=cfg.googleMapsKey;
-    if(!key){console.warn('[maps] GOOGLE_MAPS_API_KEY not configured');return;}
-    return new Promise(resolve=>{
-      window._gmCb=()=>{_gmapsReady=true;_gmapsLoading=false;resolve();_gmapsCbs.forEach(cb=>cb());_gmapsCbs=[];};
-      const s=document.createElement('script');
-      s.src=`https://maps.googleapis.com/maps/api/js?key=${key}&callback=_gmCb`;
-      s.async=true;document.head.appendChild(s);
-    });
-  });
-}
 const MAX_FLIGHTS = 6;
 const LS_KEY = 'tracked_flights';
 
@@ -474,71 +460,68 @@ function matchesFilter(num) {
   return lbl === activeFilter;
 }
 
-// ── MAP VIEW ─────────────────────────────────────────────────────────────────
+// ── MAP VIEW (Leaflet + OpenStreetMap — free, no API key) ────────────────────
 let tmap = null;
 let mapMarkers = {};
+let mapLines = [];
 let mapActive = false;
-async function showMap(hasFlights) {
+function isDark() { return window.matchMedia('(prefers-color-scheme: dark)').matches; }
+function showMap(hasFlights) {
   const wrap = document.getElementById('map-card-wrap');
   if (!hasFlights) { wrap.style.display = 'none'; mapActive = false; return; }
   wrap.style.display = 'block';
   if (!mapActive) {
     mapActive = true;
-    await loadGoogleMaps();
-    if (!window.google) return;
     if (!tmap) {
-      tmap = new google.maps.Map(document.getElementById('map-view'), {
-        center: { lat: 25, lng: 10 }, zoom: 2,
-        zoomControl: true, mapTypeControl: false, streetViewControl: false, fullscreenControl: false
-      });
+      tmap = L.map('map-view', { zoomControl: true, attributionControl: false }).setView([25, 10], 2);
+      const tileUrl = isDark()
+        ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+        : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+      L.tileLayer(tileUrl, { maxZoom: 18 }).addTo(tmap);
     }
-    setTimeout(() => { google.maps.event.trigger(tmap, 'resize'); updateMapMarkers(); }, 150);
+    setTimeout(() => { tmap.invalidateSize(); updateMapMarkers(); }, 150);
   }
   const tracked = getTracked().filter(n => flightData[n] && !flightData[n]._error);
   const el = document.getElementById('map-flight-count');
   if (el) el.textContent = tracked.length + ' flight' + (tracked.length !== 1 ? 's' : '') + ' plotted';
 }
 function updateMapMarkers() {
-  if (!tmap || !mapActive || !window.google) return;
-  Object.values(mapMarkers).forEach(m => { if (m.setMap) m.setMap(null); });
-  mapMarkers = {};
-  const bounds = new google.maps.LatLngBounds();
-  let hasBounds = false;
+  if (!tmap || !mapActive) return;
+  mapLines.forEach(l => tmap.removeLayer(l)); mapLines = [];
+  Object.values(mapMarkers).forEach(m => tmap.removeLayer(m)); mapMarkers = {};
+  const bounds = L.latLngBounds(); let hasBounds = false;
+
   getTracked().forEach(num => {
     const fd = flightData[num];
     if (!fd || fd._error) return;
     const dep = fd.departure, arr = fd.arrival, live = fd.live;
     const s = (fd.status || '').toLowerCase();
-    const dotIcon = (c, sc) => ({ path: google.maps.SymbolPath.CIRCLE, scale: sc || 5, fillColor: c, fillOpacity: 1, strokeColor: '#fff', strokeWeight: 1.5 });
 
     if (dep && dep.lat && arr && arr.lat) {
-      mapMarkers[num + '_line'] = new google.maps.Polyline({
-        path: [{ lat: dep.lat, lng: dep.lng }, { lat: arr.lat, lng: arr.lng }],
-        geodesic: true, strokeColor: s === 'active' ? '#4f9cf9' : '#aab0bb',
-        strokeOpacity: 0.55, strokeWeight: 2, map: tmap
-      });
+      const ln = L.polyline([[dep.lat, dep.lng], [arr.lat, arr.lng]], {
+        color: s === 'active' ? '#4f9cf9' : '#aab0bb', weight: 2, opacity: 0.55,
+        dashArray: s === 'active' ? null : '5 6'
+      }).addTo(tmap);
+      mapLines.push(ln);
     }
 
     if (dep && dep.lat) {
-      const dm = new google.maps.Marker({ position: { lat: dep.lat, lng: dep.lng }, map: tmap, title: `${dep.iata} · ${dep.city || dep.airport}`, icon: dotIcon('#9ca3af') });
+      const dm = L.circleMarker([dep.lat, dep.lng], { radius: 5, fillColor: '#9ca3af', color: '#fff', weight: 1.5, fillOpacity: 1 })
+        .bindTooltip(`${dep.iata} · ${dep.city || dep.airport}`).addTo(tmap);
       mapMarkers[num + '_dep'] = dm;
-      bounds.extend({ lat: dep.lat, lng: dep.lng }); hasBounds = true;
+      bounds.extend([dep.lat, dep.lng]); hasBounds = true;
     }
 
     if (arr && arr.lat) {
-      const am = new google.maps.Marker({ position: { lat: arr.lat, lng: arr.lng }, map: tmap, title: `${arr.iata} · ${arr.city || arr.airport}`, icon: dotIcon('#10d98a') });
+      const am = L.circleMarker([arr.lat, arr.lng], { radius: 5, fillColor: '#10d98a', color: '#fff', weight: 1.5, fillOpacity: 1 })
+        .bindTooltip(`${arr.iata} · ${arr.city || arr.airport}`).addTo(tmap);
       mapMarkers[num + '_arr'] = am;
-      bounds.extend({ lat: arr.lat, lng: arr.lng }); hasBounds = true;
+      bounds.extend([arr.lat, arr.lng]); hasBounds = true;
     }
 
-    let planeLat, planeLng, hdg = 0;
+    let planeLat, planeLng, hdg = live?.heading || 0;
     if (live && live.latitude) {
       planeLat = live.latitude; planeLng = live.longitude;
-      if (dep && dep.lat) {
-        const dl = (planeLng - dep.lng) * Math.PI / 180, la1 = dep.lat * Math.PI / 180, la2 = planeLat * Math.PI / 180;
-        const y = Math.sin(dl) * Math.cos(la2), x = Math.cos(la1) * Math.sin(la2) - Math.sin(la1) * Math.cos(la2) * Math.cos(dl);
-        hdg = (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
-      }
     } else if (s === 'landed' && arr && arr.lat) {
       planeLat = arr.lat; planeLng = arr.lng;
     } else if (dep && dep.lat) {
@@ -547,18 +530,21 @@ function updateMapMarkers() {
 
     if (planeLat != null) {
       const col = s === 'active' ? '#3b82f6' : s === 'landed' ? '#10d98a' : s === 'delayed' ? '#f5a623' : '#7b88aa';
-      const planeSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36"><g transform="rotate(${hdg},18,18)"><path d="M18 3 L20.5 13 L30 19 L20.5 21.5 L20 29 L18 27 L16 29 L15.5 21.5 L6 19 L15.5 13 Z" fill="${col}" stroke="white" stroke-width="1.8" stroke-linejoin="round"/></g></svg>`;
-      const pm = new google.maps.Marker({
-        position: { lat: planeLat, lng: planeLng }, map: tmap, zIndex: 10,
-        title: `${num}${live && live.altitude ? ' · ' + Math.round(live.altitude).toLocaleString() + ' ft' : ''}`,
-        icon: { url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(planeSvg), scaledSize: new google.maps.Size(36, 36), anchor: new google.maps.Point(18, 18) }
-      });
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36"><g transform="rotate(${hdg},18,18)"><path d="M18 3 L20.5 13 L30 19 L20.5 21.5 L20 29 L18 27 L16 29 L15.5 21.5 L6 19 L15.5 13 Z" fill="${col}" stroke="white" stroke-width="1.8" stroke-linejoin="round"/></g></svg>`;
+      const pm = L.marker([planeLat, planeLng], {
+        icon: L.divIcon({ html: svg, iconSize: [36, 36], iconAnchor: [18, 18], className: '' }),
+        zIndexOffset: 1000,
+        title: `${num}${live?.altitude ? ' · ' + Math.round(live.altitude).toLocaleString() + ' ft' : ''}`
+      }).addTo(tmap);
       mapMarkers[num] = pm;
-      bounds.extend({ lat: planeLat, lng: planeLng }); hasBounds = true;
+      bounds.extend([planeLat, planeLng]); hasBounds = true;
     }
   });
-  if (hasBounds) tmap.fitBounds(bounds, { top: 40, right: 40, bottom: 40, left: 40 });
-  if (tmap.getZoom() > 7) tmap.setZoom(7);
+
+  if (hasBounds && bounds.isValid()) {
+    tmap.fitBounds(bounds, { padding: [40, 40] });
+    if (tmap.getZoom() > 7) tmap.setZoom(7);
+  }
 }
 
 // ── SHARE ────────────────────────────────────────────────────────────────────

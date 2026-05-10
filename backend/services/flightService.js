@@ -88,7 +88,18 @@ function normalizeAeroDataBox(f, flightNumber, arrAirport, depAirport, weather) 
       lng: arrInfo.location?.lon || arrAirport?.lng || null,
     },
     aircraft: f.aircraft?.model || f.aircraft?.reg || null,
-    live: null,
+    live: (() => {
+      const loc = f.aircraft?.location;
+      if (loc?.lat != null) return {
+        latitude: loc.lat,
+        longitude: loc.lon ?? loc.lng ?? null,
+        altitude: f.aircraft?.altitude?.feet ?? null,
+        speed: f.aircraft?.speed?.horizontal ?? null,
+        heading: f.aircraft?.heading ?? null,
+        updated: new Date().toISOString(),
+      };
+      return null;
+    })(),
     weather,
     buffer: calcBuffer(status, depDelay, arrDelay),
     fetchedAt: new Date().toISOString(),
@@ -177,6 +188,33 @@ async function fetchFromAviationStack(flightNumber) {
   return res.data.data[0];
 }
 
+// ── OpenSky Network live position enrichment (free, no key) ─────────────────
+async function enrichWithOpenSky(result, icao24) {
+  if (!icao24) return result;
+  try {
+    const res = await axios.get('https://opensky-network.org/api/states/all', {
+      params: { icao24: icao24.toLowerCase() },
+      timeout: 5000,
+    });
+    const s = res.data?.states?.[0];
+    // indices: 5=lon, 6=lat, 7=baro_altitude(m), 8=on_ground, 9=velocity(m/s), 10=true_track
+    if (!s || s[8] || s[6] == null || s[5] == null) return result;
+    result.live = {
+      latitude: s[6],
+      longitude: s[5],
+      altitude: s[7] != null ? Math.round(s[7] * 3.28084) : null, // metres → feet
+      speed: s[9] != null ? Math.round(s[9] * 1.94384) : null,    // m/s → knots
+      heading: s[10] ?? null,
+      updated: new Date().toISOString(),
+      source: 'opensky',
+    };
+    console.log(`[flight] ✈  OpenSky live position found for ${icao24}`);
+  } catch (e) {
+    console.log(`[flight] OpenSky enrichment failed: ${e.message}`);
+  }
+  return result;
+}
+
 // ── Main fetch with fallback ─────────────────────────────────────────────────
 async function fetchFlight(flightNumber) {
   const cacheKey = `flight_${flightNumber}`;
@@ -225,9 +263,17 @@ async function fetchFlight(flightNumber) {
     ? await getWeather(arrAirport?.city || '', arrAirport?.country || '')
     : null;
 
-  const result = source === 'aerodatabox'
+  let result = source === 'aerodatabox'
     ? normalizeAeroDataBox(rawFlight, flightNumber, arrAirport, depAirport, weather)
     : normalizeAviationStack(rawFlight, flightNumber, arrAirport, depAirport, weather);
+
+  // If no live position yet and flight is airborne, try OpenSky Network (free)
+  if (result.live === null && result.status === 'active') {
+    const icao24 = source === 'aerodatabox'
+      ? rawFlight.aircraft?.modeS || rawFlight.aircraft?.hex || null
+      : null;
+    result = await enrichWithOpenSky(result, icao24);
+  }
 
   cache.set(cacheKey, result, 60);
   return result;

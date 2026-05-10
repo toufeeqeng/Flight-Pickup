@@ -1,29 +1,17 @@
 const axios = require('axios');
 
-function decodeHerePolyline(encoded) {
-  const TABLE = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
-  let i = 0;
-  function decodeUnsigned() {
-    let r = 0, s = 0, c;
-    do { c = TABLE.indexOf(encoded[i++]); r |= (c & 0x1f) << s; s += 5; } while (c >= 0x20);
-    return r;
-  }
-  function decodeSigned() {
-    const u = decodeUnsigned();
-    return (u & 1) ? ~(u >>> 1) : (u >>> 1);
-  }
-  decodeUnsigned(); // version
-  const hdr = decodeUnsigned();
-  const precision = hdr & 0xf;
-  const hasThird = ((hdr >> 4) & 0x7) > 0;
-  const factor = Math.pow(10, precision);
+// Standard Google Maps encoded polyline decoder
+function decodeGooglePolyline(encoded) {
   const coords = [];
-  let lat = 0, lng = 0;
-  while (i < encoded.length) {
-    lat += decodeSigned();
-    lng += decodeSigned();
-    if (hasThird) decodeSigned();
-    coords.push([lat / factor, lng / factor]);
+  let index = 0, lat = 0, lng = 0;
+  while (index < encoded.length) {
+    let b, shift = 0, result = 0;
+    do { b = encoded.charCodeAt(index++) - 63; result |= (b & 0x1f) << shift; shift += 5; } while (b >= 0x20);
+    lat += (result & 1) ? ~(result >> 1) : (result >> 1);
+    shift = 0; result = 0;
+    do { b = encoded.charCodeAt(index++) - 63; result |= (b & 0x1f) << shift; shift += 5; } while (b >= 0x20);
+    lng += (result & 1) ? ~(result >> 1) : (result >> 1);
+    coords.push([lat / 1e5, lng / 1e5]);
   }
   return coords;
 }
@@ -40,51 +28,46 @@ async function fetchFromOSRM(originLat, originLng, destLat, destLng) {
 }
 
 async function getDriveRoute(originLat, originLng, destLat, destLng) {
-  const key = process.env.HERE_API_KEY;
+  const key = process.env.GOOGLE_MAPS_API_KEY;
   const hasRealKey = key && !key.startsWith('your_') && key.length > 10;
 
   if (hasRealKey) {
     try {
-      // HERE requires ISO 8601 without milliseconds for departureTime
-      const depTime = new Date().toISOString().replace(/\.\d+Z$/, 'Z');
-      const { data } = await axios.get('https://router.hereapi.com/v8/routes', {
+      const { data } = await axios.get('https://maps.googleapis.com/maps/api/directions/json', {
         params: {
-          transportMode: 'car',
           origin: `${originLat},${originLng}`,
           destination: `${destLat},${destLng}`,
-          return: 'summary,polyline',
-          departureTime: depTime,
-          apikey: key
+          mode: 'driving',
+          departure_time: 'now',
+          traffic_model: 'best_guess',
+          key
         },
         timeout: 8000
       });
 
-      if (!data.routes?.[0]) throw new Error('No HERE route found');
+      if (data.status !== 'OK' || !data.routes?.[0]) throw new Error(`Google Maps API: ${data.status}`);
 
-      const section = data.routes[0].sections[0];
-      const summary = section.summary;
-      console.log('[route] HERE summary:', JSON.stringify(summary));
-
-      const driveSecs = summary.duration;
-      // baseDuration = time without traffic; typicalDuration is an older alias
-      const baseSecs  = summary.baseDuration ?? summary.typicalDuration ?? driveSecs;
+      const leg = data.routes[0].legs[0];
+      const baseSecs  = leg.duration.value;
+      // duration_in_traffic is only present when departure_time=now is honoured by the API
+      const driveSecs = leg.duration_in_traffic ? leg.duration_in_traffic.value : baseSecs;
       const driveMins  = Math.round(driveSecs / 60);
       const baseMins   = Math.round(baseSecs / 60);
-      const distanceKm = Math.round(summary.length / 1000);
+      const distanceKm = Math.round(leg.distance.value / 1000);
       const trafficRatio = baseMins > 0 ? driveMins / baseMins : 1;
       const trafficLevel = trafficRatio > 1.25 ? 'heavy' : trafficRatio > 1.08 ? 'moderate' : 'clear';
       const trafficExtra = Math.max(0, driveMins - baseMins);
-      const routeCoords = decodeHerePolyline(section.polyline);
-      console.log(`[route] ✅ HERE — ${driveMins}min (base ${baseMins}min) ratio=${trafficRatio.toFixed(2)} → ${trafficLevel}`);
-      return { driveMins, baseMins, distanceKm, trafficLevel, trafficExtra, routeCoords, source: 'here' };
+      const routeCoords = decodeGooglePolyline(data.routes[0].overview_polyline.points);
+      console.log(`[route] ✅ Google — ${driveMins}min (base ${baseMins}min) ratio=${trafficRatio.toFixed(2)} → ${trafficLevel}`);
+      return { driveMins, baseMins, distanceKm, trafficLevel, trafficExtra, routeCoords, source: 'google' };
     } catch (e) {
       const status = e.response?.status;
       const detail = e.response?.data ? JSON.stringify(e.response.data) : e.message;
-      console.error(`[route] ❌ HERE failed (HTTP ${status || 'N/A'}): ${detail} — falling back to OSRM`);
+      console.error(`[route] ❌ Google Maps failed (HTTP ${status || 'N/A'}): ${detail} — falling back to OSRM`);
     }
   }
 
-  // Free fallback — no API key or HERE failed
+  // Free fallback — no API key or Google failed
   const osrm = await fetchFromOSRM(originLat, originLng, destLat, destLng);
   return { ...osrm, source: 'osrm' };
 }

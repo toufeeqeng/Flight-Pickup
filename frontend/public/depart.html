@@ -35,7 +35,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <style>
 /* ── Ad Slots ── */
 .ad-slot{width:100%;max-width:728px;margin:0 auto 1rem;min-height:50px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.03);border:1px dashed rgba(255,255,255,.08);border-radius:8px;overflow:hidden}
@@ -62,19 +61,11 @@
     --t1:#1a0f00; --t2:#6b5240; --t3:#b89880;
     --green:#059669; --amber:#d97706; --red:#dc2626; --blue:#2563eb;
   }
-  #stars{display:none}
-  #bg-overlay{background:linear-gradient(to bottom,rgba(255,248,240,.55) 0%,rgba(255,248,240,.28) 30%,rgba(255,248,240,.72) 60%,rgba(255,248,240,.97) 100%)}
-  .leaflet-container{background:#f5ede4}
+  .route-bar::after,.rbar::after{background:var(--bg)}
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t1);min-height:100vh;overflow-x:hidden}
 
-/* ── Background slideshow ── */
-#bg-slideshow{position:fixed;top:0;left:0;width:100%;height:100vh;height:100svh;z-index:0;overflow:hidden;transform:translateZ(0);-webkit-transform:translateZ(0);backface-visibility:hidden;-webkit-backface-visibility:hidden}
-.bg-slide{position:absolute;top:-5%;left:-5%;width:110%;height:110%;background-size:cover;background-position:center;background-repeat:no-repeat;opacity:0;transform:translateZ(0);-webkit-transform:translateZ(0)}
-.bg-slide.active{opacity:1}
-#bg-overlay{position:fixed;top:0;right:0;bottom:0;left:0;background:linear-gradient(to bottom,rgba(10,8,4,.65) 0%,rgba(10,8,4,.32) 30%,rgba(10,8,4,.62) 62%,rgba(10,8,4,.97) 100%);z-index:1}
-#stars{position:fixed;top:0;right:0;bottom:0;left:0;z-index:0;background-image:radial-gradient(1px 1px at 15% 20%,rgba(255,200,100,.3) 0%,transparent 100%),radial-gradient(1px 1px at 65% 12%,rgba(255,200,100,.25) 0%,transparent 100%),radial-gradient(1.5px 1.5px at 85% 55%,rgba(255,200,100,.18) 0%,transparent 100%),radial-gradient(1px 1px at 40% 70%,rgba(255,200,100,.18) 0%,transparent 100%)}
 
 /* ── Mode switcher (top centre) ── */
 .mode-bar{position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:500;display:flex;gap:4px;background:rgba(10,8,4,.6);border:1px solid rgba(255,255,255,.14);border-radius:999px;padding:4px;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
@@ -341,26 +332,19 @@ header::before{content:'';position:absolute;top:0;left:50%;transform:translateX(
 #flight-map{width:100%;height:280px}
 .map-tog{background:var(--g1);border:1px solid var(--b1);border-radius:8px;padding:5px 9px;cursor:pointer;color:var(--t2);display:flex;align-items:center;gap:5px;font-size:.73rem;transition:all .2s;font-family:'DM Sans',sans-serif}
 .map-tog:hover,.map-tog.active{background:rgba(249,115,22,.15);border-color:rgba(249,115,22,.4);color:#fb923c}
-@media(prefers-color-scheme:dark){.leaflet-container{background:#0a0c10}.leaflet-tile{filter:brightness(.85) saturate(.9)}}
-.leaflet-control-zoom a{background:var(--s1)!important;color:var(--t1)!important;border-color:var(--b2)!important}
+
 
 /* ── Action bar ── */
 .act-bar{display:flex;background:var(--s1);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--b2);border-radius:var(--r);overflow:hidden;margin:.9rem 0}
-.ab-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:.72rem .3rem;border:none;border-right:1px solid var(--b1);background:transparent;cursor:pointer;transition:background .15s;font-family:'DM Sans',sans-serif}
+.ab-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:.72rem .3rem;border:none;border-right:1px solid var(--b1);background:transparent;cursor:pointer;transition:all .15s;font-family:'DM Sans',sans-serif;color:var(--t2)}
 .ab-btn:last-child{border-right:none}
-.ab-btn:hover{background:var(--b1)}
+.ab-btn:hover{background:var(--b1);color:var(--t1)}
 .ab-btn:active{background:var(--b2)}
 .ab-ic{display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .ab-ic svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .ab-lbl{font-size:.6rem;font-weight:600;letter-spacing:.03em;white-space:nowrap}
-.ab-save{color:#a5b4fc}
-.ab-nav{color:#67e8f9}
-.ab-wa{color:#86efac}
-.ab-copy{color:#d8b4fe}
-.ab-share{color:#fda4af}
-.ab-notif{color:#fbbf24}
-.ab-notif.active{color:#f59e0b;background:rgba(251,191,36,.14)}
-.ab-save.saved-state{color:#6ee7b7}
+.ab-notif.active{color:var(--acc);background:rgba(79,156,249,.1)}
+.ab-save.saved-state{color:var(--green)}
 
 /* ── Live Status Monitor ── */
 .status-monitor{background:var(--s1);backdrop-filter:blur(20px);border:1px solid var(--b2);border-radius:var(--r);overflow:hidden;margin-bottom:.9rem}
@@ -610,15 +594,10 @@ body.results-mode .leave-card{display:block}
 .dep-pax-del:hover{color:var(--red)}
 .dep-pax-save-btn{background:none;border:1px dashed var(--b2);border-radius:999px;padding:.28rem .75rem;font-size:.72rem;color:var(--t3);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .18s}
 .dep-pax-save-btn:hover{border-color:var(--acc);color:var(--acc)}
-.ab-dep-cal{color:#fb923c}
-.ab-pax-save{color:var(--acc)}
 
 </style>
 </head>
 <body>
-<div id="bg-slideshow"></div>
-<div id="bg-overlay"></div>
-<div id="stars"></div>
 <div id="toast"></div>
 
 <!-- Mode switcher -->
@@ -1064,9 +1043,24 @@ body.results-mode .leave-card{display:block}
 
 </main><!-- end wrap -->
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
 <script>
 const API = window.location.hostname==='localhost' ? 'http://localhost:3001/api' : '/api';
+let _gmapsReady=false,_gmapsLoading=false,_gmapsCbs=[];
+function loadGoogleMaps(){
+  if(_gmapsReady)return Promise.resolve();
+  if(_gmapsLoading)return new Promise(r=>_gmapsCbs.push(r));
+  _gmapsLoading=true;
+  return fetch(`${API}/config`).then(r=>r.json()).catch(()=>({})).then(cfg=>{
+    const key=cfg.googleMapsKey;
+    if(!key){console.warn('[maps] GOOGLE_MAPS_API_KEY not configured');return;}
+    return new Promise(resolve=>{
+      window._gmCb=()=>{_gmapsReady=true;_gmapsLoading=false;resolve();_gmapsCbs.forEach(cb=>cb());_gmapsCbs=[];};
+      const s=document.createElement('script');
+      s.src=`https://maps.googleapis.com/maps/api/js?key=${key}&callback=_gmCb`;
+      s.async=true;document.head.appendChild(s);
+    });
+  });
+}
 const isImperial=/^en-US/i.test(navigator.language);
 function fmtDist(km){return isImperial?Math.round(km*0.621371)+' mi':km+' km'}
 
@@ -1339,24 +1333,29 @@ function toggleDepBuf(){
   setBuf(opts[(idx+1)%opts.length]);
 }
 
-// ─── LEAFLET MAP ─────────────────────────────────────────────────────────────
-function mkPlane(h){
-  const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><g transform="rotate(${h||0},16,16)"><path d="M16 2 L20 14 L30 16 L20 18 L18 28 L16 24 L14 28 L12 18 L2 16 L12 14 Z" fill="white" stroke="rgba(0,0,0,0.35)" stroke-width="1" stroke-linejoin="round"/></g></svg>`;
-  return L.divIcon({className:'',html:`<div style="filter:drop-shadow(0 2px 8px rgba(0,0,0,.7))">${svg}</div>`,iconSize:[32,32],iconAnchor:[16,16]});
-}
-function renderMap(d){
+// ─── MAP (Google Maps) ────────────────────────────────────────────────────────
+async function renderMap(d){
   if(!d.live)return;
+  await loadGoogleMaps();
+  if(!window.google)return;
   const mc=document.getElementById('map-card');
   mc.classList.add('show');
-  if(!lmap){
-    lmap=L.map('flight-map',{zoomControl:true,attributionControl:false});
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:13}).addTo(lmap);
-  }
   const{latitude:lat,longitude:lng,heading:h,altitude:alt,speed:spd}=d.live;
-  lmap.setView([lat,lng],5);
-  if(planeMarker)lmap.removeLayer(planeMarker);
-  planeMarker=L.marker([lat,lng],{icon:mkPlane(h||0)}).addTo(lmap)
-    .bindPopup(`<b>${d.flightNumber}</b><br>${alt?'Alt: '+alt+' ft':''}${spd?' · '+spd+' km/h':''}`);
+  if(!lmap){
+    lmap=new google.maps.Map(document.getElementById('flight-map'),{
+      center:{lat,lng},zoom:5,
+      zoomControl:true,mapTypeControl:false,streetViewControl:false,fullscreenControl:false
+    });
+  }else{
+    lmap.setCenter({lat,lng});
+  }
+  if(planeMarker)planeMarker.setMap(null);
+  const planeSvg=`<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><g transform="rotate(${h||0},16,16)"><path d="M16 2 L20 14 L30 16 L20 18 L18 28 L16 24 L14 28 L12 18 L2 16 L12 14 Z" fill="white" stroke="rgba(0,0,0,0.35)" stroke-width="1" stroke-linejoin="round"/></g></svg>`;
+  planeMarker=new google.maps.Marker({
+    position:{lat,lng},map:lmap,
+    title:`${d.flightNumber}${alt?' · '+alt.toLocaleString()+' ft':''}`,
+    icon:{url:'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(planeSvg),scaledSize:new google.maps.Size(32,32),anchor:new google.maps.Point(16,16)}
+  });
   const mi=document.getElementById('map-info');
   if(mi)mi.innerHTML=`<span>Alt: <strong>${alt?.toLocaleString()||'—'} ft</strong></span><span>Speed: <strong>${spd||'—'} km/h</strong></span>`;
 }
@@ -1365,7 +1364,7 @@ function toggleFlightMap(){
   const btn=document.getElementById('map-toggle-btn');
   const showing=mc.classList.toggle('show');
   if(btn)btn.classList.toggle('active',showing);
-  if(showing){setTimeout(()=>{mc.scrollIntoView({behavior:'smooth',block:'start'});if(lmap){lmap.invalidateSize();if(planeMarker)lmap.setView(planeMarker.getLatLng(),5);}},200);}
+  if(showing){setTimeout(()=>{mc.scrollIntoView({behavior:'smooth',block:'start'});if(lmap&&window.google){google.maps.event.trigger(lmap,'resize');if(planeMarker)lmap.setCenter(planeMarker.getPosition());}},200);}
 }
 
 // ─── LOCATION ─────────────────────────────────────────────────────────────────
@@ -1394,7 +1393,7 @@ function reqLoc(){
         document.getElementById('drive-mins').value=driveMins;
         const tfLbl={heavy:'🔴 Heavy traffic',moderate:'🟡 Moderate traffic',clear:'🟢 Clear roads'};
         if(driveVal)driveVal.textContent=`${result.driveMins} min`;
-        const depSrc=result.source==='here'?'Live traffic':'No traffic data';
+        const depSrc=result.source==='google'?'Live traffic':'No traffic data';
         if(driveSub)driveSub.textContent=`${fmtDist(result.distanceKm)} · ${tfLbl[result.trafficLevel]||depSrc}`;
         recalc();
       }
@@ -1422,12 +1421,14 @@ async function fetchRoute(fLat,fLng,tLat,tLng){
 }
 
 function updateDepTcCard(result){
-  if(!result||!depTcMap)return;
-  if(depTcUserM)depTcMap.removeLayer(depTcUserM);
-  depTcUserM=L.marker([userLat,userLng],{icon:mkUser()}).addTo(depTcMap);
-  if(depTcPath)depTcMap.removeLayer(depTcPath);
-  depTcPath=L.polyline(result.routeCoords||[[userLat,userLng]],{color:'#fb923c',weight:4,opacity:.85}).addTo(depTcMap);
-  depTcMap.fitBounds(L.latLngBounds(result.routeCoords||[[userLat,userLng]]),{padding:[28,28]});
+  if(!result||!depTcMap||!window.google)return;
+  const dotIcon=c=>({path:google.maps.SymbolPath.CIRCLE,scale:8,fillColor:c,fillOpacity:1,strokeColor:'#fff',strokeWeight:2.5});
+  if(depTcUserM)depTcUserM.setMap(null);
+  depTcUserM=new google.maps.Marker({position:{lat:userLat,lng:userLng},map:depTcMap,title:'You are here',icon:dotIcon('#4f9cf9')});
+  if(depTcPath)depTcPath.setMap(null);
+  const path=(result.routeCoords||[[userLat,userLng]]).map(([lt,ln])=>({lat:lt,lng:ln}));
+  depTcPath=new google.maps.Polyline({path,geodesic:true,strokeColor:'#4285f4',strokeOpacity:.9,strokeWeight:4,map:depTcMap});
+  const b=new google.maps.LatLngBounds();path.forEach(p=>b.extend(p));depTcMap.fitBounds(b,{top:28,right:28,bottom:28,left:28});
   const tfMap={heavy:{cls:'heavy',txt:'Heavy traffic'},moderate:{cls:'moderate',txt:'Moderate traffic'},clear:{cls:'clear',txt:'Clear roads'}};
   const tf=tfMap[result.trafficLevel]||tfMap.clear;
   document.getElementById('dep-tc-drive').innerHTML=`${result.driveMins} <span>min drive</span>`;
@@ -1444,7 +1445,7 @@ function trafficStatus(){
 
 let depOsrmDrive=null, depTcMap=null, depTcUserM=null, depTcArrM=null, depTcPath=null;
 
-function renderDepTcCard(){
+async function renderDepTcCard(){
   if(!userLat||!userLng||!curData||!curData.departure||!curData.departure.lat)return;
   const card=document.getElementById('dep-tc-card');
   card.classList.add('show');
@@ -1458,24 +1459,27 @@ function renderDepTcCard(){
   chip.className=`tc-chip ${tf.cls}`;
   document.getElementById('dep-tc-traffic').textContent=tf.txt;
   const km=depOsrmDrive?`${fmtDist(depOsrmDrive.distanceKm||depOsrmDrive.km||0)} · `:'';
-  const depSrcLbl=depOsrmDrive?.source==='here'?tf.txt:'No traffic data';
+  const depSrcLbl=depOsrmDrive?.source==='google'?tf.txt:'No traffic data';
   document.getElementById('dep-tc-live').textContent=`${km}${depSrcLbl}`;
   document.getElementById('dep-tc-sub').textContent=`From your location to ${dep.airport||dep.iata||'airport'}`;
-  const isDark=window.matchMedia('(prefers-color-scheme:dark)').matches;
-  const tile=isDark?'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png':'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
+  await loadGoogleMaps();
+  if(!window.google)return;
+  const dotIcon=c=>({path:google.maps.SymbolPath.CIRCLE,scale:8,fillColor:c,fillOpacity:1,strokeColor:'#fff',strokeWeight:2.5});
   if(!depTcMap){
-    depTcMap=L.map('dep-route-map',{zoomControl:false,attributionControl:false,scrollWheelZoom:false});
-    L.tileLayer(tile,{maxZoom:18,subdomains:'abcd'}).addTo(depTcMap);
+    depTcMap=new google.maps.Map(document.getElementById('dep-route-map'),{
+      center:{lat:userLat,lng:userLng},zoom:12,
+      disableDefaultUI:true,gestureHandling:'none',mapTypeId:'roadmap'
+    });
+    new google.maps.TrafficLayer().setMap(depTcMap);
   }
-  [depTcUserM,depTcArrM,depTcPath].forEach(l=>{if(l&&depTcMap)depTcMap.removeLayer(l)});
-  const mkUser=()=>L.divIcon({className:'',html:'<div style="width:18px;height:18px;background:#4f9cf9;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 5px rgba(79,156,249,.28),0 2px 10px rgba(0,0,0,.5)"></div>',iconSize:[18,18],iconAnchor:[9,9]});
-  const mkDot=c=>L.divIcon({className:'',html:`<div style="width:12px;height:12px;background:${c};border:2.5px solid #fff;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,.5)"></div>`,iconSize:[12,12],iconAnchor:[6,6]});
-  depTcUserM=L.marker([userLat,userLng],{icon:mkUser()}).addTo(depTcMap).bindPopup('<b>📍 You are here</b>');
-  depTcArrM=L.marker([dep.lat,dep.lng],{icon:mkDot('#fb923c')}).addTo(depTcMap).bindPopup(`<b>${dep.iata}</b><br>${dep.airport||dep.city}`);
+  [depTcUserM,depTcArrM,depTcPath].forEach(o=>{if(o)o.setMap(null)});
+  depTcUserM=new google.maps.Marker({position:{lat:userLat,lng:userLng},map:depTcMap,title:'You are here',icon:dotIcon('#4f9cf9')});
+  depTcArrM=new google.maps.Marker({position:{lat:dep.lat,lng:dep.lng},map:depTcMap,title:dep.iata,icon:dotIcon('#fb923c')});
   const routeCoords=depOsrmDrive?.routeCoords||[[userLat,userLng],[dep.lat,dep.lng]];
-  depTcPath=L.polyline(routeCoords,{color:'#fb923c',weight:4,opacity:.85,dashArray:depOsrmDrive?.routeCoords?null:'7,9'}).addTo(depTcMap);
-  depTcMap.fitBounds(L.latLngBounds(routeCoords),{padding:[30,30]});
-  setTimeout(()=>{if(depTcMap)depTcMap.invalidateSize()},200);
+  const path=routeCoords.map(([lt,ln])=>({lat:lt,lng:ln}));
+  depTcPath=new google.maps.Polyline({path,geodesic:true,strokeColor:'#4285f4',strokeOpacity:.9,strokeWeight:4,map:depTcMap});
+  const b=new google.maps.LatLngBounds();path.forEach(p=>b.extend(p));
+  depTcMap.fitBounds(b,{top:30,right:30,bottom:30,left:30});
 }
 
 function updateLocNav(){
@@ -1887,24 +1891,10 @@ function renderDepartureLounges(iata){
 }
 
 
-// ─── BACKGROUND ──────────────────────────────────────────────────────────────
-const BG_COUNT=74;
-const BG_FILTER='brightness(1.06) contrast(1.1) saturate(1.18)';
-function initBgSlideshow(){
-  const ss=document.getElementById('bg-slideshow');
-  if(!ss||ss.children.length)return;
-  const n=String(Math.floor(Math.random()*BG_COUNT)+1).padStart(3,'0');
-  const d=document.createElement('div');
-  d.className='bg-slide active';
-  d.style.backgroundImage=`url('images/bg-${n}.jpg')`;
-  d.style.filter=BG_FILTER;
-  ss.appendChild(d);
-}
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
 loadSaved();
 checkUrlParams();
-initBgSlideshow();
 if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js').catch(()=>{});
 if('Notification' in window && Notification.permission==='default'){
   setTimeout(()=>Notification.requestPermission().then(updateDepNotifBellState), 800);

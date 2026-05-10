@@ -129,24 +129,31 @@ app.get('/api/drive-route', async (req, res) => {
   }
 });
 
-// ─── HERE key diagnostic ───────────────────────────────────────────────────────
-app.get('/api/here-test', async (req, res) => {
-  const key = process.env.HERE_API_KEY;
-  if (!key || key.startsWith('your_')) return res.json({ configured: false, message: 'HERE_API_KEY not set in .env' });
+// ─── Frontend config (exposes browser-safe keys) ──────────────────────────────
+app.get('/api/config', (req, res) => {
+  const key = process.env.GOOGLE_MAPS_API_KEY;
+  res.json({ googleMapsKey: (!key || key.startsWith('your_')) ? null : key });
+});
+
+// ─── Google Maps key diagnostic ────────────────────────────────────────────────
+app.get('/api/maps-test', async (req, res) => {
+  const key = process.env.GOOGLE_MAPS_API_KEY;
+  if (!key || key.startsWith('your_')) return res.json({ configured: false, message: 'GOOGLE_MAPS_API_KEY not set in .env' });
   try {
-    const { data } = await axios.get('https://router.hereapi.com/v8/routes', {
+    const { data } = await axios.get('https://maps.googleapis.com/maps/api/directions/json', {
       params: {
-        transportMode: 'car',
         origin: '51.5074,-0.1278',
         destination: '51.4775,-0.4614',
-        return: 'summary',
-        departureTime: new Date().toISOString(),
-        apikey: key
+        mode: 'driving',
+        departure_time: 'now',
+        key
       },
       timeout: 8000
     });
-    const s = data.routes?.[0]?.sections?.[0]?.summary;
-    res.json({ configured: true, ok: true, duration: s?.duration, baseDuration: s?.baseDuration, message: 'HERE API working ✅' });
+    const leg = data.routes?.[0]?.legs?.[0];
+    res.json({ configured: true, ok: data.status === 'OK', status: data.status,
+      duration: leg?.duration?.text, durationInTraffic: leg?.duration_in_traffic?.text,
+      message: data.status === 'OK' ? 'Google Maps API working ✅' : data.error_message });
   } catch (e) {
     res.json({ configured: true, ok: false, status: e.response?.status, error: e.response?.data || e.message });
   }

@@ -35,7 +35,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <style>
 /* ── CSS VARIABLES ── */
 :root{
@@ -56,18 +55,9 @@
     --t1:#0f172a; --t2:#475569; --t3:#94a3b8;
     --green:#059669; --amber:#d97706; --red:#dc2626; --blue:#2563eb;
   }
-  #stars{display:none}
-  #bg-overlay{background:linear-gradient(to bottom,rgba(240,244,255,.55) 0%,rgba(240,244,255,.28) 30%,rgba(240,244,255,.72) 60%,rgba(240,244,255,.97) 100%)}
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t1);min-height:100vh;overflow-x:hidden}
-
-/* ── Background ── */
-#bg-slideshow{position:fixed;top:0;right:0;bottom:0;left:0;z-index:0}
-.bg-slide{position:absolute;inset:0;background-size:cover;background-position:center;background-repeat:no-repeat;opacity:0;transition:opacity 1.5s ease}
-.bg-slide.active{opacity:1}
-#bg-overlay{position:fixed;top:0;right:0;bottom:0;left:0;background:linear-gradient(to bottom,rgba(8,12,24,.65) 0%,rgba(8,12,24,.32) 30%,rgba(8,12,24,.62) 62%,rgba(8,12,24,.97) 100%);z-index:1}
-#stars{position:fixed;top:0;right:0;bottom:0;left:0;z-index:0;background-image:radial-gradient(1px 1px at 15% 20%,rgba(255,255,255,.4) 0%,transparent 100%),radial-gradient(1px 1px at 60% 10%,rgba(255,255,255,.3) 0%,transparent 100%),radial-gradient(1px 1px at 80% 50%,rgba(255,255,255,.25) 0%,transparent 100%),radial-gradient(1.5px 1.5px at 90% 78%,rgba(255,255,255,.2) 0%,transparent 100%),radial-gradient(1px 1px at 35% 65%,rgba(255,255,255,.2) 0%,transparent 100%)}
 
 /* ── Mode bar ── */
 .mode-bar{position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:500;display:flex;gap:4px;background:rgba(8,12,24,.6);border:1px solid rgba(255,255,255,.14);border-radius:999px;padding:4px;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
@@ -258,9 +248,6 @@ footer a{color:var(--t3);text-decoration:underline}
 </style>
 </head>
 <body>
-<div id="bg-slideshow"></div>
-<div id="bg-overlay"></div>
-<div id="stars"></div>
 
 <!-- Mode bar -->
 <nav class="mode-bar">
@@ -349,9 +336,24 @@ footer a{color:var(--t3);text-decoration:underline}
   </footer>
 </div>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
 <script>
 const API = window.location.hostname === 'localhost' ? 'http://localhost:3001/api' : '/api';
+let _gmapsReady=false,_gmapsLoading=false,_gmapsCbs=[];
+function loadGoogleMaps(){
+  if(_gmapsReady)return Promise.resolve();
+  if(_gmapsLoading)return new Promise(r=>_gmapsCbs.push(r));
+  _gmapsLoading=true;
+  return fetch(`${API}/config`).then(r=>r.json()).catch(()=>({})).then(cfg=>{
+    const key=cfg.googleMapsKey;
+    if(!key){console.warn('[maps] GOOGLE_MAPS_API_KEY not configured');return;}
+    return new Promise(resolve=>{
+      window._gmCb=()=>{_gmapsReady=true;_gmapsLoading=false;resolve();_gmapsCbs.forEach(cb=>cb());_gmapsCbs=[];};
+      const s=document.createElement('script');
+      s.src=`https://maps.googleapis.com/maps/api/js?key=${key}&callback=_gmCb`;
+      s.async=true;document.head.appendChild(s);
+    });
+  });
+}
 const MAX_FLIGHTS = 6;
 const LS_KEY = 'tracked_flights';
 
@@ -476,63 +478,59 @@ function matchesFilter(num) {
 let tmap = null;
 let mapMarkers = {};
 let mapActive = false;
-function showMap(hasFlights) {
+async function showMap(hasFlights) {
   const wrap = document.getElementById('map-card-wrap');
   if (!hasFlights) { wrap.style.display = 'none'; mapActive = false; return; }
   wrap.style.display = 'block';
   if (!mapActive) {
     mapActive = true;
+    await loadGoogleMaps();
+    if (!window.google) return;
     if (!tmap) {
-      const dark = window.matchMedia('(prefers-color-scheme:dark)').matches;
-      const tile = dark
-        ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-        : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
-      tmap = L.map('map-view', { zoomControl: true, attributionControl: false }).setView([25, 10], 2);
-      L.tileLayer(tile, { maxZoom: 19, subdomains: 'abcd' }).addTo(tmap);
+      tmap = new google.maps.Map(document.getElementById('map-view'), {
+        center: { lat: 25, lng: 10 }, zoom: 2,
+        zoomControl: true, mapTypeControl: false, streetViewControl: false, fullscreenControl: false
+      });
     }
-    setTimeout(() => { tmap.invalidateSize(); updateMapMarkers(); }, 150);
+    setTimeout(() => { google.maps.event.trigger(tmap, 'resize'); updateMapMarkers(); }, 150);
   }
   const tracked = getTracked().filter(n => flightData[n] && !flightData[n]._error);
   const el = document.getElementById('map-flight-count');
   if (el) el.textContent = tracked.length + ' flight' + (tracked.length !== 1 ? 's' : '') + ' plotted';
 }
 function updateMapMarkers() {
-  if (!tmap || !mapActive) return;
-  Object.values(mapMarkers).forEach(m => { if (m.remove) m.remove(); });
+  if (!tmap || !mapActive || !window.google) return;
+  Object.values(mapMarkers).forEach(m => { if (m.setMap) m.setMap(null); });
   mapMarkers = {};
-  const bounds = [];
+  const bounds = new google.maps.LatLngBounds();
+  let hasBounds = false;
   getTracked().forEach(num => {
     const fd = flightData[num];
     if (!fd || fd._error) return;
     const dep = fd.departure, arr = fd.arrival, live = fd.live;
     const s = (fd.status || '').toLowerCase();
+    const dotIcon = (c, sc) => ({ path: google.maps.SymbolPath.CIRCLE, scale: sc || 5, fillColor: c, fillOpacity: 1, strokeColor: '#fff', strokeWeight: 1.5 });
 
-    // Route line dep → arr
     if (dep && dep.lat && arr && arr.lat) {
-      const line = L.polyline([[dep.lat, dep.lng], [arr.lat, arr.lng]], {
-        color: s === 'active' ? '#4f9cf9' : '#aab0bb',
-        weight: 2, opacity: 0.55, dashArray: '6 5'
-      }).addTo(tmap);
-      mapMarkers[num + '_line'] = line;
+      mapMarkers[num + '_line'] = new google.maps.Polyline({
+        path: [{ lat: dep.lat, lng: dep.lng }, { lat: arr.lat, lng: arr.lng }],
+        geodesic: true, strokeColor: s === 'active' ? '#4f9cf9' : '#aab0bb',
+        strokeOpacity: 0.55, strokeWeight: 2, map: tmap
+      });
     }
 
-    // Departure airport dot
     if (dep && dep.lat) {
-      const dm = L.circleMarker([dep.lat, dep.lng], { radius: 5, color: '#6b7280', fillColor: '#9ca3af', fillOpacity: 1, weight: 1.5 }).addTo(tmap);
-      dm.bindTooltip(`${dep.iata} · ${dep.city || dep.airport}`, { direction: 'top', offset: [0, -6] });
+      const dm = new google.maps.Marker({ position: { lat: dep.lat, lng: dep.lng }, map: tmap, title: `${dep.iata} · ${dep.city || dep.airport}`, icon: dotIcon('#9ca3af') });
       mapMarkers[num + '_dep'] = dm;
-      bounds.push([dep.lat, dep.lng]);
+      bounds.extend({ lat: dep.lat, lng: dep.lng }); hasBounds = true;
     }
 
-    // Arrival airport dot
     if (arr && arr.lat) {
-      const am = L.circleMarker([arr.lat, arr.lng], { radius: 5, color: '#10d98a', fillColor: '#10d98a', fillOpacity: 1, weight: 1.5 }).addTo(tmap);
-      am.bindTooltip(`${arr.iata} · ${arr.city || arr.airport}`, { direction: 'top', offset: [0, -6] });
+      const am = new google.maps.Marker({ position: { lat: arr.lat, lng: arr.lng }, map: tmap, title: `${arr.iata} · ${arr.city || arr.airport}`, icon: dotIcon('#10d98a') });
       mapMarkers[num + '_arr'] = am;
-      bounds.push([arr.lat, arr.lng]);
+      bounds.extend({ lat: arr.lat, lng: arr.lng }); hasBounds = true;
     }
 
-    // Live aircraft position
     let planeLat, planeLng, hdg = 0;
     if (live && live.latitude) {
       planeLat = live.latitude; planeLng = live.longitude;
@@ -549,18 +547,18 @@ function updateMapMarkers() {
 
     if (planeLat != null) {
       const col = s === 'active' ? '#3b82f6' : s === 'landed' ? '#10d98a' : s === 'delayed' ? '#f5a623' : '#7b88aa';
-      const planeSvg=`<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36"><g transform="rotate(${hdg},18,18)"><path d="M18 3 L20.5 13 L30 19 L20.5 21.5 L20 29 L18 27 L16 29 L15.5 21.5 L6 19 L15.5 13 Z" fill="${col}" stroke="white" stroke-width="1.8" stroke-linejoin="round"/></g></svg>`;
-      const planeIcon = L.divIcon({
-        html: `<div style="filter:drop-shadow(0 2px 10px rgba(0,0,0,.8))">${planeSvg}</div>`,
-        className: '', iconSize: [36, 36], iconAnchor: [18, 18]
+      const planeSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36"><g transform="rotate(${hdg},18,18)"><path d="M18 3 L20.5 13 L30 19 L20.5 21.5 L20 29 L18 27 L16 29 L15.5 21.5 L6 19 L15.5 13 Z" fill="${col}" stroke="white" stroke-width="1.8" stroke-linejoin="round"/></g></svg>`;
+      const pm = new google.maps.Marker({
+        position: { lat: planeLat, lng: planeLng }, map: tmap, zIndex: 10,
+        title: `${num}${live && live.altitude ? ' · ' + Math.round(live.altitude).toLocaleString() + ' ft' : ''}`,
+        icon: { url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(planeSvg), scaledSize: new google.maps.Size(36, 36), anchor: new google.maps.Point(18, 18) }
       });
-      const pm = L.marker([planeLat, planeLng], { icon: planeIcon, zIndexOffset: 1000 }).addTo(tmap);
-      pm.bindPopup(`<b>${num}</b><br>${fd.airline || ''}${live&&live.altitude ? `<br>Alt: ${Math.round(live.altitude).toLocaleString()} ft · ${Math.round(live.speed||0)} km/h` : ''}`);
       mapMarkers[num] = pm;
-      bounds.push([planeLat, planeLng]);
+      bounds.extend({ lat: planeLat, lng: planeLng }); hasBounds = true;
     }
   });
-  if (bounds.length) tmap.fitBounds(bounds, { padding: [40, 40], maxZoom: 7 });
+  if (hasBounds) tmap.fitBounds(bounds, { top: 40, right: 40, bottom: 40, left: 40 });
+  if (tmap.getZoom() > 7) tmap.setZoom(7);
 }
 
 // ── SHARE ────────────────────────────────────────────────────────────────────

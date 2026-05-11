@@ -349,16 +349,16 @@ header::before{content:'';position:absolute;top:0;left:50%;transform:translateX(
 
 
 /* ── Result navigation tabs ── */
-.result-tabs{display:flex;gap:0;border-bottom:2px solid var(--b1);margin-bottom:.8rem;background:var(--s1);border-radius:var(--r) var(--r) 0 0;overflow:hidden;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
-.rtab{flex:1;padding:.68rem .4rem;border:none;background:transparent;color:var(--t2);font-family:'DM Sans',sans-serif;font-size:.8rem;font-weight:600;cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;transition:all .2s;white-space:nowrap}
-.rtab:hover{color:var(--t1);background:var(--g1)}
-.rtab.active{color:var(--acc);border-bottom-color:var(--acc);background:rgba(79,156,249,.07)}
-.leave-mini{display:none;align-items:center;gap:.5rem;padding:.5rem .9rem;background:rgba(79,156,249,.08);border:1px solid rgba(79,156,249,.2);border-radius:var(--rsm);margin-bottom:.75rem;font-size:.8rem}
+.result-tabs{display:flex;gap:6px;margin:.4rem 0 .85rem;padding:0;background:transparent;border-radius:0;border-bottom:none;overflow:visible;backdrop-filter:none;-webkit-backdrop-filter:none}
+.rtab{flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:.55rem .4rem;border:1px solid var(--b2);border-radius:10px;background:var(--g1);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.75rem;font-weight:600;color:var(--t2);transition:all .18s;white-space:nowrap;border-bottom:none;margin-bottom:0}
+.rtab:not(.active):hover{background:var(--g2);color:var(--t1)}
+.rtab.active{background:var(--acc);border-color:var(--acc);color:#fff;box-shadow:0 3px 12px rgba(79,156,249,.3)}
+.leave-mini{display:none;align-items:center;gap:.55rem;padding:.4rem .9rem;background:rgba(79,156,249,.09);border:1px solid rgba(79,156,249,.22);border-radius:8px;margin-bottom:.75rem;font-size:.78rem}
 .leave-mini.show{display:flex}
-#lm-fn{font-family:'Syne',sans-serif;font-weight:700;color:var(--acc);font-size:.8rem}
-.lm-dot{width:5px;height:5px;border-radius:50%;background:var(--green);flex-shrink:0}
-.lm-lbl{color:var(--t2);font-size:.72rem;flex:1}
-#lm-time{color:var(--green);font-weight:700}
+#lm-fn{font-family:'Syne',sans-serif;font-weight:800;color:var(--t1)}
+.lm-dot{width:5px;height:5px;border-radius:50%;background:var(--acc);flex-shrink:0}
+.lm-lbl{color:var(--t2);font-size:.72rem}
+#lm-time{font-weight:700;color:var(--acc)}
 
 /* ── Route results ── */
 .rr-card{background:var(--s1);backdrop-filter:blur(20px);border:1px solid var(--b2);border-radius:var(--r);overflow:hidden;display:none;margin-bottom:.9rem}

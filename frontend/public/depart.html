@@ -356,23 +356,31 @@ header::before{content:'';position:absolute;top:0;left:50%;transform:translateX(
 
 
 /* ── Action bar ── */
-.act-bar{display:flex;background:transparent;border:none;border-radius:0;overflow-x:auto;scrollbar-width:none;padding:.7rem 0;margin:.9rem 0;gap:0}
+.act-bar{display:flex;background:var(--s1);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--b2);border-radius:var(--r);overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding:.7rem 0;margin:.9rem 0;gap:0}
 .act-bar::-webkit-scrollbar{display:none}
-.ab-btn{flex:0 0 auto;min-width:66px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:.3rem .4rem;border:none;background:transparent;cursor:pointer;transition:transform .15s,opacity .15s;font-family:'DM Sans',sans-serif}
+.ab-btn{flex:0 0 auto;min-width:66px;display:flex;flex-direction:column;align-items:center;gap:6px;padding:.35rem .4rem;border:none;background:transparent;cursor:pointer;transition:transform .15s,opacity .15s;font-family:'DM Sans',sans-serif}
 .ab-btn:active{transform:scale(.88);opacity:.7}
-.ab-ic{width:46px;height:46px;border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,.18)}
+.ab-ic{width:46px;height:46px;border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:filter .15s}
+.ab-btn:hover .ab-ic{filter:brightness(1.15)}
 .ab-ic svg{width:21px;height:21px;stroke:white;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.ab-lbl{font-size:.6rem;font-weight:700;letter-spacing:.02em;white-space:nowrap;color:var(--t2)}
+.ab-lbl{font-size:.6rem;font-weight:700;letter-spacing:.02em;white-space:nowrap}
 .ab-save .ab-ic{background:linear-gradient(135deg,#4f9cf9,#2563eb);box-shadow:0 3px 10px rgba(79,156,249,.35)}
-.ab-pax-save .ab-ic{background:linear-gradient(135deg,#06b6d4,#0891b2);box-shadow:0 3px 10px rgba(6,182,212,.3)}
-.ab-nav .ab-ic{background:linear-gradient(135deg,#10d98a,#059669);box-shadow:0 3px 10px rgba(16,217,138,.3)}
-.ab-wa .ab-ic{background:linear-gradient(135deg,#25D366,#16a34a);box-shadow:0 3px 10px rgba(37,211,102,.3)}
-.ab-notif .ab-ic{background:linear-gradient(135deg,#8b5cf6,#6d28d9);box-shadow:0 3px 10px rgba(139,92,246,.3)}
-.ab-copy .ab-ic{background:linear-gradient(135deg,#f59e0b,#d97706);box-shadow:0 3px 10px rgba(245,158,11,.3)}
-.ab-share .ab-ic{background:linear-gradient(135deg,#60a5fa,#3b82f6);box-shadow:0 3px 10px rgba(96,165,250,.3)}
-.ab-dep-cal .ab-ic{background:linear-gradient(135deg,#f43f5e,#e11d48);box-shadow:0 3px 10px rgba(244,63,94,.3)}
+.ab-save .ab-lbl{color:#4f9cf9}
 .ab-save.saved-state .ab-ic{background:linear-gradient(135deg,#10d98a,#059669)}
-.ab-notif.active .ab-ic{background:linear-gradient(135deg,#a78bfa,#7c3aed)}
+.ab-save.saved-state .ab-lbl{color:#10d98a}
+.ab-pax-save .ab-ic{background:linear-gradient(135deg,#06b6d4,#0891b2);box-shadow:0 3px 10px rgba(6,182,212,.3)}
+.ab-pax-save .ab-lbl{color:#06b6d4}
+.ab-nav .ab-ic{background:linear-gradient(135deg,#10d98a,#059669);box-shadow:0 3px 10px rgba(16,217,138,.3)}
+.ab-nav .ab-lbl{color:#10d98a}
+.ab-wa .ab-ic{background:linear-gradient(135deg,#25D366,#16a34a);box-shadow:0 3px 10px rgba(37,211,102,.3)}
+.ab-wa .ab-lbl{color:#25D366}
+.ab-notif .ab-ic{background:linear-gradient(135deg,#8b5cf6,#6d28d9);box-shadow:0 3px 10px rgba(139,92,246,.3)}
+.ab-notif .ab-lbl{color:#8b5cf6}
+.ab-notif.active .ab-ic{box-shadow:0 0 0 3px rgba(139,92,246,.4),0 3px 10px rgba(139,92,246,.3)}
+.ab-copy .ab-ic{background:linear-gradient(135deg,#f59e0b,#d97706);box-shadow:0 3px 10px rgba(245,158,11,.3)}
+.ab-copy .ab-lbl{color:#f59e0b}
+.ab-share .ab-ic{background:linear-gradient(135deg,#60a5fa,#3b82f6);box-shadow:0 3px 10px rgba(96,165,250,.3)}
+.ab-share .ab-lbl{color:#60a5fa}
 
 /* ── Result tabs (Plan / Flight / Prep) ── */
 .dep-result-tabs{display:flex;gap:6px;margin:.4rem 0 .85rem;padding:0}
@@ -503,9 +511,7 @@ body.results-mode .leave-card{display:block}
   .buf-opts{gap:.35rem}
   .buf-opt{padding:.3rem .7rem;font-size:.75rem}
   /* action bar */
-  .ab-btn{min-width:58px}
-  .ab-ic{width:40px;height:40px;border-radius:12px}
-  .ab-ic svg{width:18px;height:18px}
+  .ab-btn{padding:.6rem .2rem;gap:3px;min-width:58px}
   .ab-lbl{font-size:.55rem}
   /* flight card compact */
   .apt-iata{font-size:1.1rem}
@@ -999,6 +1005,10 @@ body.results-mode .leave-card{display:block}
     <span class="ab-ic"><svg viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></span>
     <span class="ab-lbl" id="save-btn-txt">Save</span>
   </button>
+  <button class="ab-btn ab-pax-save" onclick="promptSaveDepPassenger()" title="Save this trip">
+    <span class="ab-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg></span>
+    <span class="ab-lbl">Save Trip</span>
+  </button>
   <button class="ab-btn ab-nav" onclick="qaiNavigate()">
     <span class="ab-ic"><svg viewBox="0 0 24 24"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg></span>
     <span class="ab-lbl">Navigate</span>
@@ -1007,6 +1017,10 @@ body.results-mode .leave-card{display:block}
     <span class="ab-ic"><svg viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg></span>
     <span class="ab-lbl">WhatsApp</span>
   </button>
+  <button class="ab-btn ab-notif" id="ab-notif-btn" onclick="toggleNotifBtn()">
+    <span class="ab-ic"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></span>
+    <span class="ab-lbl" id="ab-notif-lbl">Remind</span>
+  </button>
   <button class="ab-btn ab-copy" onclick="shareLink()">
     <span class="ab-ic"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></span>
     <span class="ab-lbl">Copy</span>
@@ -1014,18 +1028,6 @@ body.results-mode .leave-card{display:block}
   <button class="ab-btn ab-share" onclick="shareNative()">
     <span class="ab-ic"><svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></span>
     <span class="ab-lbl">Share</span>
-  </button>
-  <button class="ab-btn ab-notif" id="ab-notif-btn" onclick="toggleNotifBtn()">
-    <span class="ab-ic"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></span>
-    <span class="ab-lbl" id="ab-notif-lbl">Remind</span>
-  </button>
-  <button class="ab-btn ab-dep-cal" onclick="addDepToCalendar()" title="Add to Calendar">
-    <span class="ab-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>
-    <span class="ab-lbl">Calendar</span>
-  </button>
-  <button class="ab-btn ab-pax-save" onclick="promptSaveDepPassenger()" title="Save this trip">
-    <span class="ab-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
-    <span class="ab-lbl">Save Trip</span>
   </button>
 </div>
 

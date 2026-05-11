@@ -103,16 +103,18 @@ header::before{content:'';position:absolute;top:0;left:50%;transform:translateX(
 .stat-chip.purple{background:rgba(139,92,246,.18);border-color:rgba(139,92,246,.45);color:#a78bfa}
 .stat-chip-dot{width:6px;height:6px;border-radius:50%;background:currentColor}
 
-/* ── Add flight card ── */
-.add-card{background:var(--s1);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--b2);border-radius:var(--r);padding:1rem 1.2rem 1.1rem;margin-bottom:.9rem}
-.add-row{display:flex;gap:.6rem;align-items:center;flex-wrap:wrap}
-.add-input{flex:1;min-width:160px;padding:.65rem 1rem;background:var(--g2);border:1px solid var(--b2);border-radius:var(--rsm);color:var(--t1);font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;outline:none;transition:border-color .2s,box-shadow .2s}
-.add-input:focus{border-color:var(--acc);box-shadow:0 0 0 3px rgba(79,156,249,.15)}
-.add-input::placeholder{color:var(--t3);font-family:'DM Sans',sans-serif;font-weight:300;font-size:.88rem;letter-spacing:0;text-transform:none}
-.add-btn{padding:.65rem 1.3rem;background:linear-gradient(135deg,#4f9cf9,#8b5cf6);border:none;border-radius:var(--rsm);color:#fff;font-family:'Syne',sans-serif;font-size:.88rem;font-weight:700;cursor:pointer;transition:opacity .2s,transform .1s;white-space:nowrap;box-shadow:0 4px 16px rgba(79,156,249,.3)}
-.add-btn:hover{opacity:.88}
-.add-btn:active{transform:scale(.97)}
-.add-btn:disabled{opacity:.4;cursor:not-allowed}
+/* ── Search card ── */
+.card{background:var(--s1);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--b2);border-radius:var(--r);margin-bottom:.9rem}
+.sbody{padding:.9rem}
+.field{position:relative;margin-bottom:.1rem}
+.field label{display:block;font-size:.68rem;color:var(--t2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px;font-weight:600}
+.field input{width:100%;padding:.65rem .9rem;background:var(--g2);border:1px solid var(--b2);border-radius:var(--rsm);color:var(--t1);font-family:'Syne',sans-serif;font-size:.98rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;outline:none;transition:border-color .2s,box-shadow .2s}
+.field input::placeholder{color:var(--t3);font-family:'DM Sans',sans-serif;font-weight:300;font-size:.88rem;letter-spacing:0;text-transform:none}
+.field input:focus{border-color:var(--acc);box-shadow:0 0 0 3px rgba(79,156,249,.15)}
+.sbtn{width:100%;margin-top:.85rem;padding:.82rem;background:linear-gradient(135deg,#4f9cf9,#8b5cf6);border:none;border-radius:var(--rsm);color:#fff;font-family:'Syne',sans-serif;font-size:.98rem;font-weight:700;cursor:pointer;transition:opacity .2s,transform .1s;box-shadow:0 4px 20px rgba(79,156,249,.3)}
+.sbtn:hover{opacity:.91}
+.sbtn:active{transform:scale(.99)}
+.sbtn:disabled{opacity:.45;cursor:not-allowed}
 
 /* ── Icon buttons ── */
 .ctrl-icon-btn{width:36px;height:36px;border-radius:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:opacity .18s,transform .15s;flex-shrink:0;border:none}
@@ -222,7 +224,7 @@ footer a{color:var(--t3);text-decoration:underline}
 .fc-cdown.soon{color:var(--amber)}
 
 /* ── Sort / Filter bar ── */
-.sf-bar{display:flex;gap:.4rem;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;-ms-overflow-style:none;align-items:center;margin-top:.8rem;padding-top:.8rem;border-top:1px solid var(--b1);margin-bottom:0;padding-bottom:.1rem}
+.sf-bar{display:flex;gap:.4rem;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;-ms-overflow-style:none;align-items:center;margin-top:.75rem;padding:.75rem .9rem .2rem;border-top:1px solid var(--b1);margin-left:-.9rem;margin-right:-.9rem}
 .sf-bar::-webkit-scrollbar{display:none}
 .sf-lbl{font-size:.72rem;color:var(--t1);font-weight:700;text-transform:uppercase;letter-spacing:.06em;flex-shrink:0}
 .sf-btn{padding:.28rem .72rem;background:var(--g2);border:1px solid var(--b2);border-radius:999px;color:var(--t1);font-size:.72rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .18s;white-space:nowrap;flex-shrink:0}
@@ -249,8 +251,7 @@ footer a{color:var(--t3);text-decoration:underline}
   .hero-sub{font-size:.78rem}
   .mode-bar{top:8px;padding:3px}
   .mode-opt{padding:.22rem .42rem;font-size:.63rem}
-  .add-row{gap:.45rem}
-  .add-btn{padding:.6rem 1rem;font-size:.82rem}
+  .sbtn{padding:.72rem;font-size:.9rem}
   .ctrl-icon-btn{width:32px;height:32px}
   .stat-chip{font-size:.7rem;padding:.28rem .65rem}
   .sf-btn{padding:.22rem .55rem;font-size:.68rem}
@@ -297,20 +298,23 @@ footer a{color:var(--t3);text-decoration:underline}
     </div>
   </div>
 
-  <!-- Add flight card -->
-  <div class="add-card">
-    <div class="add-row">
-      <input class="add-input" id="flight-input" type="text" maxlength="8" placeholder="e.g. EK202, BA283" autocomplete="off" autocorrect="off" spellcheck="false"/>
-      <button class="add-btn" id="add-btn" onclick="addFlight()">Track Flight</button>
-    </div>
-    <!-- Sort / Filter bar -->
-    <div class="sf-bar" id="sf-bar" style="display:none">
-      <span class="sf-lbl">Filter:</span>
-      <button class="sf-btn on" data-filter="all" onclick="setFilter(this)">All</button>
-      <button class="sf-btn" data-filter="inflight" onclick="setFilter(this)">✈ In Flight</button>
-      <button class="sf-btn" data-filter="delayed" onclick="setFilter(this)">⏱ Delayed</button>
-      <button class="sf-btn" data-filter="ontime" onclick="setFilter(this)">✅ On Time</button>
-      <button class="sf-btn" data-filter="landed" onclick="setFilter(this)">🛬 Landed</button>
+  <!-- Search card -->
+  <div class="card" role="search">
+    <div class="sbody">
+      <div class="field">
+        <label>Flight Number</label>
+        <input type="text" id="flight-input" placeholder="e.g. EK202, BA283" maxlength="8" autocomplete="off" autocorrect="off" spellcheck="false"/>
+      </div>
+      <button class="sbtn" id="add-btn" onclick="addFlight()">🗺 Track Flight</button>
+      <!-- Sort / Filter bar -->
+      <div class="sf-bar" id="sf-bar" style="display:none">
+        <span class="sf-lbl">Filter:</span>
+        <button class="sf-btn on" data-filter="all" onclick="setFilter(this)">All</button>
+        <button class="sf-btn" data-filter="inflight" onclick="setFilter(this)">✈ In Flight</button>
+        <button class="sf-btn" data-filter="delayed" onclick="setFilter(this)">⏱ Delayed</button>
+        <button class="sf-btn" data-filter="ontime" onclick="setFilter(this)">✅ On Time</button>
+        <button class="sf-btn" data-filter="landed" onclick="setFilter(this)">🛬 Landed</button>
+      </div>
     </div>
   </div>
 
@@ -983,11 +987,14 @@ async function addFlight() {
   card.innerHTML = buildCardSkeleton(num);
   grid.appendChild(card);
 
-  document.getElementById('add-btn').disabled = true;
+  const btn = document.getElementById('add-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Loading…';
 
   await fetchFlight(num);
 
-  document.getElementById('add-btn').disabled = false;
+  btn.disabled = false;
+  btn.textContent = '🗺 Track Flight';
   renderGrid();
 }
 

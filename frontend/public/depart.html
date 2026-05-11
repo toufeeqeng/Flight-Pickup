@@ -356,16 +356,33 @@ header::before{content:'';position:absolute;top:0;left:50%;transform:translateX(
 
 
 /* ── Action bar ── */
-.act-bar{display:flex;background:var(--s1);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--b2);border-radius:var(--r);overflow:hidden;margin:.9rem 0}
-.ab-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:.72rem .3rem;border:none;border-right:1px solid var(--b1);background:transparent;cursor:pointer;transition:all .15s;font-family:'DM Sans',sans-serif;color:var(--t2)}
-.ab-btn:last-child{border-right:none}
-.ab-btn:hover{background:var(--b1);color:var(--t1)}
-.ab-btn:active{background:var(--b2)}
-.ab-ic{display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.ab-ic svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.ab-lbl{font-size:.6rem;font-weight:600;letter-spacing:.03em;white-space:nowrap}
-.ab-notif.active{color:var(--acc);background:rgba(79,156,249,.1)}
-.ab-save.saved-state{color:var(--green)}
+.act-bar{display:flex;background:transparent;border:none;border-radius:0;overflow-x:auto;scrollbar-width:none;padding:.7rem 0;margin:.9rem 0;gap:0}
+.act-bar::-webkit-scrollbar{display:none}
+.ab-btn{flex:0 0 auto;min-width:66px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:.3rem .4rem;border:none;background:transparent;cursor:pointer;transition:transform .15s,opacity .15s;font-family:'DM Sans',sans-serif}
+.ab-btn:active{transform:scale(.88);opacity:.7}
+.ab-ic{width:46px;height:46px;border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,.18)}
+.ab-ic svg{width:21px;height:21px;stroke:white;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ab-lbl{font-size:.6rem;font-weight:700;letter-spacing:.02em;white-space:nowrap;color:var(--t2)}
+.ab-save .ab-ic{background:linear-gradient(135deg,#4f9cf9,#2563eb);box-shadow:0 3px 10px rgba(79,156,249,.35)}
+.ab-pax-save .ab-ic{background:linear-gradient(135deg,#06b6d4,#0891b2);box-shadow:0 3px 10px rgba(6,182,212,.3)}
+.ab-nav .ab-ic{background:linear-gradient(135deg,#10d98a,#059669);box-shadow:0 3px 10px rgba(16,217,138,.3)}
+.ab-wa .ab-ic{background:linear-gradient(135deg,#25D366,#16a34a);box-shadow:0 3px 10px rgba(37,211,102,.3)}
+.ab-notif .ab-ic{background:linear-gradient(135deg,#8b5cf6,#6d28d9);box-shadow:0 3px 10px rgba(139,92,246,.3)}
+.ab-copy .ab-ic{background:linear-gradient(135deg,#f59e0b,#d97706);box-shadow:0 3px 10px rgba(245,158,11,.3)}
+.ab-share .ab-ic{background:linear-gradient(135deg,#60a5fa,#3b82f6);box-shadow:0 3px 10px rgba(96,165,250,.3)}
+.ab-dep-cal .ab-ic{background:linear-gradient(135deg,#f43f5e,#e11d48);box-shadow:0 3px 10px rgba(244,63,94,.3)}
+.ab-save.saved-state .ab-ic{background:linear-gradient(135deg,#10d98a,#059669)}
+.ab-notif.active .ab-ic{background:linear-gradient(135deg,#a78bfa,#7c3aed)}
+
+/* ── Result tabs (Plan / Flight / Prep) ── */
+.dep-result-tabs{display:flex;gap:6px;margin:.4rem 0 .85rem;padding:0}
+.dep-rtab{flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:.55rem .4rem;border:1px solid var(--b2);border-radius:10px;background:var(--g1);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.75rem;font-weight:600;color:var(--t2);transition:all .18s;white-space:nowrap}
+.dep-rtab.active{background:var(--acc);border-color:var(--acc);color:#fff;box-shadow:0 3px 12px rgba(249,115,22,.3)}
+.dep-rtab:not(.active):hover{background:var(--g2);color:var(--t1)}
+.dep-leave-mini{display:none;align-items:center;gap:.55rem;padding:.4rem .9rem;background:rgba(249,115,22,.1);border:1px solid rgba(249,115,22,.25);border-radius:8px;margin-bottom:.75rem;font-size:.78rem}
+#dep-lm-fn{font-family:'Syne',sans-serif;font-weight:800;color:var(--t1)}
+.dep-lm-dot{width:5px;height:5px;background:var(--acc);border-radius:50%;flex-shrink:0}
+#dep-lm-time{font-weight:700;color:var(--acc)}
 
 /* ── Live Status Monitor ── */
 .status-monitor{background:var(--s1);backdrop-filter:blur(20px);border:1px solid var(--b2);border-radius:var(--r);overflow:hidden;margin-bottom:.9rem}
@@ -486,10 +503,9 @@ body.results-mode .leave-card{display:block}
   .buf-opts{gap:.35rem}
   .buf-opt{padding:.3rem .7rem;font-size:.75rem}
   /* action bar */
-  .act-bar{overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
-  .act-bar::-webkit-scrollbar{display:none}
-  .ab-btn{padding:.6rem .2rem;gap:3px;flex:0 0 auto;min-width:50px}
-  .ab-ic svg{width:13px;height:13px}
+  .ab-btn{min-width:58px}
+  .ab-ic{width:40px;height:40px;border-radius:12px}
+  .ab-ic svg{width:18px;height:18px}
   .ab-lbl{font-size:.55rem}
   /* flight card compact */
   .apt-iata{font-size:1.1rem}
@@ -722,6 +738,20 @@ body.results-mode .leave-card{display:block}
 
 <!-- Result card -->
 <div id="result-card" style="display:none;animation:fadeUp .4s ease">
+
+<!-- Result tabs -->
+<div class="dep-result-tabs" id="dep-result-tabs" style="display:none">
+  <button class="dep-rtab active" data-tab="plan" onclick="switchResultTab('plan')">🛫 Plan</button>
+  <button class="dep-rtab" data-tab="flight" onclick="switchResultTab('flight')">✈ Flight</button>
+  <button class="dep-rtab" data-tab="prep" onclick="switchResultTab('prep')">🧳 Prep</button>
+</div>
+<!-- Leave mini (shown on non-plan tabs) -->
+<div class="dep-leave-mini" id="dep-lm">
+  <span id="dep-lm-fn">—</span>
+  <span class="dep-lm-dot"></span>
+  <span>Leave by</span>
+  <span id="dep-lm-time">—</span>
+</div>
 
 <!-- Leave banner -->
 <div class="leave-card card" id="leave-card">
@@ -964,7 +994,7 @@ body.results-mode .leave-card{display:block}
 </div>
 
 <!-- Action bar -->
-<div class="act-bar">
+<div class="act-bar" id="dep-actbar">
   <button class="ab-btn ab-save" id="save-flight-btn" onclick="saveFlightBtn()">
     <span class="ab-ic"><svg viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></span>
     <span class="ab-lbl" id="save-btn-txt">Save</span>
@@ -1338,6 +1368,9 @@ function renderFlight(d){
   renderSecurityWait(d.departure?.iata||'');
   renderDepartureLounges(d.departure?.iata||'');
   document.getElementById('result-card').style.display='block';
+  document.getElementById('dep-result-tabs').style.display='flex';
+  switchResultTab('plan');
+  updateDepLeaveMini();
   document.getElementById('result-card').scrollIntoView({behavior:'smooth',block:'start'});
   if(userLat&&userLng)renderDepTcCard();
   if(depFirstRender){depFirstRender=false;autoDetectDepFlightType(d);}
@@ -1400,6 +1433,7 @@ function recalc(){
   document.getElementById('leave-title').textContent=depTitle(curData);
   updateLocNav();
   updateSdcCard();
+  updateDepLeaveMini();
   if(userLat&&userLng)renderDepTcCard();
 }
 
@@ -1776,12 +1810,45 @@ function clearResults(){
   if(sdcDep)sdcDep.textContent='—';
   const sdcDepSub=document.getElementById('sdc-dep-sub');
   if(sdcDepSub)sdcDepSub.textContent='enter flight';
+  const rtabs=document.getElementById('dep-result-tabs');if(rtabs)rtabs.style.display='none';
+  const dlm=document.getElementById('dep-lm');if(dlm)dlm.style.display='none';
   dpNotifFirst=true; dpPrevStatus=null; dpPrevDelay=0; depFirstRender=true;
 }
 let _toastTimer=null;
 function showToast(m){
   const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');
   clearTimeout(_toastTimer);_toastTimer=setTimeout(()=>t.classList.remove('show'),2800);
+}
+
+// ─── RESULT TABS (Plan / Flight / Prep) ──────────────────────────────────────
+const DEP_TAB_ELS = {
+  plan:   ['leave-card','dep-actbar'],
+  flight: ['fi-card','map-card'],
+  prep:   ['prep-card','security-panel','dep-lounge-panel']
+};
+const DEP_RT_SHOW = {'dep-actbar':'flex','map-card':'block','security-panel':'block','dep-lounge-panel':'block'};
+let curResTab = 'plan';
+function switchResultTab(tab) {
+  curResTab = tab;
+  const all = [...new Set(Object.values(DEP_TAB_ELS).flat())];
+  all.forEach(id => { const el = document.getElementById(id); if(el) el.style.display='none'; });
+  (DEP_TAB_ELS[tab]||[]).forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.style.display = DEP_RT_SHOW[id] || '';
+  });
+  document.querySelectorAll('.dep-rtab').forEach(b => b.classList.toggle('active', b.dataset.tab===tab));
+  const lm = document.getElementById('dep-lm');
+  if(lm) lm.style.display = tab==='plan' ? 'none' : 'flex';
+  if(tab==='flight' && lmap) setTimeout(()=>lmap.invalidateSize(), 200);
+}
+function updateDepLeaveMini() {
+  if(!curData) return;
+  const dep = new Date(curData.departure.scheduled);
+  const leave = new Date(dep.getTime() - (bufMins + driveMins) * 60000);
+  const fn = document.getElementById('dep-lm-fn');
+  const tm = document.getElementById('dep-lm-time');
+  if(fn) fn.textContent = curData.flightNumber;
+  if(tm) tm.textContent = fmtTime(leave);
 }
 
 // ─── URL PARAMS ───────────────────────────────────────────────────────────────

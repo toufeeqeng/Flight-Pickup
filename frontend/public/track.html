@@ -115,10 +115,20 @@ header::before{content:'';position:absolute;top:0;left:50%;transform:translateX(
 .add-btn:disabled{opacity:.4;cursor:not-allowed}
 
 /* ── Icon buttons ── */
-.ctrl-icon-btn{width:28px;height:28px;background:var(--g2);border:1px solid var(--b2);border-radius:8px;color:var(--t2);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .18s;flex-shrink:0}
-.ctrl-icon-btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.ctrl-icon-btn:hover{background:var(--b1);color:var(--t1)}
-.ctrl-icon-btn.on{background:rgba(79,156,249,.18);border-color:rgba(79,156,249,.45);color:var(--acc)}
+.ctrl-icon-btn{width:36px;height:36px;border-radius:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:opacity .18s,transform .15s;flex-shrink:0;border:none}
+.ctrl-icon-btn:active{transform:scale(.88);opacity:.7}
+.ctrl-icon-btn svg{width:16px;height:16px;stroke:white;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+#share-btn{background:linear-gradient(135deg,#60a5fa,#3b82f6);box-shadow:0 2px 10px rgba(96,165,250,.35)}
+#share-btn:hover{opacity:.85}
+#notify-btn{background:linear-gradient(135deg,#8b5cf6,#6d28d9);box-shadow:0 2px 10px rgba(139,92,246,.35)}
+#notify-btn:hover{opacity:.85}
+#notify-btn.on{background:linear-gradient(135deg,#a78bfa,#7c3aed);box-shadow:0 3px 14px rgba(167,139,250,.45)}
+
+/* ── View tabs (Map / Flights) ── */
+#track-view-tabs{display:flex;gap:6px;margin-bottom:.85rem}
+.track-tab{flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:.52rem .4rem;border:1px solid var(--b2);border-radius:10px;background:var(--g1);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.78rem;font-weight:600;color:var(--t2);transition:all .18s;white-space:nowrap}
+.track-tab.active{background:linear-gradient(135deg,#4f9cf9,#8b5cf6);border-color:transparent;color:#fff;box-shadow:0 3px 12px rgba(79,156,249,.3)}
+.track-tab:not(.active):hover{background:var(--g2);color:var(--t1)}
 
 /* ── Flight cards grid ── */
 .cards-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.2rem}
@@ -241,7 +251,7 @@ footer a{color:var(--t3);text-decoration:underline}
   .mode-opt{padding:.22rem .42rem;font-size:.63rem}
   .add-row{gap:.45rem}
   .add-btn{padding:.6rem 1rem;font-size:.82rem}
-  .ctrl-icon-btn{width:28px;height:28px;font-size:.85rem}
+  .ctrl-icon-btn{width:32px;height:32px}
   .stat-chip{font-size:.7rem;padding:.28rem .65rem}
   .sf-btn{padding:.22rem .55rem;font-size:.68rem}
   #map-view{height:270px}
@@ -302,6 +312,12 @@ footer a{color:var(--t3);text-decoration:underline}
       <button class="sf-btn" data-filter="ontime" onclick="setFilter(this)">✅ On Time</button>
       <button class="sf-btn" data-filter="landed" onclick="setFilter(this)">🛬 Landed</button>
     </div>
+  </div>
+
+  <!-- View tabs -->
+  <div id="track-view-tabs" style="display:none">
+    <button class="track-tab active" data-tab="flights" onclick="switchTrackTab('flights')">✈ Flights</button>
+    <button class="track-tab" data-tab="map" onclick="switchTrackTab('map')">🗺 Map</button>
   </div>
 
   <!-- Map view -->
@@ -460,6 +476,23 @@ function matchesFilter(num) {
   return lbl === activeFilter;
 }
 
+// ── VIEW TABS (Map / Flights) ─────────────────────────────────────────────────
+let curTrackTab = 'flights';
+function switchTrackTab(tab) {
+  curTrackTab = tab;
+  document.querySelectorAll('.track-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  syncTrackTabView();
+  if (tab === 'map' && tmap) setTimeout(() => tmap.invalidateSize(), 200);
+}
+function syncTrackTabView() {
+  const hasFlights = getTracked().length > 0;
+  const tabsBar = document.getElementById('track-view-tabs');
+  if (tabsBar) tabsBar.style.display = hasFlights ? 'flex' : 'none';
+  if (!hasFlights) return;
+  document.getElementById('cards-grid').style.display = curTrackTab === 'flights' ? '' : 'none';
+  document.getElementById('map-card-wrap').style.display = curTrackTab === 'map' ? 'block' : 'none';
+}
+
 // ── MAP VIEW (Leaflet + OpenStreetMap — free, no API key) ────────────────────
 let tmap = null;
 let mapMarkers = {};
@@ -469,7 +502,6 @@ function isDark() { return window.matchMedia('(prefers-color-scheme: dark)').mat
 function showMap(hasFlights) {
   const wrap = document.getElementById('map-card-wrap');
   if (!hasFlights) { wrap.style.display = 'none'; mapActive = false; return; }
-  wrap.style.display = 'block';
   if (!mapActive) {
     mapActive = true;
     if (!tmap) {
@@ -479,7 +511,8 @@ function showMap(hasFlights) {
         : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
       L.tileLayer(tileUrl, { maxZoom: 18 }).addTo(tmap);
     }
-    setTimeout(() => { tmap.invalidateSize(); updateMapMarkers(); }, 150);
+    if (curTrackTab === 'map') setTimeout(() => { tmap.invalidateSize(); updateMapMarkers(); }, 150);
+    else updateMapMarkers();
   }
   const tracked = getTracked().filter(n => flightData[n] && !flightData[n]._error);
   const el = document.getElementById('map-flight-count');
@@ -851,6 +884,7 @@ function renderGrid() {
   updateStats();
   showMap(tracked.length > 0);
   updateMapMarkers();
+  syncTrackTabView();
   checkFlightAlerts();
 }
 
@@ -941,6 +975,7 @@ async function addFlight() {
   const grid = document.getElementById('cards-grid');
   document.getElementById('empty-state').style.display = 'none';
   document.getElementById('stats-bar').style.display = 'flex';
+  syncTrackTabView();
 
   const card = document.createElement('div');
   card.className = 'flight-card';
@@ -1049,6 +1084,7 @@ async function init() {
   const grid = document.getElementById('cards-grid');
   document.getElementById('empty-state').style.display = 'none';
   document.getElementById('stats-bar').style.display = 'flex';
+  syncTrackTabView();
   tracked.forEach(num => {
     const card = document.createElement('div');
     card.className = 'flight-card';

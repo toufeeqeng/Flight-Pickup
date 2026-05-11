@@ -35,6 +35,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <style>
 /* ── Ad Slots ── */
 .ad-slot{width:100%;max-width:728px;margin:0 auto 1rem;min-height:50px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.03);border:1px dashed rgba(255,255,255,.08);border-radius:8px;overflow:hidden}
@@ -108,8 +109,28 @@ header::before{content:'';position:absolute;top:0;left:50%;transform:translateX(
 
 /* ── Search ── */
 .sbody{padding:.9rem}
-.frow{display:flex;gap:.65rem;flex-wrap:wrap}
+.frow{display:flex;gap:.65rem;flex-wrap:wrap;align-items:flex-start}
 .field{flex:1;min-width:130px;position:relative}
+.tabs{display:flex;border-bottom:1px solid var(--b1)}
+.tab{flex:1;padding:.7rem .5rem;border:none;background:transparent;color:var(--t2);font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;white-space:nowrap}
+.tab:hover{color:var(--t1);background:var(--g1)}
+.tab.active{color:var(--acc);border-bottom-color:var(--acc)}
+.swap-btn{background:var(--g2);border:1px solid var(--b2);border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--t2);font-size:1rem;transition:all .2s;flex-shrink:0;margin-top:1.4rem}
+.swap-btn:hover{background:var(--b1);color:var(--t1);transform:rotate(180deg)}
+.rr-card{background:var(--s1);backdrop-filter:blur(20px);border:1px solid var(--b2);border-radius:var(--r);overflow:hidden;display:none;margin-bottom:.9rem}
+.rr-card.show{display:block}
+.rr-hdr{padding:.9rem 1.3rem;border-bottom:1px solid var(--b1);font-family:'Syne',sans-serif;font-size:.88rem;font-weight:700;color:var(--t2)}
+.rri{display:flex;align-items:center;padding:.8rem 1.3rem;gap:.75rem;flex-wrap:wrap;cursor:pointer;border-bottom:1px solid var(--b1);transition:background .15s}
+.rri:last-child{border-bottom:none}
+.rri:hover{background:var(--g2)}
+.rri-fn{font-family:'Syne',sans-serif;font-weight:700;font-size:.88rem;min-width:60px}
+.rri-al{font-size:.8rem;color:var(--t2);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rri-time{font-size:.8rem;color:var(--t2);white-space:nowrap}
+.rri-bdg{padding:.2rem .65rem;border-radius:999px;font-size:.7rem;font-weight:600;white-space:nowrap;flex-shrink:0}
+.rri-bdg.green{background:rgba(16,217,138,.15);color:#10d98a}
+.rri-bdg.amber{background:rgba(245,166,35,.15);color:#f5a623}
+.rri-bdg.red{background:rgba(240,82,82,.15);color:#f05252}
+.rri-bdg.blue{background:rgba(96,165,250,.15);color:#60a5fa}
 .field label{display:block;font-size:.68rem;color:var(--t2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px}
 .field input{width:100%;padding:.65rem .9rem;background:var(--g2);border:1px solid var(--b2);border-radius:var(--rsm);color:var(--t1);font-family:'Syne',sans-serif;font-size:.98rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;outline:none;transition:border-color .2s,box-shadow .2s}
 .field input:focus{border-color:var(--acc);box-shadow:0 0 0 3px rgba(249,115,22,.15)}
@@ -653,16 +674,44 @@ body.results-mode .leave-card{display:block}
 
 <!-- Search card -->
 <div class="card" role="search">
+  <div class="tabs">
+    <button class="tab active" id="tab-flight" onclick="switchDepTab('flight')">✈ Flight Number</button>
+    <button class="tab" id="tab-route" onclick="switchDepTab('route')">🔍 By Route</button>
+  </div>
   <div class="sbody">
-    <div class="frow">
-      <div class="field">
-        <label>My Flight Number</label>
-        <input type="text" id="flight-input" placeholder="e.g. BA283, EK202" maxlength="8"
-          oninput="this.value=this.value.toUpperCase()"/>
+    <div id="panel-flight">
+      <div class="frow">
+        <div class="field">
+          <label>My Flight Number</label>
+          <input type="text" id="flight-input" placeholder="e.g. BA283, EK202" maxlength="8"
+            oninput="this.value=this.value.toUpperCase()"/>
+        </div>
       </div>
     </div>
-    <button class="sbtn" id="sbtn" onclick="doSearch()">🛫 Check My Flight</button>
+    <div id="panel-route" style="display:none">
+      <div class="frow">
+        <div class="field">
+          <label>From — City or Airport</label>
+          <input type="text" id="dep-input" class="city" placeholder="London, Dubai, Delhi..." autocomplete="off" oninput="depAcSearch('dep')"/>
+          <div class="ac" id="ac-dep"></div>
+          <div class="sel-tag" id="dep-tag"><span id="dep-tag-txt"></span><button onclick="clearDepApt('dep')">✕</button></div>
+        </div>
+        <button class="swap-btn" onclick="swapDepApt()" title="Swap airports">⇄</button>
+        <div class="field">
+          <label>To — City or Airport</label>
+          <input type="text" id="arr-input" class="city" placeholder="New York, Singapore..." autocomplete="off" oninput="depAcSearch('arr')"/>
+          <div class="ac" id="ac-arr"></div>
+          <div class="sel-tag" id="arr-tag"><span id="arr-tag-txt"></span><button onclick="clearDepApt('arr')">✕</button></div>
+        </div>
+      </div>
+    </div>
+    <button class="sbtn" id="sbtn" onclick="doSearch()"><span id="sbtn-txt">🛫 Check My Flight</span></button>
   </div>
+</div>
+
+<div class="rr-card" id="rr-card">
+  <div class="rr-hdr" id="rr-hdr"></div>
+  <div id="rr-list"></div>
 </div>
 
 <div class="err" id="err" aria-live="polite"></div>
@@ -769,9 +818,9 @@ body.results-mode .leave-card{display:block}
         <div class="spc-p-sub" id="sdc-drive-sub">live traffic</div>
       </div>
     </div>
-    <div class="loc-nav" id="loc-nav" style="padding:.55rem .2rem 0">
-      <a id="loc-gmaps" title="Google Maps" target="_blank" rel="noopener">🗺</a>
-      <a id="loc-apple" title="Apple Maps" target="_blank" rel="noopener">🍎</a>
+    <div id="loc-nav" style="display:none">
+      <a id="loc-gmaps" target="_blank" rel="noopener"></a>
+      <a id="loc-apple" target="_blank" rel="noopener"></a>
       <a id="loc-waze" title="Waze" target="_blank" rel="noopener">🚦</a>
     </div>
   </div>
@@ -793,16 +842,6 @@ body.results-mode .leave-card{display:block}
       <div class="tc-route-sub" id="dep-tc-sub">Enable location to calculate your route with live traffic</div>
     </div>
     <div class="tc-map"><div id="dep-route-map"></div></div>
-    <div class="tc-apps">
-      <button class="tc-app gmaps" onclick="openDepNav('google')">
-        <svg viewBox="0 0 24 24"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
-        Google Maps
-      </button>
-      <button class="tc-app" onclick="openDepNav('apple')">
-        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
-        Apple Maps
-      </button>
-    </div>
   </div>
 </div>
 
@@ -1043,6 +1082,7 @@ body.results-mode .leave-card{display:block}
 
 </main><!-- end wrap -->
 
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 const API = window.location.hostname==='localhost' ? 'http://localhost:3001/api' : '/api';
 let _gmapsReady=false,_gmapsLoading=false,_gmapsCbs=[];
@@ -1104,6 +1144,7 @@ function getDemoFlightF94602(){
 const DEMO_FLIGHTS={'BA283':getDemoFlight,'F94602':getDemoFlightF94602};
 
 // ─── STATE ───────────────────────────────────────────────────────────────────
+let curDepTab='flight', selDep=null, selArr=null, acTimers={};
 let curFlight=null, curData=null;
 let notifIntervalId=null;
 let dpPrevStatus=null, dpPrevDelay=0, dpNotifFirst=true;
@@ -1124,11 +1165,81 @@ function setBuf(mins){
   recalc();
 }
 
+// ─── TABS + ROUTE SEARCH ────────────────────────────────────────────────────
+function switchDepTab(t){
+  curDepTab=t;
+  document.getElementById('tab-flight').classList.toggle('active',t==='flight');
+  document.getElementById('tab-route').classList.toggle('active',t==='route');
+  document.getElementById('panel-flight').style.display=t==='flight'?'':'none';
+  document.getElementById('panel-route').style.display=t==='route'?'':'none';
+  document.getElementById('sbtn-txt').textContent=t==='flight'?'🛫 Check My Flight':'🔍 Search Flights';
+  document.getElementById('rr-card').classList.remove('show');
+}
+function depAcSearch(side){
+  clearTimeout(acTimers[side]);
+  const inp=document.getElementById(side==='dep'?'dep-input':'arr-input');
+  const q=inp.value.trim();
+  if(q.length<2){document.getElementById('ac-'+side).style.display='none';return;}
+  acTimers[side]=setTimeout(async()=>{
+    try{
+      const res=await fetch(`${API}/airports/search?q=${encodeURIComponent(q)}`);
+      const list=await res.json();
+      const ac=document.getElementById('ac-'+side);
+      if(!list.length){ac.style.display='none';return;}
+      ac.innerHTML=list.map(a=>`<div class="aci" onclick="selectDepApt('${side}','${a.iata}','${(a.city||a.name).replace(/'/g,"\\'")}')"><span class="aci-iata">${a.iata}</span><div><div class="aci-city">${a.city||a.name}</div><div class="aci-name">${a.name}</div></div><span class="aci-country">${a.country}</span></div>`).join('');
+      ac.style.display='block';
+    }catch(e){}
+  },280);
+}
+function selectDepApt(side,iata,city){
+  if(side==='dep'){selDep={iata,city};document.getElementById('dep-input').value='';document.getElementById('dep-tag-txt').textContent=`${iata} · ${city}`;document.getElementById('dep-tag').classList.add('show');}
+  else{selArr={iata,city};document.getElementById('arr-input').value='';document.getElementById('arr-tag-txt').textContent=`${iata} · ${city}`;document.getElementById('arr-tag').classList.add('show');}
+  document.getElementById('ac-'+side).style.display='none';
+}
+function clearDepApt(side){
+  if(side==='dep'){selDep=null;document.getElementById('dep-input').value='';document.getElementById('dep-tag').classList.remove('show');}
+  else{selArr=null;document.getElementById('arr-input').value='';document.getElementById('arr-tag').classList.remove('show');}
+}
+function swapDepApt(){
+  const tmp=selDep;selDep=selArr;selArr=tmp;
+  const di=document.getElementById('dep-input'),ai=document.getElementById('arr-input');
+  const dt=document.getElementById('dep-tag-txt'),at=document.getElementById('arr-tag-txt');
+  const dTag=document.getElementById('dep-tag'),aTag=document.getElementById('arr-tag');
+  const tv=di.value;di.value=ai.value;ai.value=tv;
+  const tt=dt.textContent;dt.textContent=at.textContent;at.textContent=tt;
+  const ds=dTag.classList.contains('show');
+  aTag.classList.contains('show')?dTag.classList.add('show'):dTag.classList.remove('show');
+  ds?aTag.classList.add('show'):aTag.classList.remove('show');
+}
+async function searchByRoute(){
+  if(!selDep||!selArr){showErr('Select both departure and arrival airports');return;}
+  showErr('');showLoading(true);
+  document.getElementById('rr-card').classList.remove('show');
+  try{
+    const res=await fetch(`${API}/route?dep=${selDep.iata}&arr=${selArr.iata}`);
+    const data=await res.json();
+    const list=data.flights||[];
+    const fmt=iso=>{try{return new Date(iso).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});}catch{return'—';}};
+    document.getElementById('rr-hdr').textContent=`${list.length} flights: ${selDep.iata} → ${selArr.iata}`;
+    document.getElementById('rr-list').innerHTML=list.length
+      ?list.map(f=>`<div class="rri" onclick="quickSearch('${f.flightNumber}')"><span class="rri-fn">${f.flightNumber}</span><span class="rri-al">${f.airline}</span><span class="rri-time">${fmt(f.scheduledDep)} → ${fmt(f.scheduledArr)}</span><span class="rri-bdg ${f.buffer.bufferColor}">${f.buffer.bufferLabel}</span></div>`).join('')
+      :`<div style="padding:1rem 1.3rem;color:var(--t2);font-size:.85rem">No flights found for this route.</div>`;
+    document.getElementById('rr-card').classList.add('show');
+  }catch(e){showErr('Could not fetch route data. Try again.');}
+  finally{showLoading(false);}
+}
+document.addEventListener('click',e=>{
+  if(!e.target.closest('.field')){
+    ['ac-dep','ac-arr'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});
+  }
+});
+
 // ─── CHECKLIST ───────────────────────────────────────────────────────────────
 function toggleCheck(el){el.classList.toggle('checked');const c=el.querySelector('.cl-check');c.textContent=el.classList.contains('checked')?'✓':''}
 
 // ─── SEARCH ──────────────────────────────────────────────────────────────────
 function doSearch(){
+  if(curDepTab==='route'){searchByRoute();return;}
   const num=document.getElementById('flight-input').value.trim().toUpperCase();
   if(!num){showErr('Please enter your flight number (e.g. BA283)');return}
   if(!document.body.classList.contains('results-mode')){
@@ -1333,29 +1444,25 @@ function toggleDepBuf(){
   setBuf(opts[(idx+1)%opts.length]);
 }
 
-// ─── MAP (Google Maps) ────────────────────────────────────────────────────────
+// ─── MAP (Leaflet — flight position) / Google Maps kept only for route/traffic ─
 async function renderMap(d){
   if(!d.live)return;
-  await loadGoogleMaps();
-  if(!window.google)return;
   const mc=document.getElementById('map-card');
   mc.classList.add('show');
   const{latitude:lat,longitude:lng,heading:h,altitude:alt,speed:spd}=d.live;
   if(!lmap){
-    lmap=new google.maps.Map(document.getElementById('flight-map'),{
-      center:{lat,lng},zoom:5,
-      zoomControl:true,mapTypeControl:false,streetViewControl:false,fullscreenControl:false
-    });
+    const dark=!document.documentElement.classList.contains('light');
+    lmap=L.map('flight-map',{zoomControl:true,attributionControl:false}).setView([lat,lng],5);
+    const tiles=dark
+      ?'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+      :'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+    L.tileLayer(tiles,{maxZoom:18}).addTo(lmap);
   }else{
-    lmap.setCenter({lat,lng});
+    lmap.setView([lat,lng],lmap.getZoom());
   }
-  if(planeMarker)planeMarker.setMap(null);
+  if(planeMarker)planeMarker.remove();
   const planeSvg=`<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><g transform="rotate(${h||0},16,16)"><path d="M16 2 L20 14 L30 16 L20 18 L18 28 L16 24 L14 28 L12 18 L2 16 L12 14 Z" fill="white" stroke="rgba(0,0,0,0.35)" stroke-width="1" stroke-linejoin="round"/></g></svg>`;
-  planeMarker=new google.maps.Marker({
-    position:{lat,lng},map:lmap,
-    title:`${d.flightNumber}${alt?' · '+alt.toLocaleString()+' ft':''}`,
-    icon:{url:'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(planeSvg),scaledSize:new google.maps.Size(32,32),anchor:new google.maps.Point(16,16)}
-  });
+  planeMarker=L.marker([lat,lng],{icon:L.divIcon({html:planeSvg,className:'',iconSize:[32,32],iconAnchor:[16,16]}),zIndexOffset:1000}).addTo(lmap).bindTooltip(`${d.flightNumber}${alt?' · '+alt.toLocaleString()+' ft':''}`);
   const mi=document.getElementById('map-info');
   if(mi)mi.innerHTML=`<span>Alt: <strong>${alt?.toLocaleString()||'—'} ft</strong></span><span>Speed: <strong>${spd||'—'} km/h</strong></span>`;
 }
@@ -1364,7 +1471,7 @@ function toggleFlightMap(){
   const btn=document.getElementById('map-toggle-btn');
   const showing=mc.classList.toggle('show');
   if(btn)btn.classList.toggle('active',showing);
-  if(showing){setTimeout(()=>{mc.scrollIntoView({behavior:'smooth',block:'start'});if(lmap&&window.google){google.maps.event.trigger(lmap,'resize');if(planeMarker)lmap.setCenter(planeMarker.getPosition());}},200);}
+  if(showing){setTimeout(()=>{mc.scrollIntoView({behavior:'smooth',block:'start'});if(lmap){lmap.invalidateSize();if(planeMarker)lmap.setView(planeMarker.getLatLng(),lmap.getZoom());}},200);}
 }
 
 // ─── LOCATION ─────────────────────────────────────────────────────────────────
@@ -1583,6 +1690,7 @@ function delSaved(fn){
 
 function quickSearch(fn){
   document.getElementById('flight-input').value=fn;
+  switchDepTab('flight');
   doSearch();
 }
 

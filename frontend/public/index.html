@@ -37,6 +37,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -129,8 +130,10 @@ header::before{content:'';position:absolute;top:0;left:50%;transform:translateX(
 
 /* ── Search body ── */
 .sbody{padding:.9rem}
-.frow{display:flex;gap:.65rem;flex-wrap:wrap}
+.frow{display:flex;gap:.65rem;flex-wrap:wrap;align-items:flex-start}
 .field{flex:1;min-width:130px;position:relative}
+.swap-btn{background:var(--g2);border:1px solid var(--b2);border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--t2);font-size:1rem;transition:all .2s;flex-shrink:0;margin-top:1.4rem}
+.swap-btn:hover{background:var(--b1);color:var(--t1);transform:rotate(180deg)}
 .field label{display:block;font-size:.68rem;color:var(--t2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px}
 .field input{width:100%;padding:.65rem .9rem;background:var(--g2);border:1px solid var(--b2);border-radius:var(--rsm);color:var(--t1);font-family:'Syne',sans-serif;font-size:.98rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;outline:none;transition:border-color .2s,box-shadow .2s}
 .field input.city{text-transform:none;font-family:'DM Sans',sans-serif;font-weight:400;font-size:.9rem;letter-spacing:0}
@@ -795,6 +798,7 @@ body.results-mode .how-card{display:none}
           <div class="ac" id="ac-dep"></div>
           <div class="sel-tag" id="dep-tag"><span id="dep-tag-txt"></span><button onclick="clearApt('dep')">✕</button></div>
         </div>
+        <button class="swap-btn" onclick="swapApt()" title="Swap airports">⇄</button>
         <div class="field">
           <label id="lbl-to">To — City or Airport</label>
           <input type="text" id="arr-input" class="city" placeholder="New York, Singapore..." autocomplete="off" oninput="acSearch('arr')"/>
@@ -1180,6 +1184,7 @@ body.results-mode .how-card{display:none}
 
 </main><!-- end wrap -->
 
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 // ─── CONFIG ───────────────────────────────────────────────────────────────────
 const API = window.location.hostname === 'localhost'
@@ -1467,6 +1472,17 @@ function selApt(side,iata,city,name,country){
   if(side==='dep')selDep=iata; else selArr=iata;
 }
 
+function swapApt(){
+  const tmp=selDep;selDep=selArr;selArr=tmp;
+  const di=document.getElementById('dep-input'),ai=document.getElementById('arr-input');
+  const dt=document.getElementById('dep-tag-txt'),at=document.getElementById('arr-tag-txt');
+  const dTag=document.getElementById('dep-tag'),aTag=document.getElementById('arr-tag');
+  const tv=di.value;di.value=ai.value;ai.value=tv;
+  const tt=dt.textContent;dt.textContent=at.textContent;at.textContent=tt;
+  const ds=dTag.classList.contains('show');
+  aTag.classList.contains('show')?dTag.classList.add('show'):dTag.classList.remove('show');
+  ds?aTag.classList.add('show'):aTag.classList.remove('show');
+}
 function clearApt(side){
   document.getElementById(side==='dep'?'dep-input':'arr-input').value='';
   document.getElementById(`${side}-tag`).classList.remove('show');
@@ -1491,7 +1507,7 @@ function reqLoc(){
     const isFirst=!userLat&&!userLng;
     userLat=pos.coords.latitude; userLng=pos.coords.longitude;
     try{localStorage.setItem('fp_loc',JSON.stringify({lat:userLat,lng:userLng,ts:Date.now()}))}catch(e){}
-    if(lmap&&window.google){if(userMarker)userMarker.setMap(null);userMarker=new google.maps.Marker({position:{lat:userLat,lng:userLng},map:lmap,title:'You are here',icon:{path:google.maps.SymbolPath.CIRCLE,scale:8,fillColor:'#4f9cf9',fillOpacity:1,strokeColor:'#fff',strokeWeight:2.5}});}
+    if(lmap){if(userMarker)userMarker.remove();userMarker=L.circleMarker([userLat,userLng],{radius:8,color:'#fff',weight:2,fillColor:'#4f9cf9',fillOpacity:1}).addTo(lmap).bindTooltip('You are here');}
     if(rmap&&window.google){if(rUserM)rUserM.setMap(null);rUserM=new google.maps.Marker({position:{lat:userLat,lng:userLng},map:rmap,title:'You are here',icon:{path:google.maps.SymbolPath.CIRCLE,scale:8,fillColor:'#4f9cf9',fillOpacity:1,strokeColor:'#fff',strokeWeight:2.5}});}
     updateLocNav();
     if(curData&&curData.arrival&&curData.arrival.lat){
@@ -1824,52 +1840,57 @@ function quickSearch(iata){
 }
 
 
-// ─── MAP (Google Maps) ────────────────────────────────────────────────────────
+// ─── MAP (Leaflet — flight position) / Google Maps kept only for route/traffic ─
 let lmap=null,pMarker=null,dMarker=null,aMarker=null,lPath=null,userMarker=null;
 let rmap=null,rUserM=null,rArrM=null,rPath=null,rTrafficLayer=null;
 let locationWatchId=null;
 
 function initMap(){
   if(lmap)return;
-  lmap=new google.maps.Map(document.getElementById('flight-map'),{
-    center:{lat:30,lng:10},zoom:2,
-    zoomControl:true,mapTypeControl:false,streetViewControl:false,fullscreenControl:false
-  });
+  const dark=!document.documentElement.classList.contains('light');
+  lmap=L.map('flight-map',{zoomControl:true,attributionControl:false}).setView([30,10],2);
+  const tiles=dark
+    ?'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+    :'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+  L.tileLayer(tiles,{maxZoom:18}).addTo(lmap);
 }
 
 async function renderMap(d){
-  await loadGoogleMaps();
-  if(!window.google){renderRouteMap();return;}
   initMap();
-  [pMarker,dMarker,aMarker].forEach(m=>{if(m)m.setMap(null)});
-  if(lPath)lPath.setMap(null);
+  [pMarker,dMarker,aMarker].forEach(m=>{if(m)m.remove();});
+  if(lPath)lPath.remove();
   pMarker=dMarker=aMarker=lPath=null;
   const dep=d.departure,arr=d.arrival,live=d.live;
   const pts=[];
-  const dotIcon=c=>({path:google.maps.SymbolPath.CIRCLE,scale:7,fillColor:c,fillOpacity:1,strokeColor:'#fff',strokeWeight:2.5});
-  if(dep.lat&&dep.lng){dMarker=new google.maps.Marker({position:{lat:dep.lat,lng:dep.lng},map:lmap,title:`${dep.iata} — ${dep.city||dep.airport}`,icon:dotIcon('#4f9cf9')});pts.push({lat:dep.lat,lng:dep.lng});}
-  if(arr.lat&&arr.lng){aMarker=new google.maps.Marker({position:{lat:arr.lat,lng:arr.lng},map:lmap,title:`${arr.iata} — ${arr.city||arr.airport}`,icon:dotIcon('#10d98a')});pts.push({lat:arr.lat,lng:arr.lng});}
+  if(dep.lat&&dep.lng){
+    dMarker=L.circleMarker([dep.lat,dep.lng],{radius:8,color:'#fff',weight:2,fillColor:'#4f9cf9',fillOpacity:1}).addTo(lmap).bindTooltip(`${dep.iata} — ${dep.city||dep.airport}`);
+    pts.push([dep.lat,dep.lng]);
+  }
+  if(arr.lat&&arr.lng){
+    aMarker=L.circleMarker([arr.lat,arr.lng],{radius:8,color:'#fff',weight:2,fillColor:'#10d98a',fillOpacity:1}).addTo(lmap).bindTooltip(`${arr.iata} — ${arr.city||arr.airport}`);
+    pts.push([arr.lat,arr.lng]);
+  }
   const mi=document.getElementById('map-info');
   if(live&&live.latitude&&live.longitude){
-    let hdg=0;
-    if(dep.lat&&dep.lng){const dl=(live.longitude-dep.lng)*Math.PI/180,la1=dep.lat*Math.PI/180,la2=live.latitude*Math.PI/180,y=Math.sin(dl)*Math.cos(la2),x=Math.cos(la1)*Math.sin(la2)-Math.sin(la1)*Math.cos(la2)*Math.cos(dl);hdg=(Math.atan2(y,x)*180/Math.PI+360)%360;}
+    let hdg=live.heading||0;
+    if(!live.heading&&dep.lat&&dep.lng){const dl=(live.longitude-dep.lng)*Math.PI/180,la1=dep.lat*Math.PI/180,la2=live.latitude*Math.PI/180,y=Math.sin(dl)*Math.cos(la2),x=Math.cos(la1)*Math.sin(la2)-Math.sin(la1)*Math.cos(la2)*Math.cos(dl);hdg=(Math.atan2(y,x)*180/Math.PI+360)%360;}
     const planeSvg=`<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36"><g transform="rotate(${hdg},18,18)"><path d="M18 3 L20.5 13 L30 19 L20.5 21.5 L20 29 L18 27 L16 29 L15.5 21.5 L6 19 L15.5 13 Z" fill="#4f9cf9" stroke="white" stroke-width="1.8" stroke-linejoin="round"/></g></svg>`;
-    pMarker=new google.maps.Marker({position:{lat:live.latitude,lng:live.longitude},map:lmap,title:`${d.flightNumber} · ${Math.round(live.altitude||0).toLocaleString()} ft`,icon:{url:'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(planeSvg),scaledSize:new google.maps.Size(36,36),anchor:new google.maps.Point(18,18)},zIndex:10});
-    pts.push({lat:live.latitude,lng:live.longitude});
+    pMarker=L.marker([live.latitude,live.longitude],{icon:L.divIcon({html:planeSvg,className:'',iconSize:[36,36],iconAnchor:[18,18]}),zIndexOffset:1000}).addTo(lmap).bindTooltip(`${d.flightNumber} · ${Math.round(live.altitude||0).toLocaleString()} ft`);
+    pts.push([live.latitude,live.longitude]);
     const pp=[];
-    if(dep.lat&&dep.lng)pp.push({lat:dep.lat,lng:dep.lng});
-    pp.push({lat:live.latitude,lng:live.longitude});
-    if(arr.lat&&arr.lng)pp.push({lat:arr.lat,lng:arr.lng});
-    if(pp.length>=2)lPath=new google.maps.Polyline({path:pp,geodesic:true,strokeColor:'#4f9cf9',strokeOpacity:.7,strokeWeight:2,map:lmap});
+    if(dep.lat&&dep.lng)pp.push([dep.lat,dep.lng]);
+    pp.push([live.latitude,live.longitude]);
+    if(arr.lat&&arr.lng)pp.push([arr.lat,arr.lng]);
+    if(pp.length>=2)lPath=L.polyline(pp,{color:'#4f9cf9',opacity:.7,weight:2,dashArray:'4 4'}).addTo(lmap);
     mi.innerHTML=`<span>✈ <strong>${Math.round(live.altitude||0).toLocaleString()} ft</strong></span><span>💨 <strong>${fmtSpd(Math.round(live.speed||0))}</strong></span>`;
     setText('map-ttl-txt',`Live — ${d.flightNumber}`);
   }else{
-    if(dep.lat&&dep.lng&&arr.lat&&arr.lng)lPath=new google.maps.Polyline({path:[{lat:dep.lat,lng:dep.lng},{lat:arr.lat,lng:arr.lng}],geodesic:true,strokeColor:'#4f9cf9',strokeOpacity:.35,strokeWeight:2,map:lmap});
+    if(dep.lat&&dep.lng&&arr.lat&&arr.lng)lPath=L.polyline([[dep.lat,dep.lng],[arr.lat,arr.lng]],{color:'#4f9cf9',opacity:.35,weight:2,dashArray:'6 6'}).addTo(lmap);
     mi.innerHTML=`<span style="color:var(--t2)">No live signal — showing route</span>`;
     setText('map-ttl-txt',`${d.flightNumber} — Route`);
   }
-  if(pts.length>=2){const b=new google.maps.LatLngBounds();pts.forEach(p=>b.extend(p));lmap.fitBounds(b,40);}
-  else if(pts.length===1)lmap.setCenter(pts[0]);
+  if(pts.length>=2)lmap.fitBounds(L.latLngBounds(pts),{padding:[40,40]});
+  else if(pts.length===1)lmap.setView(pts[0],6);
   renderRouteMap();
 }
 
@@ -1884,15 +1905,15 @@ function toggleFlightMap(){
     btn.classList.add('active');
     setTimeout(()=>{
       mc.scrollIntoView({behavior:'smooth',block:'start'});
-      if(lmap&&window.google){
-        google.maps.event.trigger(lmap,'resize');
+      if(lmap){
+        lmap.invalidateSize();
         if(curData){
           const pts=[];const dep=curData.departure,arr=curData.arrival,live=curData.live;
-          if(dep&&dep.lat&&dep.lng)pts.push({lat:dep.lat,lng:dep.lng});
-          if(live&&live.latitude&&live.longitude)pts.push({lat:live.latitude,lng:live.longitude});
-          if(arr&&arr.lat&&arr.lng)pts.push({lat:arr.lat,lng:arr.lng});
-          if(pts.length>=2){const b=new google.maps.LatLngBounds();pts.forEach(p=>b.extend(p));lmap.fitBounds(b,40);}
-          else if(pts.length===1)lmap.setCenter(pts[0]);
+          if(dep&&dep.lat&&dep.lng)pts.push([dep.lat,dep.lng]);
+          if(live&&live.latitude&&live.longitude)pts.push([live.latitude,live.longitude]);
+          if(arr&&arr.lat&&arr.lng)pts.push([arr.lat,arr.lng]);
+          if(pts.length>=2)lmap.fitBounds(L.latLngBounds(pts),{padding:[40,40]});
+          else if(pts.length===1)lmap.setView(pts[0],6);
         }
       }
     },200);

@@ -1461,8 +1461,8 @@ async function renderMap(d){
     lmap.setView([lat,lng],lmap.getZoom());
   }
   if(planeMarker)planeMarker.remove();
-  const planeSvg=`<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><g transform="rotate(${h||0},16,16)"><path d="M16 2 L20 14 L30 16 L20 18 L18 28 L16 24 L14 28 L12 18 L2 16 L12 14 Z" fill="white" stroke="rgba(0,0,0,0.35)" stroke-width="1" stroke-linejoin="round"/></g></svg>`;
-  planeMarker=L.marker([lat,lng],{icon:L.divIcon({html:planeSvg,className:'',iconSize:[32,32],iconAnchor:[16,16]}),zIndexOffset:1000}).addTo(lmap).bindTooltip(`${d.flightNumber}${alt?' · '+alt.toLocaleString()+' ft':''}`);
+  const planeSvg=`<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"><circle cx="20" cy="20" r="19" fill="#3b82f6" opacity="0.88"/><g transform="rotate(${h||0},20,20)"><path d="M20 7 L21.8 11.5 L21.8 17.5 L31 22.5 L31 24.5 L21.8 22.5 L21.5 28.5 L24.5 30.5 L24.5 32.5 L20 31 L15.5 32.5 L15.5 30.5 L18.5 28.5 L18.2 22.5 L9 24.5 L9 22.5 L18.2 17.5 L18.2 11.5 Z" fill="white" opacity="0.97"/></g></svg>`;
+  planeMarker=L.marker([lat,lng],{icon:L.divIcon({html:planeSvg,className:'',iconSize:[40,40],iconAnchor:[20,20]}),zIndexOffset:1000}).addTo(lmap).bindTooltip(`${d.flightNumber}${alt?' · '+alt.toLocaleString()+' ft':''}`);
   const mi=document.getElementById('map-info');
   if(mi)mi.innerHTML=`<span>Alt: <strong>${alt?.toLocaleString()||'—'} ft</strong></span><span>Speed: <strong>${spd||'—'} km/h</strong></span>`;
 }

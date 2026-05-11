@@ -329,6 +329,18 @@ header::before{content:'';position:absolute;top:0;left:50%;transform:translateX(
 @media(prefers-color-scheme:light){.nav-app-btn.apple{border-color:rgba(0,0,0,.15);background:rgba(0,0,0,.04)}}
 
 
+/* ── Result navigation tabs ── */
+.result-tabs{display:flex;gap:0;border-bottom:2px solid var(--b1);margin-bottom:.8rem;background:var(--s1);border-radius:var(--r) var(--r) 0 0;overflow:hidden;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.rtab{flex:1;padding:.68rem .4rem;border:none;background:transparent;color:var(--t2);font-family:'DM Sans',sans-serif;font-size:.8rem;font-weight:600;cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;transition:all .2s;white-space:nowrap}
+.rtab:hover{color:var(--t1);background:var(--g1)}
+.rtab.active{color:var(--acc);border-bottom-color:var(--acc);background:rgba(79,156,249,.07)}
+.leave-mini{display:none;align-items:center;gap:.5rem;padding:.5rem .9rem;background:rgba(79,156,249,.08);border:1px solid rgba(79,156,249,.2);border-radius:var(--rsm);margin-bottom:.75rem;font-size:.8rem}
+.leave-mini.show{display:flex}
+#lm-fn{font-family:'Syne',sans-serif;font-weight:700;color:var(--acc);font-size:.8rem}
+.lm-dot{width:5px;height:5px;border-radius:50%;background:var(--green);flex-shrink:0}
+.lm-lbl{color:var(--t2);font-size:.72rem;flex:1}
+#lm-time{color:var(--green);font-weight:700}
+
 /* ── Route results ── */
 .rr-card{background:var(--s1);backdrop-filter:blur(20px);border:1px solid var(--b2);border-radius:var(--r);overflow:hidden;display:none;margin-bottom:.9rem}
 .rr-card.show{display:block}
@@ -845,6 +857,19 @@ body.results-mode .how-card{display:none}
   <button class="div-nav" onclick="openDivertedNav()">Open in Maps</button>
 </div>
 
+<!-- Result navigation tabs -->
+<div class="result-tabs" id="result-tabs">
+  <button class="rtab active" id="rtab-plan" onclick="switchResultTab('plan')">⏰ Plan</button>
+  <button class="rtab" id="rtab-flight" onclick="switchResultTab('flight')">✈ Flight</button>
+  <button class="rtab" id="rtab-airport" onclick="switchResultTab('airport')">🏢 Airport</button>
+</div>
+<div class="leave-mini" id="leave-mini">
+  <span id="lm-fn">—</span>
+  <div class="lm-dot"></div>
+  <span class="lm-lbl">Leave by</span>
+  <strong id="lm-time">—</strong>
+</div>
+
 <!-- ── Smart Pickup Commander ── -->
 <div class="spc" id="spc-card">
   <div class="spc-hdr">
@@ -968,7 +993,7 @@ body.results-mode .how-card{display:none}
 
 <div id="flight-layout">
 <!-- Flight info card -->
-<div class="fi">
+<div class="fi" id="fi-card">
   <div class="fi-hdr">
     <div><div class="fi-num" id="fi-num"></div><div class="fi-airline" id="fi-airline"></div></div>
     <div style="display:flex;align-items:center;gap:.45rem">
@@ -1075,7 +1100,7 @@ body.results-mode .how-card{display:none}
 </div>
 
 <!-- Action bar -->
-<div class="act-bar">
+<div class="act-bar" id="fl-actbar">
   <button class="ab-btn ab-save" id="save-flight-btn" onclick="saveFlightBtn()">
     <span class="ab-ic"><svg viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></span>
     <span class="ab-lbl" id="save-btn-txt">Save</span>
@@ -1777,6 +1802,11 @@ function updateLeaveTime(d){
   leaveSPC.textContent=leaveStr;
   leaveSPC.className=`spc-res-time ${leaveCls}`;
   setText('spc-cd',cdStr);
+  // sync leave-mini strip (shown on non-plan tabs)
+  const lmTime=document.getElementById('lm-time');
+  if(lmTime)lmTime.textContent=fmtT(leaveDate.toISOString());
+  const lmFn=document.getElementById('lm-fn');
+  if(lmFn&&d.flightNumber)lmFn.textContent=d.flightNumber;
   // SPC badge
   const bdg=document.getElementById('leave-badge');
   if(bdg){bdg.className=`leave-badge ${d.buffer?.bufferColor||leaveCls}`;bdg.textContent=d.buffer?.bufferLabel||'';}
@@ -1873,8 +1903,8 @@ async function renderMap(d){
   if(live&&live.latitude&&live.longitude){
     let hdg=live.heading||0;
     if(!live.heading&&dep.lat&&dep.lng){const dl=(live.longitude-dep.lng)*Math.PI/180,la1=dep.lat*Math.PI/180,la2=live.latitude*Math.PI/180,y=Math.sin(dl)*Math.cos(la2),x=Math.cos(la1)*Math.sin(la2)-Math.sin(la1)*Math.cos(la2)*Math.cos(dl);hdg=(Math.atan2(y,x)*180/Math.PI+360)%360;}
-    const planeSvg=`<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36"><g transform="rotate(${hdg},18,18)"><path d="M18 3 L20.5 13 L30 19 L20.5 21.5 L20 29 L18 27 L16 29 L15.5 21.5 L6 19 L15.5 13 Z" fill="#4f9cf9" stroke="white" stroke-width="1.8" stroke-linejoin="round"/></g></svg>`;
-    pMarker=L.marker([live.latitude,live.longitude],{icon:L.divIcon({html:planeSvg,className:'',iconSize:[36,36],iconAnchor:[18,18]}),zIndexOffset:1000}).addTo(lmap).bindTooltip(`${d.flightNumber} · ${Math.round(live.altitude||0).toLocaleString()} ft`);
+    const planeSvg=`<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"><circle cx="20" cy="20" r="19" fill="#3b82f6" opacity="0.88"/><g transform="rotate(${hdg},20,20)"><path d="M20 7 L21.8 11.5 L21.8 17.5 L31 22.5 L31 24.5 L21.8 22.5 L21.5 28.5 L24.5 30.5 L24.5 32.5 L20 31 L15.5 32.5 L15.5 30.5 L18.5 28.5 L18.2 22.5 L9 24.5 L9 22.5 L18.2 17.5 L18.2 11.5 Z" fill="white" opacity="0.97"/></g></svg>`;
+    pMarker=L.marker([live.latitude,live.longitude],{icon:L.divIcon({html:planeSvg,className:'',iconSize:[40,40],iconAnchor:[20,20]}),zIndexOffset:1000}).addTo(lmap).bindTooltip(`${d.flightNumber} · ${Math.round(live.altitude||0).toLocaleString()} ft`);
     pts.push([live.latitude,live.longitude]);
     const pp=[];
     if(dep.lat&&dep.lng)pp.push([dep.lat,dep.lng]);
@@ -2322,12 +2352,49 @@ function wxEmoji(d){const s=(d||'').toLowerCase();if(s.includes('rain')||s.inclu
 function showToast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800)}
 
 // ─── URL PARAMS (shareable links) ────────────────────────────────────────────
+let curResultTab='plan';
+const RESULT_TAB_ELS={
+  plan:['spc-card','buf-card','fl-actbar'],
+  flight:['fi-card','map-card'],
+  airport:['airport-panel']
+};
+// Elements whose "shown" state needs an explicit inline display value (they default to display:none in CSS
+// and are shown via JS inline style rather than a CSS class).
+const RT_SHOW_DISPLAY={
+  'airport-panel':'block',
+  'fl-actbar':'flex',
+};
+function switchResultTab(tab){
+  curResultTab=tab;
+  ['plan','flight','airport'].forEach(t=>{
+    const btn=document.getElementById(`rtab-${t}`);
+    if(btn)btn.classList.toggle('active',t===tab);
+  });
+  const showEls=RESULT_TAB_ELS[tab]||[];
+  const allEls=[...RESULT_TAB_ELS.plan,...RESULT_TAB_ELS.flight,...RESULT_TAB_ELS.airport];
+  allEls.forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el)return;
+    if(showEls.includes(id)){
+      // use explicit display value if needed, otherwise let CSS handle it
+      el.style.display=RT_SHOW_DISPLAY[id]||'';
+    }else{
+      el.style.display='none';
+    }
+  });
+  const mini=document.getElementById('leave-mini');
+  if(mini)mini.classList.toggle('show',tab!=='plan');
+  if(tab==='flight'&&lmap)setTimeout(()=>lmap.invalidateSize(),60);
+  if(tab==='plan'&&rmap&&window.google)setTimeout(()=>google.maps.event.trigger(rmap,'resize'),60);
+}
+
 function enterResultsMode(fn){
   document.body.classList.add('results-mode');
   const bar=document.getElementById('back-bar');
   if(bar)bar.classList.add('show');
   const lbl=document.getElementById('back-flight-lbl');
   if(lbl)lbl.textContent=fn.toUpperCase();
+  switchResultTab('plan');
 }
 function goBackToSearch(){window.location.href=window.location.pathname;}
 function checkUrlParams(){

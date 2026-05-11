@@ -215,8 +215,76 @@ async function enrichWithOpenSky(result, icao24) {
   return result;
 }
 
+// ── Mock flight for UI testing (no API calls) ────────────────────────────────
+function mockFlight() {
+  const now = new Date();
+  const dep = new Date(now.getTime() - 90 * 60000);
+  const arr = new Date(now.getTime() + 75 * 60000);
+  return {
+    flightNumber: 'UI9999',
+    airline: 'Test Airways',
+    airlineIata: 'UI',
+    status: 'active',
+    departure: {
+      airport: 'John F. Kennedy International Airport',
+      iata: 'JFK',
+      city: 'New York',
+      country: 'United States',
+      scheduled: dep.toISOString(),
+      estimated: dep.toISOString(),
+      actual: dep.toISOString(),
+      delay: 0,
+      terminal: '4',
+      gate: 'B22',
+      lat: 40.6413,
+      lng: -73.7781,
+    },
+    arrival: {
+      airport: 'Heathrow Airport',
+      iata: 'LHR',
+      city: 'London',
+      country: 'United Kingdom',
+      scheduled: arr.toISOString(),
+      estimated: arr.toISOString(),
+      actual: null,
+      delay: 12,
+      terminal: '3',
+      gate: 'A14',
+      baggage: 'Belt 7',
+      lat: 51.4775,
+      lng: -0.4614,
+    },
+    aircraft: 'Boeing 777-300ER',
+    live: {
+      latitude: 51.0,
+      longitude: -20.5,
+      altitude: 36000,
+      speed: 487,
+      heading: 58,
+      updated: new Date().toISOString(),
+      source: 'mock',
+    },
+    weather: {
+      temp: 14,
+      condition: 'Partly Cloudy',
+      icon: '🌤',
+      humidity: 62,
+      wind: 18,
+    },
+    buffer: calcBuffer('active', 0, 12),
+    fetchedAt: new Date().toISOString(),
+    source: 'mock',
+    mock: true,
+  };
+}
+
 // ── Main fetch with fallback ─────────────────────────────────────────────────
 async function fetchFlight(flightNumber) {
+  if (flightNumber === 'UI9999') {
+    console.log('[flight] 🧪 Mock flight — no API call');
+    return mockFlight();
+  }
+
   const cacheKey = `flight_${flightNumber}`;
   const cached = cache.get(cacheKey);
   if (cached) return { ...cached, cached: true };

@@ -512,6 +512,8 @@ body.results-mode .leave-card{display:block}
   .buf-opt{padding:.3rem .7rem;font-size:.75rem}
   /* action bar */
   .ab-btn{padding:.6rem .2rem;gap:3px;min-width:58px}
+  .ab-ic{width:38px;height:38px;border-radius:11px}
+  .ab-ic svg{width:17px;height:17px}
   .ab-lbl{font-size:.55rem}
   /* flight card compact */
   .apt-iata{font-size:1.1rem}
@@ -2002,7 +2004,6 @@ function renderBaggagePanel(d){
 function renderSecurityWait(iata){
   const panel=document.getElementById('security-panel');
   if(!panel)return;
-  panel.style.display='block';
   const body=document.getElementById('secp-body');
   if(!body)return;
   const hour=new Date().getHours();
@@ -2039,7 +2040,6 @@ function renderSecurityWait(iata){
 function renderDepartureLounges(iata){
   const panel=document.getElementById('dep-lounge-panel');
   if(!panel)return;
-  panel.style.display='block';
   const iataEl=document.getElementById('dlp-iata');
   if(iataEl)iataEl.textContent=iata;
   const body=document.getElementById('dlp-body');
